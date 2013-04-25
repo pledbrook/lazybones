@@ -8,6 +8,18 @@ ext {
     templatesDir = new File(projectDir, "src/templates")
 }
 
+// Checks that the build has access to properties that should be defined
+// externally, such as usernames, passwords, etc.
+task verifyProps << {
+    def requiredProps = ["repo.url", "repo.username", "repo.apiKey"]
+    def missingProps = requiredProps.findAll { !project.hasProperty(it) }
+
+    if (missingProps) {
+        throw new GradleException("You must define the build properties '${missingProps.join('\', \'')}'" + 
+                " before you can execute this target.")
+    }
+}
+
 /**
  * Generates tasks to package individual project templates into zip archives.
  */
@@ -55,7 +67,7 @@ tasks.addRule("Pattern: publish_<proj>") { String taskName ->
             return
         }
 
-        task(taskName, dependsOn: "packageTemplate_$tmplName") << {
+        task(taskName, dependsOn: ["verifyProps", "packageTemplate_$tmplName"]) << {
             def version = new File(tmplDir, "VERSION").text.trim()
             def archiveName = tmplName + "-template-" + version + ".zip"
 
