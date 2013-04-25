@@ -3,3 +3,101 @@ apply plugin: "base"
 configurations {
     templates
 }
+
+ext {
+    templatesDir = new File(projectDir, "src/templates")
+}
+
+/**
+ * Generates tasks to package individual project templates into zip archives.
+ */
+tasks.addRule("Pattern: packageTemplate_<proj>") { String taskName ->
+    def m = taskName =~ /packageTemplate_(\S+)/
+    if (m) {
+        def tmplName = m[0][1]
+        def tmplDir = new File(templatesDir, tmplName)
+
+        if (!tmplDir.exists()) {
+            logger.error "No project template directory found for '${tmplName}'"
+            return
+        }
+
+        task(taskName, type: Zip) {
+            baseName = "${tmplName}-template"
+            destinationDir = buildDir
+            excludes = ["**/.retain"]
+            includeEmptyDirs = true
+            version = new File(tmplDir, "VERSION").text.trim()
+
+            from tmplDir
+            exclude "**/.retain", "VERSION", ".gradle"
+        }
+    }
+}
+
+/**
+ * Packages all the project templates into zip archives.
+ */
+def templateDirs = templatesDir.listFiles({ f -> f.directory} as FileFilter)
+task packageTemplates(dependsOn: templateDirs.collect { project.tasks["packageTemplate_${it.name}"] })
+
+/**
+ * Generates tasks to publish individual project template archives to BinTray.
+ */
+tasks.addRule("Pattern: publish_<proj>") { String taskName ->
+    def m = taskName =~ /publish_(\S+)/
+    if (m) {
+        def tmplName = m[0][1]
+        def tmplDir = new File(templatesDir, tmplName)
+
+        if (!tmplDir.exists()) {
+            logger.error "No project template directory found for '${tmplName}'"
+            return
+        }
+
+        task(taskName, dependsOn: "packageTemplate_$tmplName") << {
+            def version = new File(tmplDir, "VERSION").text.trim()
+            def archiveName = tmplName + "-template-" + version + ".zip"
+
+            def archiveFile = new File(buildDir, archiveName)
+            if (!archiveFile.exists()) {
+                throw new GradleException("Bad build file: zip archive '$archiveName' does not exist," +
+                        " but should have been created automatically.")
+            }
+
+            def username = project.getProperty("repo.username")
+            def password = project.getProperty("repo.apiKey")
+
+            def url = new URL(project.getProperty("repo.url") + "/${tmplName}-template/${version}/${archiveName}")
+            logger.lifecycle "Streaming archive to BinTray at URL ${url}"
+            url.openConnection().with {
+                // Add basic authentication header.
+                setRequestProperty "Authorization", "Basic " + "$username:$password".getBytes().encodeBase64().toString()
+
+                doOutput = true
+                fixedLengthStreamingMode = archiveFile.size()
+                requestMethod = "PUT"
+
+                def inputStream = archiveFile.newInputStream() 
+                try {
+                    outputStream << inputStream
+                }
+                finally {
+                    inputStream.close()
+                    outputStream.close()
+                }
+
+                assert responseCode >= 200 && responseCode < 300
+            }
+        }
+    }
+}
+
+/**
+ * Publishes all the project template zip archives.
+ */
+task publishAll(dependsOn: templateDirs.collect { project.tasks["publish_${it.name}"] })
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.5'
+}
