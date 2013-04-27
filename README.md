@@ -116,3 +116,33 @@ src/templates/ratpack-lite/VERSION with the contents
 That's it! The VERSION file will automatically be excluded from the project
 template archive.
 
+Contributing templates
+----------------------
+
+If you have an idea for a project template and want to add it to lazybone's
+library, then you have two options:
+
+1. Fork this repo, add your template source to src/templates and submit a pull
+   request
+2. Keep the source in your own repository, build a zip package for the template,
+   publish it to BinTray and finally send a link request to the
+   pledbrook/lazybones-templates repository
+
+The second option, a binary contribution, is currently the preferred one.
+Otherwise the source for this project could grow too large. Plus it's good for
+contributors to take responsibility for publishing their own binaries.
+
+Requirements for a project template:
+
+* Must have a VERSION file in the root directory containing just the current
+  version number of the template
+* A README, README.txt, README.md (or any README.* file) in the root of the
+  project. This file will be displayed straight after a new project is created
+  from the template, so it should give some information about what the template
+  contains and how to use it
+* The name of the binary must be of the form <name>-template-<version>.zip and
+  should _not_ contain a parent directory. So a README file must be at the top
+  level of the zip.
+* The name of the template should ideally be of the form <tool/framework>-<variant>,
+  where the variant is optional. For example: ratpack-lite, dropwizard,
+  grails-cqrs.
