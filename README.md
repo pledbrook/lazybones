@@ -140,9 +140,9 @@ Requirements for a project template:
   project. This file will be displayed straight after a new project is created
   from the template, so it should give some information about what the template
   contains and how to use it
-* The name of the binary must be of the form <name>-template-<version>.zip and
+* The name of the binary must be of the form &lt;name>-template-&lt;version>.zip and
   should _not_ contain a parent directory. So a README file must be at the top
   level of the zip.
-* The name of the template should ideally be of the form <tool/framework>-<variant>,
+* The name of the template should ideally be of the form &lt;tool/framework>-&lt;variant>,
   where the variant is optional. For example: ratpack-lite, dropwizard,
   grails-cqrs.
