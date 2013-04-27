@@ -1,6 +1,8 @@
-apply plugin: "base"
+apply plugin: "groovy"
+apply plugin: "application"
 
-version = "0.1"
+mainClassName = "uk.co.cacoethes.lazybones.LazyBonesMain"
+version = "0.2"
 
 configurations {
     templates
@@ -8,6 +10,21 @@ configurations {
 
 ext {
     templatesDir = new File(projectDir, "src/templates")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    groovy "org.codehaus.groovy:groovy:2.1.3"
+    compile "org.apache.commons:commons-compress:1.5",
+            "com.github.groovy-wslite:groovy-wslite:0.7.2"
+}
+
+task uploadDist(type: BinTrayGenericUpload) {
+    artifactFile = distZip.archivePath
+    artifactUrl = "lazybones/$version/${distZip.archiveName}"
 }
 
 // Checks that the build has access to properties that should be defined
@@ -69,39 +86,18 @@ tasks.addRule("Pattern: publish#<proj>") { String taskName ->
             return
         }
 
-        task(taskName, dependsOn: ["verifyProps", "packageTemplate#$tmplName"]) << {
-            def version = new File(tmplDir, "VERSION").text.trim()
-            def archiveName = tmplName + "-template-" + version + ".zip"
+        def version = new File(tmplDir, "VERSION").text.trim()
+        def archiveName = tmplName + "-template-" + version + ".zip"
 
-            def archiveFile = new File(buildDir, archiveName)
-            if (!archiveFile.exists()) {
-                throw new GradleException("Bad build file: zip archive '$archiveName' does not exist," +
-                        " but should have been created automatically.")
-            }
+        task(taskName, type: BinTrayGenericUpload, dependsOn: ["verifyProps", "packageTemplate#$tmplName"]) {
+            artifactFile = new File(project.buildDir, archiveName)
+            artifactUrl = "${tmplName}-template/${version}/${archiveName}"
 
-            def username = project.getProperty("repo.username")
-            def password = project.getProperty("repo.apiKey")
-
-            def url = new URL(project.getProperty("repo.url") + "/${tmplName}-template/${version}/${archiveName}")
-            logger.lifecycle "Streaming archive to BinTray at URL ${url}"
-            url.openConnection().with {
-                // Add basic authentication header.
-                setRequestProperty "Authorization", "Basic " + "$username:$password".getBytes().encodeBase64().toString()
-
-                doOutput = true
-                fixedLengthStreamingMode = archiveFile.size()
-                requestMethod = "PUT"
-
-                def inputStream = archiveFile.newInputStream() 
-                try {
-                    outputStream << inputStream
+            doFirst {
+                if (!artifactFile.exists()) {
+                    throw new GradleException("Bad build file: zip archive '$archiveName' does not exist," +
+                            " but should have been created automatically.")
                 }
-                finally {
-                    inputStream.close()
-                    outputStream.close()
-                }
-
-                assert responseCode >= 200 && responseCode < 300
             }
         }
     }
@@ -110,8 +106,45 @@ tasks.addRule("Pattern: publish#<proj>") { String taskName ->
 /**
  * Publishes all the project template zip archives.
  */
-task publishAll(dependsOn: templateDirs.collect { project.tasks["publish#${it.name}"] })
+task publishTemplates(dependsOn: templateDirs.collect { project.tasks["publish#${it.name}"] })
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.5'
+}
+
+class BinTrayGenericUpload extends DefaultTask {
+    @InputFile
+    File artifactFile
+
+    @Input
+    String artifactUrl
+
+    @TaskAction
+    def publish() {
+
+        def username = project.getProperty("repo.username")
+        def password = project.getProperty("repo.apiKey")
+
+        def url = new URL(project.getProperty("repo.url") + "/" + artifactUrl)
+        logger.lifecycle "Streaming artifact to BinTray at URL ${url}"
+        url.openConnection().with {
+            // Add basic authentication header.
+            setRequestProperty "Authorization", "Basic " + "$username:$password".getBytes().encodeBase64().toString()
+
+            doOutput = true
+            fixedLengthStreamingMode = artifactFile.size()
+            requestMethod = "PUT"
+
+            def inputStream = artifactFile.newInputStream() 
+            try {
+                outputStream << inputStream
+            }
+            finally {
+                inputStream.close()
+                outputStream.close()
+            }
+
+            assert responseCode >= 200 && responseCode < 300
+        }
+    }
 }
