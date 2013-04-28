@@ -4,6 +4,9 @@ apply plugin: "application"
 mainClassName = "uk.co.cacoethes.lazybones.LazyBonesMain"
 version = "0.2"
 
+sourceCompatibility = "1.6"
+targetCompatibility = "1.6"
+
 configurations {
     templates
 }
