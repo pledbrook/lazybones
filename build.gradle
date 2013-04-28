@@ -25,7 +25,7 @@ dependencies {
             "com.github.groovy-wslite:groovy-wslite:0.7.2"
 }
 
-task uploadDist(type: BinTrayGenericUpload) {
+task uploadDist(type: BinTrayGenericUpload, dependsOn: "distZip") {
     artifactFile = distZip.archivePath
     artifactUrl = "lazybones/$version/${distZip.archiveName}"
 }
