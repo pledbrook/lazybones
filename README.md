@@ -80,13 +80,13 @@ any .retain files are filtered out (but the containing directories are included)
 
 To package up a template, simply run
 
-    ./gradlew packageTemplate#<templateName>
+    ./gradlew packageTemplate-<templateName>
 
 The name of the project template comes from the containing directory. So the
 template directory structure in src/templates/ratpack-lite results in a template
 called 'ratpack-lite', which can be packaged with
 
-    ./gradlew packageTemplate#ratpack-lite
+    ./gradlew packageTemplate-ratpack-lite
 
 The project template archive will be created in the build directory with the
 name '<template name>-template-<version>.zip'. See the small section below on
@@ -99,7 +99,7 @@ You can also package all the templates in one fell swoop:
 Once a template is packaged up, you can publish it to a generic (non-Maven)
 BinTray repository by running
 
-    ./gradlew publish#<templateName>
+    ./gradlew publish-<templateName>
 
 This will initially fail, because the build does not know where to publish to.
 That's quickly fixed by adding a gradle.properties file in the root of this
