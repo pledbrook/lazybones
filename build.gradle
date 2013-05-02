@@ -15,6 +15,17 @@ ext {
     templatesDir = new File(projectDir, "src/templates")
 }
 
+sourceSets {
+    integTest {
+        groovy {
+            srcDir "src/integ/groovy"
+        }
+        resources {
+            srcDir "src/integ/resources"
+        }
+    }
+}
+
 repositories {
     mavenCentral()
 }
@@ -23,7 +34,21 @@ dependencies {
     groovy "org.codehaus.groovy:groovy:2.1.3"
     compile "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:0.7.2"
+
+    integTestCompile "commons-io:commons-io:2.4", "org.spockframework:spock-core:0.7-groovy-2.0"
 }
+
+task integTests(type: Test, dependsOn: "installApp") {
+    systemProperty "lazybones.testWorkDir", new File(buildDir, "testWork").path
+    systemProperty "lazybones.installDir", tasks.installApp.destinationDir.path
+
+    testClassesDir = sourceSets.integTest.output.classesDir
+    classpath = sourceSets.integTest.runtimeClasspath
+    include "**/*Spec*"
+    exclude "**/Abstract*Spec*"
+}
+
+distZip.dependsOn "integTests"
 
 task uploadDist(type: BinTrayGenericUpload, dependsOn: "distZip") {
     artifactFile = distZip.archivePath
