@@ -99,6 +99,8 @@ USAGE: create <template> <version> <dir>
             // 'list' is unavailable until get anonymous BinTray API access
     //        list: "Lists the available project templates." ]
 
+        log "Lazybones is a command-line based tool for creating basic software projects from templates."
+        log()
         log "Available commands:"
         log()
         cmdDescriptions.each { String cmd, String desc ->
