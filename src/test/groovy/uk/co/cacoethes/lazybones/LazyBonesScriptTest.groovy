@@ -2,6 +2,8 @@ package uk.co.cacoethes.lazybones
 
 import org.junit.Test
 
+import static uk.co.cacoethes.lazybones.LazyBonesScript.*
+
 class LazyBonesScriptTest {
 
     @Test(expected = UnsupportedOperationException)
@@ -18,5 +20,10 @@ class LazyBonesScriptTest {
         assert script.hasFeature("filterFiles")
 
         assert !script.hasFeature("foobar")
+    }
+
+    @Test
+    void "default encoding is utf-8"() {
+        assert DEFAULT_ENCODING == new LazyBonesScript().encoding
     }
 }

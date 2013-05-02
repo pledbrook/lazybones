@@ -1,26 +1,49 @@
 package uk.co.cacoethes.lazybones
 
+import uk.co.cacoethes.util.FilterMethods
+
 import javax.naming.OperationNotSupportedException
 import java.lang.reflect.Method
+import groovy.util.AntBuilder
 
 /**
  * Base script that will be applied to th lazybones.groovy root script in a lazybones template
  *
  * @author Tommy Barker
  */
-@groovy.transform.CompileStatic
 class LazyBonesScript extends Script {
 
+    protected static final String DEFAULT_ENCODING = "utf-8"
     final Map options = [:]
+
+    String targetDir
+    String encoding
+
+    String getEncoding() {
+        encoding ?: DEFAULT_ENCODING
+    }
 
     def ask(String message, String optionName, defaultValue) {
         throw new OperationNotSupportedException("ask is not supported yet")
     }
 
     def filterFiles(String filePattern, Map substitutionVariables) {
-        throw new OperationNotSupportedException("fileterFiles is not supported yet")
+        def ant = new AntBuilder()
+        List<File> scanner = ant.fileScanner {
+            fileset(dir: targetDir) {
+                include(name: filePattern)
+            }
+        }
+        FilterMethods.filterFiles(scanner, substitutionVariables)
+        return this
     }
 
+    /**
+     * uses the options / cli variables to filter files.  filePattern is usd by the ant <code>fileScanner</code>.
+     * See {@link http://groovy.codehaus.org/Using+Ant+from+Groovy} or more details.
+     *
+     * @param filePattern
+     */
     def filterFiles(String filePattern) {
         filterFiles(filePattern, options)
     }
