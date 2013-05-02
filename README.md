@@ -8,8 +8,9 @@ stuff for me.
 
 The tool is very simple: it allows you to create a new project structure for
 any framework or library for which the tool has a template. You can even
-contribute templates sending pull requests to this GitHub project (more info
-available below).
+contribute templates by sending pull requests to this GitHub project or publishing
+the packages to the relevant [BinTray repository](https://bintray.com/repo/browse/pledbrook/lazybones-templates)
+(more info available below).
 
 Running it
 ----------
