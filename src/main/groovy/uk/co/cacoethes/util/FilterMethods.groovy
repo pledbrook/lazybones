@@ -13,7 +13,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class FilterMethods {
 
-    static filterFiles(List<File> files, String encoding, Map properties) {
+    static filterFiles(Iterable<File> files, String encoding, Map properties) {
         files.each {File file ->
             filterFile(file, encoding, properties)
         }
@@ -24,7 +24,8 @@ class FilterMethods {
             throw new IllegalArgumentException("file ${file} does not exist")
         }
         def engine = new SimpleTemplateEngine()
-        def template = engine.createTemplate(file).make(properties)
+        def reader = file.newReader(encoding)
+        def template = engine.createTemplate(reader).make(properties)
         def out = new FileOutputStream(file)
         Writer writer = new OutputStreamWriter(out, encoding)
         template.writeTo(writer)
