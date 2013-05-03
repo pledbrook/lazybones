@@ -8,8 +8,9 @@ stuff for me.
 
 The tool is very simple: it allows you to create a new project structure for
 any framework or library for which the tool has a template. You can even
-contribute templates sending pull requests to this GitHub project (more info
-available below).
+contribute templates by sending pull requests to this GitHub project or publishing
+the packages to the relevant [BinTray repository](https://bintray.com/repo/browse/pledbrook/lazybones-templates)
+(more info available below).
 
 Running it
 ----------
@@ -52,8 +53,18 @@ This project is split into two parts:
 
 ### The command line tool
 
-There's really nothing to this part of the build right now. It's just a Groovy
-script in the 'bin' directory.
+The command line tool is created via Gradle's application plugin. The main
+class is `uk.co.cacoethes.lazybones.LazyBonesMain`, which currently implements
+all the sub-commands (create, list, etc.) as concrete methods.
+
+The main class plus everything else under src/main is packaged into a lazybones
+JAR that is included in the distribution zip. The application Gradle plugin
+generates a `lazybones` script that then runs the main class with all required
+dependencies on the classpath.
+
+To build the distribution, simply run
+
+    ./gradlew distZip
 
 ### The project templates
 
