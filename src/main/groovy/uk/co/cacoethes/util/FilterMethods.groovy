@@ -10,7 +10,6 @@ import groovy.transform.CompileStatic
  * Time: 7:25 AM
  * To change this template use File | Settings | File Templates.
  */
-@CompileStatic
 class FilterMethods {
 
     static filterFiles(Iterable<File> files, String encoding, Map properties) {
@@ -29,5 +28,14 @@ class FilterMethods {
         def out = new FileOutputStream(file)
         Writer writer = new OutputStreamWriter(out, encoding)
         template.writeTo(writer)
+    }
+
+    static Iterable<File> getFiles(String targetDir, String antPattern) {
+        def ant = new AntBuilder()
+        def scanner = ant.fileScanner {
+            fileset(dir: targetDir) {
+                include(name: antPattern)
+            }
+        } as Iterable<File>
     }
 }

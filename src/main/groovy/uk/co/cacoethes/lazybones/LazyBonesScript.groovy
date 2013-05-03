@@ -28,12 +28,7 @@ class LazyBonesScript extends Script {
     }
 
     def filterFiles(String filePattern, Map substitutionVariables) {
-        def ant = new AntBuilder()
-        def scanner = ant.fileScanner {
-            fileset(dir: targetDir) {
-                include(name: filePattern)
-            }
-        } as Iterable<File>
+        def scanner = FilterMethods.getFiles(targetDir, filePattern)
         FilterMethods.filterFiles(scanner, encoding, substitutionVariables)
         return this
     }
@@ -46,6 +41,7 @@ class LazyBonesScript extends Script {
      */
     def filterFiles(String filePattern) {
         filterFiles(filePattern, options)
+        return this
     }
 
     @Override
