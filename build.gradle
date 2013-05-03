@@ -70,8 +70,8 @@ task verifyProps << {
 /**
  * Generates tasks to package individual project templates into zip archives.
  */
-tasks.addRule("Pattern: packageTemplate#<proj>") { String taskName ->
-    def m = taskName =~ /packageTemplate#(\S+)/
+tasks.addRule("Pattern: packageTemplate-<proj>") { String taskName ->
+    def m = taskName =~ /packageTemplate-(\S+)/
     if (m) {
         def tmplName = m[0][1]
         def tmplDir = new File(templatesDir, tmplName)
@@ -98,13 +98,13 @@ tasks.addRule("Pattern: packageTemplate#<proj>") { String taskName ->
  * Packages all the project templates into zip archives.
  */
 def templateDirs = templatesDir.listFiles({ f -> f.directory} as FileFilter)
-task packageTemplates(dependsOn: templateDirs.collect { project.tasks["packageTemplate#${it.name}"] })
+task packageTemplates(dependsOn: templateDirs.collect { project.tasks["packageTemplate-${it.name}"] })
 
 /**
  * Generates tasks to publish individual project template archives to BinTray.
  */
-tasks.addRule("Pattern: publish#<proj>") { String taskName ->
-    def m = taskName =~ /publish#(\S+)/
+tasks.addRule("Pattern: publish-<proj>") { String taskName ->
+    def m = taskName =~ /publish-(\S+)/
     if (m) {
         def tmplName = m[0][1]
         def tmplDir = new File(templatesDir, tmplName)
@@ -117,7 +117,7 @@ tasks.addRule("Pattern: publish#<proj>") { String taskName ->
         def version = new File(tmplDir, "VERSION").text.trim()
         def archiveName = tmplName + "-template-" + version + ".zip"
 
-        task(taskName, type: BinTrayGenericUpload, dependsOn: ["verifyProps", "packageTemplate#$tmplName"]) {
+        task(taskName, type: BinTrayGenericUpload, dependsOn: ["verifyProps", "packageTemplate-$tmplName"]) {
             artifactFile = new File(project.buildDir, archiveName)
             artifactUrl = "${tmplName}-template/${version}/${archiveName}"
 
@@ -134,7 +134,7 @@ tasks.addRule("Pattern: publish#<proj>") { String taskName ->
 /**
  * Publishes all the project template zip archives.
  */
-task publishTemplates(dependsOn: templateDirs.collect { project.tasks["publish#${it.name}"] })
+task publishTemplates(dependsOn: templateDirs.collect { project.tasks["publish-${it.name}"] })
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.5'
