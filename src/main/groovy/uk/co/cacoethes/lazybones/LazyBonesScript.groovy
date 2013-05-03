@@ -23,8 +23,31 @@ class LazyBonesScript extends Script {
         encoding ?: DEFAULT_ENCODING
     }
 
-    def ask(String message, String optionName, defaultValue) {
-        throw new OperationNotSupportedException("ask is not supported yet")
+    /**
+     *
+     * user can ask for variables to be filled, if no input is provided the defaultValue is returned (null if not set).
+     *
+     * @param message
+     * @param optionName optional, if the data already exists in the options map, it is returned intead
+     * @param defaultValue optional, used if the user provides no input
+     *
+     * @return the option if it already exists, the next line from the user, or the default value if the user did not input anything.
+     *
+     */
+    def ask(String message, String optionName = null, defaultValue = null) {
+        if(optionName) {
+            if(options.containsKey(optionName)) {
+                return options[optionName]
+            }
+        }
+
+        String response
+        System.out.println message
+        System.in.withReader {Reader reader ->
+            response = reader.readLine()
+        }
+
+        response ?: defaultValue
     }
 
     def filterFiles(String filePattern, Map substitutionVariables) {
