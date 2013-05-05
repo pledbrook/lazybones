@@ -13,6 +13,7 @@ configurations {
 
 ext {
     templatesDir = new File(projectDir, "src/templates")
+    cacheDir = new File(System.getProperty('user.home'), ".groovy/lazybones-templates")
 }
 
 sourceSets {
@@ -103,25 +104,38 @@ def templateDirs = templatesDir.listFiles({ f -> f.directory} as FileFilter)
 task packageTemplates(dependsOn: templateDirs.collect { project.tasks["packageTemplate-${it.name}"] })
 
 /**
+ * Generates tasks to cache individual project templates so they can be used without bintray.
+ */
+tasks.addRule("Pattern: cacheTemplate-<proj>") { String taskName ->
+    def m = taskName =~ /cacheTemplate-(\S+)/
+    if (m) {
+        def archiveDetails = buildArchiveDetails(m[0][1])
+        if (!archiveDetails) return
+
+        task(taskName, type:Copy, dependsOn: "packageTemplate-$archiveDetails.templateName") {
+            from "${buildDir}/${archiveDetails.archiveName}"
+            rename { String fileName -> fileName.replace('-template', '') }
+            into "${cacheDir}"
+        }
+    }
+}
+
+task cacheTemplates(dependsOn: templateDirs.collect { project.tasks["cacheTemplate-${it.name}"] })
+
+/**
  * Generates tasks to publish individual project template archives to BinTray.
  */
 tasks.addRule("Pattern: publish-<proj>") { String taskName ->
     def m = taskName =~ /publish-(\S+)/
     if (m) {
-        def tmplName = m[0][1]
-        def tmplDir = new File(templatesDir, tmplName)
+        def archiveDetails = buildArchiveDetails(m[0][1])
+        if (!archiveDetails) return
 
-        if (!tmplDir.exists()) {
-            logger.error "No project template directory found for '${tmplName}'"
-            return
-        }
-
-        def version = new File(tmplDir, "VERSION").text.trim()
-        def archiveName = tmplName + "-template-" + version + ".zip"
-
-        task(taskName, type: BinTrayGenericUpload, dependsOn: ["verifyProps", "packageTemplate-$tmplName"]) {
-            artifactFile = new File(project.buildDir, archiveName)
-            artifactUrl = "${tmplName}-template/${version}/${archiveName}"
+        task(taskName,
+             type: BinTrayGenericUpload,
+             dependsOn: ["verifyProps", "packageTemplate-$archiveDetails.templateName"]) {
+            artifactFile = new File(project.buildDir, archiveDetails.archiveName)
+            artifactUrl = "${archiveDetails.templateName}-template/${archiveDetails.version}/${archiveDetails.archiveName}"
 
             doFirst {
                 if (!artifactFile.exists()) {
@@ -140,6 +154,26 @@ task publishTemplates(dependsOn: templateDirs.collect { project.tasks["publish-$
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.5'
+}
+
+ArchiveDetails buildArchiveDetails(String templateName) {
+    def tmplDir = new File(templatesDir, templateName)
+
+    if (!tmplDir.exists()) {
+        logger.error "No project template directory found for '${tmplName}'"
+        return null
+    }
+
+    def version = new File(tmplDir, "VERSION").text.trim()
+    def archiveName = templateName + "-template-" + version + ".zip"
+
+    return new ArchiveDetails(templateName: templateName, version: version, archiveName: archiveName)
+}
+
+class ArchiveDetails {
+    String templateName
+    String version
+    String archiveName
 }
 
 class BinTrayGenericUpload extends DefaultTask {

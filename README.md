@@ -117,6 +117,14 @@ Finally, you can publish the whole shebang (unusual) with
 
     ./gradlew publishAll
 
+If you don't want to publish your template you can install it locally using the
+cacheTemplate task.
+
+     ./gradlew cache-<templateName>
+
+This will install the template to ~/.groovy/lazybones so that you can use it without
+moving it to bintray first.
+
 And that's it for the project templates.
 
 #### Template versions
