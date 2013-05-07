@@ -38,19 +38,28 @@ class LazyBonesMain {
     }
 
     static int createCommand(List<String> args) {
-        if (args.size() != 3) {
+        if (args.size() < 2 || args.size() > 3) {
             log """\
 Incorrect number of arguments.
 
-USAGE: create <template> <version> <dir>
+USAGE: create <template> <version>? <dir>
 
   where  template = The name of the project template to use.
-         version  = The version of the project template to use.
+         version  = (optional) The version of the project template to use. Uses
+                    the latest version of the template by default.
          dir      = The name of the directory in which to create the project
                     structure. This can be '.' to mean 'in the current
                     directory.'
 """
             return 1
+        }
+
+        // Inject the latest version into the args list if the user hasn't
+        // provided it.
+        if (args.size() == 2) {
+            def pkgSource = new BintrayPackageSource()
+            def pkgInfo = pkgSource.fetchPackageInfo(args[0])
+            args.add(1, pkgInfo.latestVersion)
         }
 
         // Can't fetch the latest version until BinTray allows anonymous API access.
