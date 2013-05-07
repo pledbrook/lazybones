@@ -3,7 +3,7 @@ package uk.co.cacoethes.lazybones
 import uk.co.cacoethes.util.ArchiveMethods
 
 @groovy.transform.CompileStatic
-class LazyBonesMain {
+class LazybonesMain {
 
     static final String templatesBaseUrl = "http://dl.bintray.com/v1/content/pledbrook/lazybones-templates"
     static final File cacheDir = new File(System.getProperty('user.home'), ".groovy/lazybones-templates")

@@ -4,14 +4,14 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import org.junit.Before
 import org.junit.Test
 
-import static uk.co.cacoethes.lazybones.LazyBonesScript.DEFAULT_ENCODING
+import static uk.co.cacoethes.lazybones.LazybonesScript.DEFAULT_ENCODING
 
 /**
  * @author Tommy Barker
  */
-class LazyBonesScriptTest {
+class LazybonesScriptTest {
 
-    def script = new LazyBonesScript()
+    def script = new LazybonesScript()
     File fileToFilter
 
     @Before
@@ -22,7 +22,7 @@ class LazyBonesScriptTest {
     }
 
     @Test(expected = UnsupportedOperationException)
-    void "LazyBones script should fail when run is called"() {
+    void "Lazybones script should fail when run is called"() {
         script.run()
     }
 
@@ -37,7 +37,7 @@ class LazyBonesScriptTest {
 
     @Test
     void "default encoding is utf-8"() {
-        assert DEFAULT_ENCODING == new LazyBonesScript().encoding
+        assert DEFAULT_ENCODING == new LazybonesScript().encoding
     }
 
     @Test
@@ -80,7 +80,7 @@ class LazyBonesScriptTest {
             """
 
             def compiler = new CompilerConfiguration()
-            compiler.setScriptBaseClass(LazyBonesScript.class.name)
+            compiler.setScriptBaseClass(LazybonesScript.class.name)
             def shell = new GroovyShell(this.class.classLoader, new Binding(), compiler)
             assert "foobar" == shell.evaluate(scriptText)
         } finally {

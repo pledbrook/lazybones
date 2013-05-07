@@ -9,7 +9,7 @@ import java.lang.reflect.Method
  *
  * @author Tommy Barker
  */
-class LazyBonesScript extends Script {
+class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
     final Map options = [:]
