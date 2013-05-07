@@ -35,7 +35,9 @@ dependencies {
     compile "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:0.7.2"
 
-    integTestCompile "commons-io:commons-io:2.4", "org.spockframework:spock-core:0.7-groovy-2.0"
+    integTestCompile "commons-io:commons-io:2.4",
+                     "org.spockframework:spock-core:0.7-groovy-2.0",
+                     "co.freeside:betamax:1.1.2"
 }
 
 task integTests(type: Test, dependsOn: "installApp") {
