@@ -5,7 +5,7 @@ import groovy.text.SimpleTemplateEngine
 import java.lang.reflect.Method
 
 /**
- * Base script that will be applied to th lazybones.groovy root script in a lazybones template
+ * Base script that will be applied to the lazybones.groovy root script in a lazybones template
  *
  * @author Tommy Barker
  */
@@ -18,7 +18,7 @@ class LazyBonesScript extends Script {
     String encoding = DEFAULT_ENCODING
 
     String getEncoding() {
-        if(encoding) {
+        if (encoding) {
             return encoding
         }
         encoding = DEFAULT_ENCODING
@@ -36,24 +36,22 @@ class LazyBonesScript extends Script {
      */
     def ask(String message, String optionName = null, defaultValue = null) {
         if (optionName) {
-            if(options.containsKey(optionName)) {
+            if (options.containsKey(optionName)) {
                 return options[optionName]
             }
         }
 
         String line
         System.out.print message
-        System.in.withReader {Reader reader ->
+        System.in.withReader { Reader reader ->
             line = reader.readLine()
         }
 
-        if(line) return line
-
-        return defaultValue
+        return line ?: defaultValue
     }
 
     def filterFiles(String filePattern, Map substitutionVariables) {
-        if(!targetDir) {
+        if (!targetDir) {
             throw new IllegalStateException("targetDir has not been set")
         }
         def ant = new AntBuilder()
@@ -67,23 +65,24 @@ class LazyBonesScript extends Script {
     }
 
     /**
-     * uses the options / cli variables to filter files.  filePattern is usd by the ant <code>fileScanner</code>.
-     * See {@link http://groovy.codehaus.org/Using+Ant+from+Groovy} or more details.
+     * uses the options / cli variables to filter files.  filePattern is used by the Ant <code>fileScanner</code>.
+     * See {@link http://groovy.codehaus.org/Using+Ant+from+Groovy} for more details.
      *
-     * @param filePattern
+     * @param filePattern The pattern matching the files you want to process, using Ant-style
+     * path wildcards.
      */
     def filterFiles(String filePattern) {
         filterFiles(filePattern, options)
     }
 
     private void filterFilesHelper(Iterable<File> files, Map properties) {
-        files.each {File file ->
+        files.each { File file ->
             filterFile(file, getEncoding(), properties)
         }
     }
 
     private void filterFileHelper(File file, Map properties) {
-        if(!file.exists()) {
+        if (!file.exists()) {
             throw new IllegalArgumentException("file ${file} does not exist")
         }
         def engine = new SimpleTemplateEngine()
@@ -96,10 +95,16 @@ class LazyBonesScript extends Script {
 
     @Override
     Object run() {
-        throw new UnsupportedOperationException("${this.getClass().name} is meant to be used directly, instead it shouldbe used as a base script")
+        throw new UnsupportedOperationException("${this.getClass().name} is not meant to be used directly. " +
+                "It should instead be used as a base script")
     }
 
+    /**
+     * Determines whether the version of Lazybones loading the post-installation
+     * script supports a particular feature. Current features include "ask" and
+     * filterFiles for example.
+     */
     boolean hasFeature(String featureName) {
-        return this.getClass().methods.any {Method method -> method.name == featureName }
+        return this.getClass().methods.any { Method method -> method.name == featureName }
     }
 }
