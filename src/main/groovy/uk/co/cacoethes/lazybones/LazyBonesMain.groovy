@@ -1,7 +1,6 @@
 package uk.co.cacoethes.lazybones
 
 import uk.co.cacoethes.util.ArchiveMethods
-import wslite.rest.*
 
 @groovy.transform.CompileStatic
 class LazyBonesMain {
@@ -10,18 +9,6 @@ class LazyBonesMain {
     static final File cacheDir = new File(System.getProperty('user.home'), ".groovy/lazybones-templates")
 
     static void main(String[] args) {
-
-        /*
-        def response = client.get(path:'/users/show.json', query:[screen_name:'jwagenleitner', include_entities:true])
-
-        assert 200 == response.statusCode
-        assert "John Wagenleitner" == response.json.name
-        */
-
-
-        // REST API currently requires an API key, which I'm not keen on making public!
-        //def restClient = new RESTClient("https://bintray.com/api/v1")
-
         String cmd
         List argsList = args as List
         if (argsList.size() == 0) {
@@ -37,6 +24,7 @@ class LazyBonesMain {
         def cmdMap = [
             create: this.&createCommand,
             list: this.&listCommand,
+            info: this.&infoCommand,
             help: this.&helpCommand ] as Map<String, Closure>
 
         def cmdClosure = cmdMap[cmd]
@@ -88,16 +76,56 @@ USAGE: create <template> <version> <dir>
     }
 
     static int listCommand(List<String> args) {
-        log "Sorry, this command isn't implemented yet."
-        return 1
+        log "Available templates:"
+        log ""
+
+        def pkgSource = new BintrayPackageSource()
+        for (name in pkgSource.listPackageNames()) {
+            log "    " + name
+        }
+        return 0
+    }
+
+    static int infoCommand(List<String> args) {
+        if (args.size() != 1) {
+            log """\
+Incorrect number of arguments.
+
+USAGE: info <template>
+
+  where  template = The name of the project template you want information
+                    about
+"""
+            return 1
+        }
+
+        def pkgSource = new BintrayPackageSource()
+        def pkgInfo = pkgSource.fetchPackageInfo(args[0])
+
+        if (!pkgInfo) {
+            log "Cannot find a template named '${args[0]}'"
+            return 1
+        }
+
+        log "Name:        " + pkgInfo.name
+        log "Latest:      " + pkgInfo.latestVersion
+        if (pkgInfo.description) log "Description: " + pkgInfo.description
+        if (pkgInfo.owner) log "Owner:       " + pkgInfo.owner
+        log "Versions:    " + pkgInfo.versions.join(", ")
+
+        if (pkgInfo.url) {
+            log ""
+            log "More information at " + pkgInfo.url
+        }
+        return 0
     }
 
     static int helpCommand(List<String> args) {
 
         final cmdDescriptions = [
-            create: "Creates a new project structure from a named template."] as Map<String, String>//,
-            // 'list' is unavailable until get anonymous BinTray API access
-    //        list: "Lists the available project templates." ]
+            create: "Creates a new project structure from a named template.",
+            list: "Lists the available project templates.",
+            info: "Displays information about a given template." ] as Map<String, String>
 
         log "Lazybones is a command-line based tool for creating basic software projects from templates."
         log()
