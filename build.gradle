@@ -13,7 +13,7 @@ configurations {
 
 ext {
     templatesDir = new File(projectDir, "src/templates")
-    cacheDir = new File(System.getProperty('user.home'), ".groovy/lazybones-templates")
+    installDir = new File(System.getProperty('user.home'), ".lazybones/templates")
 }
 
 sourceSets {
@@ -104,10 +104,10 @@ def templateDirs = templatesDir.listFiles({ f -> f.directory} as FileFilter)
 task packageTemplates(dependsOn: templateDirs.collect { project.tasks["packageTemplate-${it.name}"] })
 
 /**
- * Generates tasks to cache individual project templates so they can be used without bintray.
+ * Generates tasks to install individual project templates so they can be used without bintray.
  */
-tasks.addRule("Pattern: cacheTemplate-<proj>") { String taskName ->
-    def m = taskName =~ /cacheTemplate-(\S+)/
+tasks.addRule("Pattern: installTemplate-<proj>") { String taskName ->
+    def m = taskName =~ /installTemplate-(\S+)/
     if (m) {
         def archiveDetails = buildArchiveDetails(m[0][1])
         if (!archiveDetails) return
@@ -115,12 +115,12 @@ tasks.addRule("Pattern: cacheTemplate-<proj>") { String taskName ->
         task(taskName, type:Copy, dependsOn: "packageTemplate-$archiveDetails.templateName") {
             from "${buildDir}/${archiveDetails.archiveName}"
             rename { String fileName -> fileName.replace('-template', '') }
-            into "${cacheDir}"
+            into "${installDir}"
         }
     }
 }
 
-task cacheTemplates(dependsOn: templateDirs.collect { project.tasks["cacheTemplate-${it.name}"] })
+task installTemplates(dependsOn: templateDirs.collect { project.tasks["installTemplate-${it.name}"] })
 
 /**
  * Generates tasks to publish individual project template archives to BinTray.

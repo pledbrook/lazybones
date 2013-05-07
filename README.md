@@ -72,7 +72,7 @@ The project templates are simply directory structures with whatever files in
 them that you want. Ultimately, the template project directories will be zipped
 up and stored on [BinTray](https://bintray.com/repo/browse/pledbrook/lazybones-templates).
 From there, lazybones downloads the zips on demand and caches them in a local
-user directory (currently ~/.groovy/lazybones-templates).
+user directory (currently ~/.lazybones/templates).
 
 If you want empty directories to form part of the project template, then simply
 add an empty .retain file to each one. When the template archive is created,
@@ -118,11 +118,11 @@ Finally, you can publish the whole shebang (unusual) with
     ./gradlew publishAll
 
 If you don't want to publish your template you can install it locally using the
-cacheTemplate task.
+installTemplate task.
 
-     ./gradlew cache-<templateName>
+     ./gradlew installTemplate-<templateName>
 
-This will install the template to ~/.groovy/lazybones so that you can use it without
+This will install the template to ~/.lazybones/templates so that you can use it without
 moving it to bintray first.
 
 And that's it for the project templates.

@@ -6,7 +6,7 @@ import uk.co.cacoethes.util.ArchiveMethods
 class LazyBonesMain {
 
     static final String templatesBaseUrl = "http://dl.bintray.com/v1/content/pledbrook/lazybones-templates"
-    static final File cacheDir = new File(System.getProperty('user.home'), ".groovy/lazybones-templates")
+    static final File installDir = new File(System.getProperty('user.home'), ".lazybones/templates")
 
     static void main(String[] args) {
         String cmd
@@ -156,11 +156,11 @@ USAGE: info <template>
 
     private static File fetchTemplate(String name, String version) {
         // Does it exist in the cache? If not, pull it from BinTray.
-        def packageFile = new File(cacheDir, "${name}-${version}.zip")
+        def packageFile = new File(installDir, "${name}-${version}.zip")
 
 
         if (!packageFile.exists()) {
-            cacheDir.mkdirs()
+            installDir.mkdirs()
             String externalUrl = templatesBaseUrl + "/${name}-template-${version}.zip"
             try {
                 packageFile.withOutputStream { OutputStream out ->
