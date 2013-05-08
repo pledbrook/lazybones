@@ -59,6 +59,12 @@ USAGE: create <template> <version>? <dir>
         if (args.size() == 2) {
             def pkgSource = new BintrayPackageSource()
             def pkgInfo = pkgSource.fetchPackageInfo(args[0])
+
+            if (!pkgInfo) {
+                log "Cannot find a template named '${args[0]}'. Project has not been created."
+                return 1
+            }
+
             args.add(1, pkgInfo.latestVersion)
         }
 
@@ -67,7 +73,7 @@ USAGE: create <template> <version>? <dir>
         def templateZip = fetchTemplate(args[0], args[1])
 
         if (!templateZip) {
-            log "No template to work with. Project has not been created."
+            log "Cannot find version ${args[1]} of template '${args[0]}'. Project has not been created."
             return 1
         }
 
