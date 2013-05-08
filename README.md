@@ -9,7 +9,7 @@ stuff for me.
 The tool is very simple: it allows you to create a new project structure for
 any framework or library for which the tool has a template. You can even
 contribute templates by sending pull requests to this GitHub project or publishing
-the packages to the relevant [BinTray repository](https://bintray.com/repo/browse/pledbrook/lazybones-templates)
+the packages to the relevant [Bintray repository](https://bintray.com/repo/browse/pledbrook/lazybones-templates)
 (more info available below).
 
 Running it
@@ -21,7 +21,7 @@ Grab lazybones from gvm:
 
     gvm install lazybones
 
-Alternatively, grab the distribution [from BinTray](https://bintray.com/pkg/show/general/pledbrook/lazybones-templates/lazybones),
+Alternatively, grab the distribution [from Bintray](https://bintray.com/pkg/show/general/pledbrook/lazybones-templates/lazybones),
 unpack it to a local directory, and then add its 'bin' directory to your PATH
 environment variable.
 
@@ -70,7 +70,7 @@ To build the distribution, simply run
 
 The project templates are simply directory structures with whatever files in
 them that you want. Ultimately, the template project directories will be zipped
-up and stored on [BinTray](https://bintray.com/repo/browse/pledbrook/lazybones-templates).
+up and stored on [Bintray](https://bintray.com/repo/browse/pledbrook/lazybones-templates).
 From there, lazybones downloads the zips on demand and caches them in a local
 user directory (currently ~/.lazybones/templates).
 
@@ -97,7 +97,7 @@ You can also package all the templates in one fell swoop:
     ./gradlew packageTemplates
 
 Once a template is packaged up, you can publish it to a generic (non-Maven)
-BinTray repository by running
+Bintray repository by running
 
     ./gradlew publish-<templateName>
 
@@ -148,7 +148,7 @@ library, then you have two options:
 1. Fork this repo, add your template source to src/templates and submit a pull
    request
 2. Keep the source in your own repository, build a zip package for the template,
-   publish it to BinTray and finally send a link request to the
+   publish it to Bintray and finally send a link request to the
    pledbrook/lazybones-templates repository
 
 The second option, a binary contribution, is currently the preferred one.

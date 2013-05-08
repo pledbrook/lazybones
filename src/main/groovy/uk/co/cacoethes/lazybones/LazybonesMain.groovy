@@ -68,7 +68,7 @@ USAGE: create <template> <version>? <dir>
             args.add(1, pkgInfo.latestVersion)
         }
 
-        // Can't fetch the latest version until BinTray allows anonymous API access.
+        // Can't fetch the latest version until Bintray allows anonymous API access.
         // Or I set up a separate server for this stuff.
         def templateZip = fetchTemplate(args[0], args[1])
 
@@ -161,7 +161,7 @@ USAGE: info <template>
     }
 
     private static File fetchTemplate(String name, String version) {
-        // Does it exist in the cache? If not, pull it from BinTray.
+        // Does it exist in the cache? If not, pull it from Bintray.
         def packageFile = new File(installDir, "${name}-${version}.zip")
 
         if (!packageFile.exists()) {

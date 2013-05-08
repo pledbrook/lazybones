@@ -53,9 +53,9 @@ task integTests(type: Test, dependsOn: "installApp") {
     exclude "**/Abstract*Spec*"
 }
 
-distZip.dependsOn "integTests"
+distZip.dependsOn(["test", "integTests"])
 
-task uploadDist(type: BinTrayGenericUpload, dependsOn: "distZip") {
+task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
     artifactFile = distZip.archivePath
     artifactUrl = "lazybones/$version/${distZip.archiveName}"
 }
@@ -125,7 +125,7 @@ tasks.addRule("Pattern: installTemplate-<proj>") { String taskName ->
 task installTemplates(dependsOn: templateDirs.collect { project.tasks["installTemplate-${it.name}"] })
 
 /**
- * Generates tasks to publish individual project template archives to BinTray.
+ * Generates tasks to publish individual project template archives to Bintray.
  */
 tasks.addRule("Pattern: publish-<proj>") { String taskName ->
     def m = taskName =~ /publish-(\S+)/
@@ -134,7 +134,7 @@ tasks.addRule("Pattern: publish-<proj>") { String taskName ->
         if (!archiveDetails) return
 
         task(taskName,
-             type: BinTrayGenericUpload,
+             type: BintrayGenericUpload,
              dependsOn: ["verifyProps", "packageTemplate-$archiveDetails.templateName"]) {
             artifactFile = new File(project.buildDir, archiveDetails.archiveName)
             artifactUrl = "${archiveDetails.templateName}-template/${archiveDetails.version}/${archiveDetails.archiveName}"
@@ -178,7 +178,7 @@ class ArchiveDetails {
     String archiveName
 }
 
-class BinTrayGenericUpload extends DefaultTask {
+class BintrayGenericUpload extends DefaultTask {
     @InputFile
     File artifactFile
 
@@ -192,7 +192,7 @@ class BinTrayGenericUpload extends DefaultTask {
         def password = project.getProperty("repo.apiKey")
 
         def url = new URL(project.getProperty("repo.url") + "/" + artifactUrl)
-        logger.lifecycle "Streaming artifact to BinTray at URL ${url}"
+        logger.lifecycle "Streaming artifact to Bintray at URL ${url}"
         url.openConnection().with {
             // Add basic authentication header.
             setRequestProperty "Authorization", "Basic " + "$username:$password".getBytes().encodeBase64().toString()
