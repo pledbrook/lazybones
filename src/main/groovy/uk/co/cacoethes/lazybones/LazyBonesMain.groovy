@@ -6,7 +6,7 @@ import uk.co.cacoethes.util.ArchiveMethods
 class LazybonesMain {
 
     static final String templatesBaseUrl = "http://dl.bintray.com/v1/content/pledbrook/lazybones-templates"
-    static final File cacheDir = new File(System.getProperty('user.home'), ".groovy/lazybones-templates")
+    static final File installDir = new File(System.getProperty('user.home'), ".lazybones/templates")
 
     static void main(String[] args) {
         String cmd
@@ -64,7 +64,13 @@ USAGE: create <template> <version>? <dir>
 
         // Can't fetch the latest version until BinTray allows anonymous API access.
         // Or I set up a separate server for this stuff.
-        def templateZip = fetchTemplate(args[0], args[1]) 
+        def templateZip = fetchTemplate(args[0], args[1])
+
+        if (!templateZip) {
+            log "No template to work with. Project has not been created."
+            return 1
+        }
+
         def targetDir = new File(args[2])
         targetDir.mkdirs()
         ArchiveMethods.unzip(templateZip, targetDir)
@@ -150,14 +156,22 @@ USAGE: info <template>
 
     private static File fetchTemplate(String name, String version) {
         // Does it exist in the cache? If not, pull it from BinTray.
-        def packageFile = new File(cacheDir, "${name}-${version}.zip")
-        if (!packageFile.exists()) {
-            cacheDir.mkdirs()
+        def packageFile = new File(installDir, "${name}-${version}.zip")
 
-            packageFile.withOutputStream { OutputStream out ->
-                new URL(templatesBaseUrl + "/${name}-template-${version}.zip").withInputStream { InputStream input ->
-                    out << input
+
+        if (!packageFile.exists()) {
+            installDir.mkdirs()
+            String externalUrl = templatesBaseUrl + "/${name}-template-${version}.zip"
+            try {
+                packageFile.withOutputStream { OutputStream out ->
+                    new URL(externalUrl).withInputStream { InputStream input ->
+                        out << input
+                    }
                 }
+            } catch (FileNotFoundException fileNotFoundException) {
+                log("${externalUrl} was not found. ")
+                packageFile.deleteOnExit()
+                return null
             }
         }
 
