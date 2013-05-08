@@ -164,7 +164,6 @@ USAGE: info <template>
         // Does it exist in the cache? If not, pull it from BinTray.
         def packageFile = new File(installDir, "${name}-${version}.zip")
 
-
         if (!packageFile.exists()) {
             installDir.mkdirs()
             String externalUrl = templatesBaseUrl + "/${name}-template-${version}.zip"
@@ -174,8 +173,9 @@ USAGE: info <template>
                         out << input
                     }
                 }
-            } catch (FileNotFoundException fileNotFoundException) {
-                log("${externalUrl} was not found. ")
+            }
+            catch (FileNotFoundException fileNotFoundException) {
+                log "${externalUrl} was not found."
                 packageFile.deleteOnExit()
                 return null
             }
