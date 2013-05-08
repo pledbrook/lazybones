@@ -23,3 +23,25 @@ interactions:
       WWW-Authenticate: Basic realm="Bintray API Realm"
     body: !!binary |-
       H4sIAAAAAAAAA1VR3UrDMBR+lZArhba03bphX2B4K7tSxjhNjjMsa8LJ6eoU390TNwUhEPL9nZ986hFOqHtNwBHMsWQ8RQ+MutCEMQjj4eMyhBHTH5eEDPOIJGz0aAcK4SiYxWQE2t5k6jWQAjVAckZtRHO+lPJAq56uxRTE6J0BdmFUs+M3UScQMyo3WnxXEQ6oYLSCbwis4MPkvFV3P+KZxI90X6lHVuBTEJfxk3SRc1h8QFZZR2g40EUgmgxPdG1MBCx9QUrIYkhqRu/zbYIoTLDXyjItp0qG8zCgT7p/2RUamMkNE+M+b+8Gvgbvw4wkz7bQhlBWYGUdbd0synpZtt22qft23XdttVg9PEvmWdQyew7QddXoXS6TK+5vjNgzXugp2n9xXVmvt/Wqb+Wsq2WzynHyh2487E2YRtZ98wvovvv6BgM21aroAQAA
+- recorded: 2013-05-08T14:33:54.368Z
+  request:
+    method: GET
+    uri: https://bintray.com/api/v1/packages/pledbrook/lazybones-templates/unknown-template
+    headers:
+      Accept: text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2
+      Accept-Encoding: gzip
+      Cache-Control: no-cache
+      Connection: Close
+      Host: bintray.com
+      Pragma: no-cache
+      User-Agent: Java/1.7.0_05
+  response:
+    status: 404
+    headers:
+      Content-Encoding: gzip
+      Content-Type: application/json;charset=utf-8
+      Date: Wed, 08 May 2013 14:33:54 GMT
+      Server: nginx/1.2.7
+      WWW-Authenticate: Basic realm="Bintray API Realm"
+    body: !!binary |-
+      H4sIAAAAAAAAAwtITM5OTE9VUC/Ny87LL8/TLUnNLchJLElVVyhPLFbIyy9RSMsvzUsBACTpNBgoAAAA

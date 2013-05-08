@@ -60,6 +60,30 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         new File(appDir, "src/ratpack/public/index.html").isFile()
     }
 
+    @Betamax(tape="create-tape")
+    def "Create command reports error if no version given and package info is not available"() {
+        when: "I run lazybones with the create command for an unknown package and no version"
+        def exitCode = runCommand(["create", "unknown", "myapp"], baseWorkDir)
+
+        then: "It returns a non-zero exit code and reports the package as missing"
+        exitCode != 0
+        output =~ /Cannot find a template named 'unknown'./
+
+        !new File(baseWorkDir, "myapp").exists()
+    }
+
+    @Betamax(tape="create-tape")
+    def "Create command reports error if package cannot be found"() {
+        when: "I run lazybones with the create command for an unknown package"
+        def exitCode = runCommand(["create", "unknown", "1.0", "myapp"], baseWorkDir)
+
+        then: "It returns a non-zero exit code and reports the package as missing"
+        exitCode != 0
+        output =~ /Cannot find version 1.0 of template 'unknown'./
+
+        !new File(baseWorkDir, "myapp").exists()
+    }
+
     def "Create command displays usage when incorrect number of arguments are provided"() {
         when: "I run lazybones with the create command without an extra argument"
         def exitCode = runCommand(["create"], baseWorkDir)
