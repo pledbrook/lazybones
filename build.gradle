@@ -2,7 +2,7 @@ apply plugin: "groovy"
 apply plugin: "application"
 
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.2.1"
+version = "0.3"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
