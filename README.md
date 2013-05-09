@@ -15,8 +15,6 @@ the packages to the relevant [Bintray repository](https://bintray.com/repo/brows
 Running it
 ----------
 
-*Note* These instructions will only apply once lazybones becomes a gvm candidate.
-
 Grab lazybones from gvm:
 
     gvm install lazybones
@@ -37,11 +35,16 @@ directory I would run
 I can also create the project in the current directory by passing in '.' as
 the target directory.
 
-*TODO* Implement
+To see what templates you can install, run
 
      lazybones list
-     lazybones create <template name> <target directory>
 
+You can also find out more about a template through the `info` command:
+
+     lazybones info <template name>
+
+This will print a description of the template and what versions are available
+for it.
 
 Building it
 -----------
