@@ -1,14 +1,20 @@
 package uk.co.cacoethes.lazybones
 
+import groovy.transform.CompileStatic
+import groovy.util.logging.Log
+import java.util.logging.LogManager
 import uk.co.cacoethes.util.ArchiveMethods
 
-@groovy.transform.CompileStatic
+@CompileStatic
+@Log
 class LazybonesMain {
 
     static final String templatesBaseUrl = "http://dl.bintray.com/v1/content/pledbrook/lazybones-templates"
     static final File installDir = new File(System.getProperty('user.home'), ".lazybones/templates")
 
     static void main(String[] args) {
+        initLogging()
+
         String cmd
         List argsList = args as List
         if (argsList.size() == 0) {
@@ -29,7 +35,7 @@ class LazybonesMain {
 
         def cmdClosure = cmdMap[cmd]
         if (!cmdClosure) {
-            log "No command '" + cmd + "'"
+            println "No command '" + cmd + "'"
             System.exit 1
         }
 
@@ -39,7 +45,7 @@ class LazybonesMain {
 
     static int createCommand(List<String> args) {
         if (args.size() < 2 || args.size() > 3) {
-            log """\
+            println """\
 Incorrect number of arguments.
 
 USAGE: create <template> <version>? <dir>
@@ -61,7 +67,7 @@ USAGE: create <template> <version>? <dir>
             def pkgInfo = pkgSource.fetchPackageInfo(args[0])
 
             if (!pkgInfo) {
-                log "Cannot find a template named '${args[0]}'. Project has not been created."
+                println "Cannot find a template named '${args[0]}'. Project has not been created."
                 return 1
             }
 
@@ -73,7 +79,7 @@ USAGE: create <template> <version>? <dir>
         def templateZip = fetchTemplate(args[0], args[1])
 
         if (!templateZip) {
-            log "Cannot find version ${args[1]} of template '${args[0]}'. Project has not been created."
+            println "Cannot find version ${args[1]} of template '${args[0]}'. Project has not been created."
             return 1
         }
 
@@ -86,30 +92,30 @@ USAGE: create <template> <version>? <dir>
             name == "README" || name.startsWith("README")
         } as FilenameFilter)
 
-        log()
-        if (!readmeFiles) log "This project has no README"
-        else log readmeFiles[0].text
+        println ""
+        if (!readmeFiles) println "This project has no README"
+        else println readmeFiles[0].text
 
-        log()
-        log "Project created in ${args[2]}!"
+        println ""
+        println "Project created in ${args[2]}!"
 
         return 0
     }
 
     static int listCommand(List<String> args) {
-        log "Available templates:"
-        log ""
+        println "Available templates:"
+        println ""
 
         def pkgSource = new BintrayPackageSource()
         for (name in pkgSource.listPackageNames()) {
-            log "    " + name
+            println "    " + name
         }
         return 0
     }
 
     static int infoCommand(List<String> args) {
         if (args.size() != 1) {
-            log """\
+            println """\
 Incorrect number of arguments.
 
 USAGE: info <template>
@@ -120,23 +126,25 @@ USAGE: info <template>
             return 1
         }
 
+        log.info "Fetching package information for '${args[0]}' from Bintray"
+
         def pkgSource = new BintrayPackageSource()
         def pkgInfo = pkgSource.fetchPackageInfo(args[0])
 
         if (!pkgInfo) {
-            log "Cannot find a template named '${args[0]}'"
+            println "Cannot find a template named '${args[0]}'"
             return 1
         }
 
-        log "Name:        " + pkgInfo.name
-        log "Latest:      " + pkgInfo.latestVersion
-        if (pkgInfo.description) log "Description: " + pkgInfo.description
-        if (pkgInfo.owner) log "Owner:       " + pkgInfo.owner
-        log "Versions:    " + pkgInfo.versions.join(", ")
+        println "Name:        " + pkgInfo.name
+        println "Latest:      " + pkgInfo.latestVersion
+        if (pkgInfo.description) println "Description: " + pkgInfo.description
+        if (pkgInfo.owner) println "Owner:       " + pkgInfo.owner
+        println "Versions:    " + pkgInfo.versions.join(", ")
 
         if (pkgInfo.url) {
-            log ""
-            log "More information at " + pkgInfo.url
+            println ""
+            println "More information at " + pkgInfo.url
         }
         return 0
     }
@@ -148,14 +156,14 @@ USAGE: info <template>
             list: "Lists the available project templates.",
             info: "Displays information about a given template." ] as Map<String, String>
 
-        log "Lazybones is a command-line based tool for creating basic software projects from templates."
-        log()
-        log "Available commands:"
-        log()
+        println "Lazybones is a command-line based tool for creating basic software projects from templates."
+        println ""
+        println "Available commands:"
+        println ""
         cmdDescriptions.each { String cmd, String desc ->
-            log "    " + cmd.padRight(15) + desc
+            println "    " + cmd.padRight(15) + desc
         }
-        log()
+        println ""
 
         return 0
     }
@@ -175,7 +183,7 @@ USAGE: info <template>
                 }
             }
             catch (FileNotFoundException fileNotFoundException) {
-                log "${externalUrl} was not found."
+                println "${externalUrl} was not found."
                 packageFile.deleteOnExit()
                 return null
             }
@@ -184,9 +192,22 @@ USAGE: info <template>
         return packageFile
 
     }
-
-    private static void log(String message = "") {
-        System.out.println message
-    }
     
+    private static void initLogging() {
+        def inputStream = new ByteArrayInputStream(LOG_CONFIG.getBytes("UTF-8"))
+        LogManager.logManager.readConfiguration(inputStream)
+    }
+
+    /**
+     * Logging configuration in Properties format. It simply sets up the console
+     * handler with a formatter that just prints the message without any decoration.
+     */
+    private static final String LOG_CONFIG = """\
+# Logging
+handlers = java.util.logging.ConsoleHandler
+
+# Console logging
+java.util.logging.ConsoleHandler.formatter = uk.co.cacoethes.util.PlainFormatter
+java.util.logging.ConsoleHandler.level = WARNING
+"""
 }

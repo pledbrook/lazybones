@@ -1,6 +1,7 @@
 package uk.co.cacoethes.lazybones
 
 import groovy.text.SimpleTemplateEngine
+import groovy.util.logging.Log
 
 import java.lang.reflect.Method
 
@@ -9,6 +10,7 @@ import java.lang.reflect.Method
  *
  * @author Tommy Barker
  */
+@Log
 class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
