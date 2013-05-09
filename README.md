@@ -12,6 +12,8 @@ contribute templates by sending pull requests to this GitHub project or publishi
 the packages to the relevant [Bintray repository](https://bintray.com/repo/browse/pledbrook/lazybones-templates)
 (more info available below).
 
+[![Build Status](https://drone.io/github.com/pledbrook/lazybones/status.png)](https://drone.io/github.com/pledbrook/lazybones/latest)
+
 Running it
 ----------
 
