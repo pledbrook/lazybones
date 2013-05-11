@@ -37,20 +37,27 @@ dependencies {
     compile "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:0.7.2"
 
-    testCompile "junit:junit:4.11"
+    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
     integTestCompile "commons-io:commons-io:2.4",
-                     "org.spockframework:spock-core:0.7-groovy-2.0",
-                     "co.freeside:betamax:1.1.2"
+            "org.spockframework:spock-core:0.7-groovy-2.0",
+            "co.freeside:betamax:1.1.2"
 }
 
-task integTests(type: Test, dependsOn: "installApp") {
+task integTests(type: Test, dependsOn: ["installApp", "installTemplates"]) {
     systemProperty "lazybones.testWorkDir", new File(buildDir, "testWork").path
     systemProperty "lazybones.installDir", tasks.installApp.destinationDir.path
 
     testClassesDir = sourceSets.integTest.output.classesDir
     classpath = sourceSets.integTest.runtimeClasspath
-    include "**/*Spec*"
-    exclude "**/Abstract*Spec*"
+    def singleTest = System.getProperty("test.single")
+
+    if (singleTest) {
+        include "**/${singleTest}*"
+    } else {
+        include "**/*Spec*"
+        exclude "**/Abstract*Spec*"
+    }
+
 }
 
 distZip.dependsOn(["test", "integTests"])
@@ -67,7 +74,7 @@ task verifyProps << {
     def missingProps = requiredProps.findAll { !project.hasProperty(it) }
 
     if (missingProps) {
-        throw new GradleException("You must define the build properties '${missingProps.join('\', \'')}'" + 
+        throw new GradleException("You must define the build properties '${missingProps.join('\', \'')}'" +
                 " before you can execute this target.")
     }
 }
@@ -102,7 +109,7 @@ tasks.addRule("Pattern: packageTemplate-<proj>") { String taskName ->
 /**
  * Packages all the project templates into zip archives.
  */
-def templateDirs = templatesDir.listFiles({ f -> f.directory} as FileFilter)
+def templateDirs = templatesDir.listFiles({ f -> f.directory } as FileFilter)
 task packageTemplates(dependsOn: templateDirs.collect { project.tasks["packageTemplate-${it.name}"] })
 
 /**
@@ -114,7 +121,7 @@ tasks.addRule("Pattern: installTemplate-<proj>") { String taskName ->
         def archiveDetails = buildArchiveDetails(m[0][1])
         if (!archiveDetails) return
 
-        task(taskName, type:Copy, dependsOn: "packageTemplate-$archiveDetails.templateName") {
+        task(taskName, type: Copy, dependsOn: "packageTemplate-$archiveDetails.templateName") {
             from "${buildDir}/${archiveDetails.archiveName}"
             rename { String fileName -> fileName.replace('-template', '') }
             into "${installDir}"
@@ -134,8 +141,8 @@ tasks.addRule("Pattern: publish-<proj>") { String taskName ->
         if (!archiveDetails) return
 
         task(taskName,
-             type: BintrayGenericUpload,
-             dependsOn: ["verifyProps", "packageTemplate-$archiveDetails.templateName"]) {
+                type: BintrayGenericUpload,
+                dependsOn: ["verifyProps", "packageTemplate-$archiveDetails.templateName"]) {
             artifactFile = new File(project.buildDir, archiveDetails.archiveName)
             artifactUrl = "${archiveDetails.templateName}-template/${archiveDetails.version}/${archiveDetails.archiveName}"
 
@@ -201,7 +208,7 @@ class BintrayGenericUpload extends DefaultTask {
             fixedLengthStreamingMode = artifactFile.size()
             requestMethod = "PUT"
 
-            def inputStream = artifactFile.newInputStream() 
+            def inputStream = artifactFile.newInputStream()
             try {
                 outputStream << inputStream
             }

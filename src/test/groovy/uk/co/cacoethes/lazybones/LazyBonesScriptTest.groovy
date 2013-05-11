@@ -2,7 +2,9 @@ package uk.co.cacoethes.lazybones
 
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 
 import static uk.co.cacoethes.lazybones.LazybonesScript.DEFAULT_ENCODING
 
@@ -13,12 +15,21 @@ class LazybonesScriptTest {
 
     def script = new LazybonesScript()
     File fileToFilter
+    File lazybonesScript
+
+    @Rule
+    public TemporaryFolder testFolder = new TemporaryFolder();
 
     @Before
     void setupFileToFilter() {
-        fileToFilter = File.createTempFile("foo", null)
-        fileToFilter.deleteOnExit()
-        fileToFilter.write("hello \${foo}")
+        lazybonesScript = testFolder.newFile("lazybones.groovy")
+        lazybonesScript.write("""
+            def foo = ask("give me foo")
+            def bar = ask("give me bar")
+            filterFiles('foo', [foo:foo, bar:bar])
+        """)
+        fileToFilter = testFolder.newFile("foo")
+        fileToFilter.write("hello \${foo} and \${bar}")
     }
 
     @Test(expected = UnsupportedOperationException)
@@ -42,8 +53,8 @@ class LazybonesScriptTest {
 
     @Test
     void "basic tests for filtering an individual file"() {
-        script.filterFileHelper(fileToFilter, [foo: "bar"])
-        assert "hello bar" == fileToFilter.text
+        script.filterFileHelper(fileToFilter, [foo: "bar", bar: "bam"])
+        assert "hello bar and bam" == fileToFilter.text
     }
 
     @Test(expected = IllegalArgumentException)
@@ -91,5 +102,19 @@ class LazybonesScriptTest {
     @Test(expected = IllegalStateException)
     void "filter files throws error if targetDir is not set"() {
         script.filterFiles("*")
+    }
+
+    @Test
+    void "do full script inheritance with file filtering"() {
+        def compiler = new CompilerConfiguration()
+        compiler.setScriptBaseClass(LazybonesScript.class.name)
+        def shell = new GroovyShell(this.class.classLoader, new Binding(), compiler)
+
+        LazybonesScript script = shell.parse(lazybonesScript) as LazybonesScript
+        script.setTargetDir(testFolder.root.path)
+        def newLine = System.getProperty("line.separator")
+        script.setReader(new ByteArrayInputStream("foobar${newLine}foofam".toString().bytes).newReader())
+        script.run()
+        assert "hello foobar and foofam" == fileToFilter.text
     }
 }

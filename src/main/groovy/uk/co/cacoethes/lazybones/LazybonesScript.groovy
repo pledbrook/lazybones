@@ -15,6 +15,7 @@ class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
     final Map options = [:]
+    Reader reader
 
     String targetDir
     String encoding = DEFAULT_ENCODING
@@ -24,6 +25,12 @@ class LazybonesScript extends Script {
             return encoding
         }
         encoding = DEFAULT_ENCODING
+    }
+
+    Reader getReader() {
+        if (reader) return reader
+
+        reader = new InputStreamReader(System.in)
     }
 
     /**
@@ -45,9 +52,7 @@ class LazybonesScript extends Script {
 
         String line
         System.out.print message
-        System.in.withReader { Reader reader ->
-            line = reader.readLine()
-        }
+        line = getReader().readLine()
 
         return line ?: defaultValue
     }
@@ -62,7 +67,12 @@ class LazybonesScript extends Script {
                 include(name: filePattern)
             }
         } as Iterable<File>
-        filterFilesHelper(scanner, getEncoding(), substitutionVariables)
+        boolean atLeastOneFileFiltered = filterFilesHelper(scanner, substitutionVariables)
+
+        if (!atLeastOneFileFiltered) {
+            log.warning("No files filtered with file pattern [$filePattern] and target directory [$targetDir]")
+        }
+
         return this
     }
 
@@ -77,16 +87,29 @@ class LazybonesScript extends Script {
         filterFiles(filePattern, options)
     }
 
-    private void filterFilesHelper(Iterable<File> files, Map properties) {
-        files.each { File file ->
-            filterFile(file, getEncoding(), properties)
+    /**
+     *
+     * @param files files to filter
+     * @param properties properties used to filter files
+     * @return true if at least one file was filtered
+     */
+    private boolean filterFilesHelper(Iterable<File> files, Map properties) {
+        boolean atLeastOneFileFiltered = false
+
+        //have to use for instead of each, closure causes issues when script is used as base script
+        for (file in files) {
+            filterFileHelper(file, properties)
+            atLeastOneFileFiltered = true
         }
+
+        return atLeastOneFileFiltered
     }
 
     private void filterFileHelper(File file, Map properties) {
         if (!file.exists()) {
             throw new IllegalArgumentException("file ${file} does not exist")
         }
+        log.info "filtering file $file"
         def engine = new SimpleTemplateEngine()
         def reader = file.newReader(getEncoding())
         def template = engine.createTemplate(reader).make(properties)
