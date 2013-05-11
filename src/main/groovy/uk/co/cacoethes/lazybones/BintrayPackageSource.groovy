@@ -10,13 +10,15 @@ import wslite.rest.*
  * available and to get extra information about them.
  */
 class BintrayPackageSource implements PackageSource {
+    static final String TEMPLATE_BASE_URL = "http://dl.bintray.com/v1/content/"
     static final String API_BASE_URL = "https://bintray.com/api/v1"
-    static final String REPO_NAME = "pledbrook/lazybones-templates"
     static final String PACKAGE_SUFFIX = "-template"
 
+    final String repoName
     def restClient
 
-    BintrayPackageSource() {
+    BintrayPackageSource(String repositoryName) {
+        repoName = repositoryName
         restClient = new RESTClient(API_BASE_URL)
 
         // For testing with Betamax: set up a proxy if required. groovyws-lite
@@ -29,14 +31,18 @@ class BintrayPackageSource implements PackageSource {
         }
     }
 
+    String getTemplateUrl(String pkgName, String version) {
+        def pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX
+        return "${TEMPLATE_BASE_URL}/${repoName}/${pkgNameWithSuffix}-${version}.zip"
+    }
+
     List<String> listPackageNames() {
-        def pkgSuffix = "-template"
-        def response = restClient.get(path: "/repos/${REPO_NAME}/packages")
+        def response = restClient.get(path: "/repos/${repoName}/packages")
 
         def pkgNames = response.json.findAll {
-            it.name.endsWith(pkgSuffix)
+            it.name.endsWith(PACKAGE_SUFFIX)
         }.collect {
-            it.name - pkgSuffix
+            it.name - PACKAGE_SUFFIX
         }
 
         return pkgNames
@@ -47,7 +53,7 @@ class BintrayPackageSource implements PackageSource {
 
         def response
         try {
-            response = restClient.get(path: "/packages/${REPO_NAME}/${pkgNameWithSuffix}")
+            response = restClient.get(path: "/packages/${repoName}/${pkgNameWithSuffix}")
         }
         catch(HTTPClientException ex) {
             if (ex.response.statusCode == 404) return null
@@ -56,6 +62,7 @@ class BintrayPackageSource implements PackageSource {
 
         def data = response.json
         def pkgInfo = new PackageInfo(data.name - PACKAGE_SUFFIX, data.'latest_version')
+
         pkgInfo.with {
             versions = data.versions as List
             owner = data.owner
