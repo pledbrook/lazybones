@@ -22,7 +22,8 @@ class LazybonesMain {
         if (argsList.size() == 0) {
             cmd = "help"
             argsList = []
-        } else {
+        }
+        else {
             cmd = argsList[0]
             argsList = argsList.size() == 1 ? [] : argsList[1..-1]
         }
@@ -89,11 +90,12 @@ USAGE: create <template> <version>? <dir>
         ArchiveMethods.unzip(templateZip, targetDir)
 
         try {
-            runLazyBonesIfExists(targetDir)
-        } catch (Throwable throwable) {
+            runPostInstallScript(targetDir)
+        }
+        catch (Throwable throwable) {
             //TODO: once we support --stacktrace, we should handle this better
             log.warning("lazybones script caused an exception, project might be corrupted")
-            log.throwing(LazybonesMain.name, "runLazyBonesIfExists", throwable)
+            log.throwing(LazybonesMain.name, "runPostInstallScript", throwable)
             return 1
         }
 
@@ -117,7 +119,7 @@ USAGE: create <template> <version>? <dir>
      * @param targetDir the target directory that contains the lazybones.groovy script
      * @return the lazybones script if it exists
      */
-    static private Script runLazyBonesIfExists(File targetDir) {
+    static private Script runPostInstallScript(File targetDir) {
         def file = new File(targetDir, "lazybones.groovy")
         if (file.exists()) {
             def compiler = new CompilerConfiguration()

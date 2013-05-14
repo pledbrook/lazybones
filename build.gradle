@@ -43,21 +43,16 @@ dependencies {
             "co.freeside:betamax:1.1.2"
 }
 
+//for a single test, you can run "gradle -DintegTests.single=<test name>"
 task integTests(type: Test, dependsOn: ["installApp", "installTemplates"]) {
     systemProperty "lazybones.testWorkDir", new File(buildDir, "testWork").path
     systemProperty "lazybones.installDir", tasks.installApp.destinationDir.path
 
     testClassesDir = sourceSets.integTest.output.classesDir
     classpath = sourceSets.integTest.runtimeClasspath
-    def singleTest = System.getProperty("test.single")
 
-    if (singleTest) {
-        include "**/${singleTest}*"
-    } else {
-        include "**/*Spec*"
-        exclude "**/Abstract*Spec*"
-    }
-
+    include "**/*Spec*"
+    exclude "**/Abstract*Spec*"
 }
 
 distZip.dependsOn(["test", "integTests"])

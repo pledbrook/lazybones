@@ -5,13 +5,9 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 /**
- * Created with IntelliJ IDEA.
- * User: tbarker
- * Date: 5/10/13
- * Time: 9:31 PM
- * To change this template use File | Settings | File Templates.
+ * @author Tommy Barker
  */
-class LazybonesMainTest extends Specification {
+class LazybonesMainSpec extends Specification {
 
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
@@ -20,7 +16,7 @@ class LazybonesMainTest extends Specification {
         when: "I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
         file.write("System.setProperty('ran','true')")
-        LazybonesMain.runLazyBonesIfExists(testFolder.root)
+        LazybonesMain.runPostInstallScript(testFolder.root)
 
         then: "the script is deleted"
         !file.exists()
@@ -34,7 +30,7 @@ class LazybonesMainTest extends Specification {
         when: "when I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
         file.write("//do nothing")
-        LazybonesScript script = LazybonesMain.runLazyBonesIfExists(testFolder.root)
+        LazybonesScript script = LazybonesMain.runPostInstallScript(testFolder.root)
 
         then: "the targetDir is set"
         assert script.getTargetDir()
@@ -46,6 +42,6 @@ class LazybonesMainTest extends Specification {
 
         then: "nothing happens"
         !file.exists()
-        null == LazybonesMain.runLazyBonesIfExists(testFolder.root)
+        null == LazybonesMain.runPostInstallScript(testFolder.root)
     }
 }

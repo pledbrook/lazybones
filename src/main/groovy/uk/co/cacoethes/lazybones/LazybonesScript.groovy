@@ -14,7 +14,6 @@ import java.lang.reflect.Method
 class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
-    final Map options = [:]
     Reader reader
 
     String targetDir
@@ -39,16 +38,10 @@ class LazybonesScript extends Script {
      * value will be returned.  null can be returned
      *
      * @param message
-     * @param optionName
      * @param defaultValue
      * @return
      */
-    def ask(String message, String optionName = null, defaultValue = null) {
-        if (optionName) {
-            if (options.containsKey(optionName)) {
-                return options[optionName]
-            }
-        }
+    def ask(String message, defaultValue = null) {
 
         String line
         System.out.print message
@@ -74,17 +67,6 @@ class LazybonesScript extends Script {
         }
 
         return this
-    }
-
-    /**
-     * uses the options / cli variables to filter files.  filePattern is used by the Ant <code>fileScanner</code>.
-     * See {@link http://groovy.codehaus.org/Using+Ant+from+Groovy} for more details.
-     *
-     * @param filePattern The pattern matching the files you want to process, using Ant-style
-     * path wildcards.
-     */
-    def filterFiles(String filePattern) {
-        filterFiles(filePattern, options)
     }
 
     /**

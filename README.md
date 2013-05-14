@@ -168,9 +168,23 @@ Requirements for a project template:
   project. This file will be displayed straight after a new project is created
   from the template, so it should give some information about what the template
   contains and how to use it
+* An optional lazybones.groovy post install script (look below for more details). It
+  runs right after the template is installed and is deleted after successful completion.
 * The name of the binary must be of the form &lt;name>-template-&lt;version>.zip and
   should _not_ contain a parent directory. So a README file must be at the top
   level of the zip.
 * The name of the template should ideally be of the form &lt;tool/framework>-&lt;variant>,
   where the variant is optional. For example: ratpack-lite, dropwizard,
   grails-cqrs.
+
+The lazybones.groovy post install script is a generic groovy script with a few extra
+helper methods:
+
+* `ask(String message, defaultValue = null)` - asks the user a question and returns their answer, or defaultValue if no
+answer is provided
+
+* `filterFiles(String filePattern, Map substitutionVariables)` - use ant pattern matching to find files and filter their
+contents in place using the SimpleTemplateEngine.
+
+* `hasFeature(String featureName)` - checks if the script has access to a feature, `hasFeature("ask")` or
+`hasFeature("fileFilter")` would both return true

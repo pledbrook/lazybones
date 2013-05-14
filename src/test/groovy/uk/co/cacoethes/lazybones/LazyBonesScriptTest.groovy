@@ -63,12 +63,6 @@ class LazybonesScriptTest {
     }
 
     @Test
-    void "if value is available in options, then return that"() {
-        script.options.foo = "bar"
-        assert "bar" == script.ask("give me foo", "foo")
-    }
-
-    @Test
     void "if value is returned by user return that"() {
         def originalIn = System.in
         try {
@@ -101,7 +95,7 @@ class LazybonesScriptTest {
 
     @Test(expected = IllegalStateException)
     void "filter files throws error if targetDir is not set"() {
-        script.filterFiles("*")
+        script.filterFiles("*", [:])
     }
 
     @Test
