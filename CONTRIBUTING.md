@@ -43,6 +43,35 @@ directory and extend `AbstractFunctionalSpec`.
 They use [Betamax](http://freeside.co/betamax) to intercept and replay web requests
 (such as to the Bintray REST API and download URLs).
 
+Commit messages
+---------------
+
+It may seem anal to request a particular format for commit messages, but these
+are a historical record of what's happening in the code base and consistency
+makes investigating that history much easier.
+
+Please follow the advice of the [Phonegap guys](https://github.com/phonegap/phonegap/wiki/Git-Commit-Message-Format)
+when crafting commit messages. The advice basically comes down to:
+
+* First line should be maximum 50 characters long
+* It should summarise the change and use imperative present tense
+* The rest of the commit message should come after a blank line
+* We encourage you to use Markdown syntax in the rest of the commit message
+* Preferably keep to an 80 character limit on lines in the rest of the message.
+
+If a commit is related to a particular issue, put the issue number after a
+hash (#) somewhere in the detail. You can put the issue number in the first
+line summary, but only if you can also fit in a useful summary of what was
+changed in the commit.
+
+Here's an example git message:
+
+> Make create's version argument optional.
+>
+> Implements issue #3. If the user doesn't provide an explicit version,
+> lazybones retrieves the latest version from Bintray. Integration tests
+> added for the `create` command as well.
+
 Formatting
 ----------
 
