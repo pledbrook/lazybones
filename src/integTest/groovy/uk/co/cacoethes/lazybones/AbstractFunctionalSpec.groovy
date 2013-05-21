@@ -12,14 +12,14 @@ abstract class AbstractFunctionalSpec extends Specification {
     // It seems this needs to be protected for some reason, otherwise the tests
     // throw a MissingPropertyException.
     protected final Object _outputLock = new Object()
-    
+
     protected processOutput = new StringBuilder()
 
-    protected final baseWorkDir = new File(System.getProperty("lazybones.testWorkDir") ?: 
-                                 System.getProperty("user.dir") + "/build/testWork")
+    protected final baseWorkDir = new File(System.getProperty("lazybones.testWorkDir") ?:
+        System.getProperty("user.dir") + "/build/testWork")
+
     protected final env = [:]
-    
-    
+
     /**
      * Runs a lazybones command. For example:
      *
@@ -55,7 +55,22 @@ abstract class AbstractFunctionalSpec extends Specification {
         // the form VAR=value.
         def envp = env.collect { key, value -> key + "=" + value }
 
-        def process = (["${lazybonesInstallDir}/bin/lazybones"] + cmdList).execute(envp, workDir)
+        Process process = (["${lazybonesInstallDir}/bin/lazybones"] + cmdList).execute(envp, workDir)
+
+        if (inputs) {
+            def newLine = System.getProperty("line.separator")
+            def line = new StringBuilder()
+            inputs.each { String item ->
+                line << item << newLine
+            }
+
+            // We're deliberately using the platform encoding when converting
+            // the string to bytes, since that's the encoding the terminal is
+            // likely using when users manually enter text in answer to ask()
+            // questions.
+            process.outputStream.write(line.toString().bytes)
+            process.outputStream.flush()
+        }
 
         def stdoutThread = consumeProcessStream(process.inputStream)
         def stderrThread = consumeProcessStream(process.errorStream)
@@ -69,7 +84,7 @@ abstract class AbstractFunctionalSpec extends Specification {
         println output
         return exitCode
     }
-    
+
     /**
      * Returns the text output (both stdout and stderr) of the last command
      * that was executed.
@@ -77,7 +92,7 @@ abstract class AbstractFunctionalSpec extends Specification {
     String getOutput() {
         return processOutput.toString()
     }
-    
+
     /**
      * Clears the saved command output.
      */
