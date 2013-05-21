@@ -16,4 +16,9 @@ interface PackageSource {
      * given name, this returns {@code null}.
      */
     PackageInfo fetchPackageInfo(String packageName)
+
+    /**
+     * Returns the URL to download particular package and version from this package source
+     */
+    String getTemplateUrl(String pkgName, String version)
 }

@@ -11,11 +11,16 @@ import java.util.logging.LogManager
 @Log
 class LazybonesMain {
 
-    static final String templatesBaseUrl = "http://dl.bintray.com/v1/content/pledbrook/lazybones-templates"
+    static final File configFile = new File(System.getProperty('user.home'), '.lazybones/config.groovy')
     static final File installDir = new File(System.getProperty('user.home'), ".lazybones/templates")
+    static final String defaultRespository = 'pledbrook/lazybones-templates'
+
+    static ConfigObject configuration
 
     static void main(String[] args) {
         initLogging()
+
+        initConfiguration()
 
         String cmd
         List argsList = args as List
@@ -62,26 +67,37 @@ USAGE: create <template> <version>? <dir>
             return 1
         }
 
+        String requestedVersion = args[1] as String
+        String packageName = args[0] as String
+
         // Inject the latest version into the args list if the user hasn't
         // provided it.
+        PackageInfo pkgInfo = null
+        PackageSource packageSource = null
+
+        configuration.bintrayRepositories.find { String bintrayRepoName ->
+            packageSource = new BintrayPackageSource(bintrayRepoName)
+            pkgInfo = packageSource.fetchPackageInfo(packageName)
+            pkgInfo
+        }
+
+        if (!pkgInfo) {
+            println "Cannot find a template named '${packageName}'. Project has not been created."
+            return 1
+        }
+
         if (args.size() == 2) {
-            def pkgSource = new BintrayPackageSource()
-            def pkgInfo = pkgSource.fetchPackageInfo(args[0])
-
-            if (!pkgInfo) {
-                println "Cannot find a template named '${args[0]}'. Project has not been created."
-                return 1
-            }
-
-            args.add(1, pkgInfo.latestVersion)
+            requestedVersion = pkgInfo.latestVersion
         }
 
         // Can't fetch the latest version until Bintray allows anonymous API access.
         // Or I set up a separate server for this stuff.
-        def templateZip = fetchTemplate(args[0], args[1])
+        def templateZip = fetchTemplate(packageName,
+                                        requestedVersion,
+                                        packageSource.getTemplateUrl(packageName, requestedVersion))
 
         if (!templateZip) {
-            println "Cannot find version ${args[1]} of template '${args[0]}'. Project has not been created."
+            println "Cannot find version ${requestedVersion} of template '${packageName}'. Project has not been created."
             return 1
         }
 
@@ -118,10 +134,13 @@ USAGE: create <template> <version>? <dir>
         println "Available templates:"
         println ""
 
-        def pkgSource = new BintrayPackageSource()
-        for (name in pkgSource.listPackageNames()) {
-            println "    " + name
+        configuration.bintrayRepositories.each { String bintrayRepoName ->
+            def pkgSource = new BintrayPackageSource(bintrayRepoName)
+            for (name in pkgSource.listPackageNames()) {
+                println "    " + bintrayRepoName + '/' + name
+            }
         }
+
         return 0
     }
 
@@ -140,8 +159,13 @@ USAGE: info <template>
 
         log.info "Fetching package information for '${args[0]}' from Bintray"
 
-        def pkgSource = new BintrayPackageSource()
-        def pkgInfo = pkgSource.fetchPackageInfo(args[0])
+        // grab the package from the first repository that has it
+        def pkgInfo
+        configuration.bintrayRepositories.find { String bintrayRepoName ->
+            def pkgSource = new BintrayPackageSource(bintrayRepoName)
+            pkgInfo = pkgSource.fetchPackageInfo(args[0])
+            pkgInfo
+        }
 
         if (!pkgInfo) {
             println "Cannot find a template named '${args[0]}'"
@@ -207,13 +231,12 @@ USAGE: info <template>
         return null
     }
 
-    private static File fetchTemplate(String name, String version) {
+    private static File fetchTemplate(String templateName, String requestedVersion, String externalUrl) {
         // Does it exist in the cache? If not, pull it from Bintray.
-        def packageFile = new File(installDir, "${name}-${version}.zip")
+        def packageFile = new File(installDir, "${templateName}-${requestedVersion}.zip")
 
         if (!packageFile.exists()) {
             installDir.mkdirs()
-            String externalUrl = templatesBaseUrl + "/${name}-template-${version}.zip"
             try {
                 packageFile.withOutputStream { OutputStream out ->
                     new URL(externalUrl).withInputStream { InputStream input ->
@@ -221,7 +244,8 @@ USAGE: info <template>
                     }
                 }
             }
-            catch (FileNotFoundException fileNotFoundException) {
+            catch (all) {
+                println all.message
                 println "${externalUrl} was not found."
                 packageFile.deleteOnExit()
                 return null
@@ -229,7 +253,15 @@ USAGE: info <template>
         }
 
         return packageFile
+    }
 
+    private static void initConfiguration() {
+        try {
+            configuration = new ConfigSlurper().parse(configFile.toURL())
+        } catch (FileNotFoundException fileNotFoundEx) {
+            configuration = new ConfigObject()
+            configuration.bintrayRepositories = [defaultRespository]
+        }
     }
 
     private static void initLogging() {
