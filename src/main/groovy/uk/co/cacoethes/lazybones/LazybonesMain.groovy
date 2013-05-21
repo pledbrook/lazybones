@@ -11,9 +11,9 @@ import java.util.logging.LogManager
 @Log
 class LazybonesMain {
 
-    static final File configFile = new File(System.getProperty('user.home'), '.lazybones/config.groovy')
-    static final File installDir = new File(System.getProperty('user.home'), ".lazybones/templates")
-    static final String defaultRespository = 'pledbrook/lazybones-templates'
+    static final File CONFIG_FILE = new File(System.getProperty('user.home'), '.lazybones/config.groovy')
+    static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
+    static final String DEFAULT_REPOSITORY = 'pledbrook/lazybones-templates'
 
     static ConfigObject configuration
 
@@ -233,10 +233,10 @@ USAGE: info <template>
 
     private static File fetchTemplate(String templateName, String requestedVersion, String externalUrl) {
         // Does it exist in the cache? If not, pull it from Bintray.
-        def packageFile = new File(installDir, "${templateName}-${requestedVersion}.zip")
+        def packageFile = new File(INSTALL_DIR, "${templateName}-${requestedVersion}.zip")
 
         if (!packageFile.exists()) {
-            installDir.mkdirs()
+            INSTALL_DIR.mkdirs()
             try {
                 packageFile.withOutputStream { OutputStream out ->
                     new URL(externalUrl).withInputStream { InputStream input ->
@@ -256,11 +256,13 @@ USAGE: info <template>
     }
 
     private static void initConfiguration() {
-        try {
-            configuration = new ConfigSlurper().parse(configFile.toURL())
-        } catch (FileNotFoundException fileNotFoundEx) {
+        if (CONFIG_FILE.exists()) {
+            configuration = new ConfigSlurper().parse(CONFIG_FILE.toURL())
+        }
+        else {
+            // Default configuration
             configuration = new ConfigObject()
-            configuration.bintrayRepositories = [defaultRespository]
+            configuration.bintrayRepositories = [DEFAULT_REPOSITORY]
         }
     }
 
