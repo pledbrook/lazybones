@@ -79,7 +79,19 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
 
         then: "It returns a non-zero exit code and reports the package as missing"
         exitCode != 0
-        output =~ /Cannot find version 1.0 of template 'unknown'./
+        output =~ /Cannot find a template named 'unknown'./
+
+        !new File(baseWorkDir, "myapp").exists()
+    }
+
+    @Betamax(tape="create-tape")
+    def "Create command reports error if specified version of a package cannot be found"() {
+        when: "I run lazybones with the create command for an unknown version of a known package"
+        def exitCode = runCommand(["create", "ratpack", "99.99", "myapp"], baseWorkDir)
+
+        then: "It returns a non-zero exit code and reports the package as missing"
+        exitCode != 0
+        output =~ /Cannot find version 99.99 of template 'ratpack'./
 
         !new File(baseWorkDir, "myapp").exists()
     }
