@@ -131,14 +131,16 @@ USAGE: create <template> <version>? <dir>
     }
 
     static int listCommand(List<String> args) {
-        println "Available templates:"
-        println ""
+        for (String bintrayRepoName in configuration.bintrayRepositories) {
+            println "Available templates in ${bintrayRepoName}:"
+            println()
 
-        configuration.bintrayRepositories.each { String bintrayRepoName ->
             def pkgSource = new BintrayPackageSource(bintrayRepoName)
             for (name in pkgSource.listPackageNames()) {
-                println "    " + bintrayRepoName + '/' + name
+                println "    " + name
             }
+
+            println()
         }
 
         return 0
