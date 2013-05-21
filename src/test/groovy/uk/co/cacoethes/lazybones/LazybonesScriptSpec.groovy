@@ -49,7 +49,7 @@ class LazybonesScriptSpec extends Specification {
 
     void "default encoding is utf-8"() {
         expect:
-        a == new LazybonesScript().encoding
+        a == new LazybonesScript().fileEncoding
 
         where:
         a << [DEFAULT_ENCODING]

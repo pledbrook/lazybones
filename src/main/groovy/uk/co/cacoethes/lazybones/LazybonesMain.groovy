@@ -94,7 +94,7 @@ USAGE: create <template> <version>? <dir>
         }
         catch (Throwable throwable) {
             //TODO: once we support --stacktrace, we should handle this better
-            log.warning("lazybones script caused an exception, project might be corrupted")
+            log.warning("Post install script caused an exception, project might be corrupt: ${throwable.message}")
             log.throwing(LazybonesMain.name, "runPostInstallScript", throwable)
             return 1
         }
@@ -191,7 +191,11 @@ USAGE: info <template>
         if (file.exists()) {
             def compiler = new CompilerConfiguration()
             compiler.scriptBaseClass = LazybonesScript.name
-            def shell = new GroovyShell(this.classLoader, new Binding(), compiler)
+
+            // Can't use 'this' here because the static type checker does not
+            // treat it as the class instance:
+            //       https://jira.codehaus.org/browse/GROOVY-6162
+            def shell = new GroovyShell(LazybonesMain.classLoader, new Binding(), compiler)
 
             LazybonesScript script = shell.parse(file) as LazybonesScript
             script.targetDir = targetDir.path

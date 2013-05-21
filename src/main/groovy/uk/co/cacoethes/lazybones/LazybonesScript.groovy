@@ -25,27 +25,13 @@ class LazybonesScript extends Script {
      * The encoding/charset used by the files in the template. This is UTF-8
      * by default.
      */
-    String fileEncoding
+    String fileEncoding = DEFAULT_ENCODING
 
     /**
      * The reader stream from which user input will be pulled. Defaults to a
      * wrapper around stdin using the platform's default encoding/charset.
      */
-    Reader reader
-
-    String getFileEncoding() {
-        if (fileEncoding) return fileEncoding
-
-        fileEncoding = DEFAULT_ENCODING
-    }
-
-    Reader getReader() {
-        if (reader) return reader
-
-        // Default to default platform encoding on the assumption that is what
-        // System.in is using.
-        reader = new InputStreamReader(System.in)
-    }
+    Reader reader = new InputStreamReader(System.in)
 
     /**
      * Prints a message asking for a property value.  If options already contains the value, that
@@ -108,10 +94,10 @@ class LazybonesScript extends Script {
         log.info "Filtering file $file"
 
         def engine = new SimpleTemplateEngine()
-        def reader = file.newReader(getFileEncoding())
+        def reader = file.newReader(fileEncoding)
         def template = engine.createTemplate(reader).make(properties)
         def out = new FileOutputStream(file)
-        Writer writer = new OutputStreamWriter(out, getFileEncoding())
+        Writer writer = new OutputStreamWriter(out, fileEncoding)
         template.writeTo(writer)
     }
 
