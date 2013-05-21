@@ -67,18 +67,17 @@ USAGE: create <template> <version>? <dir>
             return 1
         }
 
-        String requestedVersion = args[1] as String
-        String packageName = args[0] as String
-
         // Inject the latest version into the args list if the user hasn't
         // provided it.
+        String packageName = args[0]
         PackageInfo pkgInfo = null
         PackageSource packageSource = null
 
-        configuration.bintrayRepositories.find { String bintrayRepoName ->
+        for (String bintrayRepoName in configuration.bintrayRepositories) {
             packageSource = new BintrayPackageSource(bintrayRepoName)
             pkgInfo = packageSource.fetchPackageInfo(packageName)
-            pkgInfo
+
+            if (pkgInfo) break
         }
 
         if (!pkgInfo) {
@@ -86,8 +85,16 @@ USAGE: create <template> <version>? <dir>
             return 1
         }
 
+        File targetDir
+        String requestedVersion
         if (args.size() == 2) {
+            // No version specified, so pull the latest from the package server.
+            targetDir = args[1] as File
             requestedVersion = pkgInfo.latestVersion
+        }
+        else {
+            targetDir = args[2] as File
+            requestedVersion = args[1]
         }
 
         // Can't fetch the latest version until Bintray allows anonymous API access.
@@ -101,7 +108,6 @@ USAGE: create <template> <version>? <dir>
             return 1
         }
 
-        def targetDir = new File(args[2])
         targetDir.mkdirs()
         ArchiveMethods.unzip(templateZip, targetDir)
 
