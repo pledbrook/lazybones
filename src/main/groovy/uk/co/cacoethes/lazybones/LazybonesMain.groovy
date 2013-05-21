@@ -114,28 +114,6 @@ USAGE: create <template> <version>? <dir>
         return 0
     }
 
-    /**
-     *
-     * @param targetDir the target directory that contains the lazybones.groovy script
-     * @return the lazybones script if it exists
-     */
-    static private Script runPostInstallScript(File targetDir) {
-        def file = new File(targetDir, "lazybones.groovy")
-        if (file.exists()) {
-            def compiler = new CompilerConfiguration()
-            compiler.setScriptBaseClass(LazybonesScript.class.name)
-            def shell = new GroovyShell(this.class.classLoader, new Binding(), compiler)
-
-            LazybonesScript script = shell.parse(file) as LazybonesScript
-            script.setTargetDir(targetDir.path)
-            script.run()
-            file.delete()
-            return script
-        }
-
-        return null
-    }
-
     static int listCommand(List<String> args) {
         println "Available templates:"
         println ""
@@ -200,6 +178,29 @@ USAGE: info <template>
         println ""
 
         return 0
+    }
+
+    /**
+     * Runs the post install script if it exists in the unpacked template
+     * package. Once the script has been run, it is deleted.
+     * @param targetDir the target directory that contains the lazybones.groovy script
+     * @return the lazybones script if it exists
+     */
+    private static Script runPostInstallScript(File targetDir) {
+        def file = new File(targetDir, "lazybones.groovy")
+        if (file.exists()) {
+            def compiler = new CompilerConfiguration()
+            compiler.scriptBaseClass = LazybonesScript.name
+            def shell = new GroovyShell(this.classLoader, new Binding(), compiler)
+
+            LazybonesScript script = shell.parse(file) as LazybonesScript
+            script.targetDir = targetDir.path
+            script.run()
+            file.delete()
+            return script
+        }
+
+        return null
     }
 
     private static File fetchTemplate(String name, String version) {

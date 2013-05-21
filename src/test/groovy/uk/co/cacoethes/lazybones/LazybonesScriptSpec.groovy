@@ -10,7 +10,7 @@ import static uk.co.cacoethes.lazybones.LazybonesScript.DEFAULT_ENCODING
 /**
  * @author Tommy Barker
  */
-class LazybonesScriptSpec extends Specification{
+class LazybonesScriptSpec extends Specification {
 
     def script = new LazybonesScript()
     File fileToFilter

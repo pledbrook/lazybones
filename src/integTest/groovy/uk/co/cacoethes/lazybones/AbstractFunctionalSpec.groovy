@@ -17,6 +17,7 @@ abstract class AbstractFunctionalSpec extends Specification {
 
     protected final baseWorkDir = new File(System.getProperty("lazybones.testWorkDir") ?:
         System.getProperty("user.dir") + "/build/testWork")
+
     protected final env = [:]
 
     /**
@@ -58,13 +59,19 @@ abstract class AbstractFunctionalSpec extends Specification {
 
         if (inputs) {
             def newLine = System.getProperty("line.separator")
-            String line = new String()
+            def line = new StringBuilder()
             inputs.each { String item ->
-                line += item + newLine
+                line << item << newLine
             }
-            process.outputStream.write(line.bytes)
+
+            // We're deliberately using the platform encoding when converting
+            // the string to bytes, since that's the encoding the terminal is
+            // likely using when users manually enter text in answer to ask()
+            // questions.
+            process.outputStream.write(line.toString().bytes)
             process.outputStream.flush()
         }
+
         def stdoutThread = consumeProcessStream(process.inputStream)
         def stderrThread = consumeProcessStream(process.errorStream)
         int exitCode = process.waitFor()

@@ -14,26 +14,41 @@ import java.lang.reflect.Method
 class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
+
+    /**
+     * The root directory of the unpacked template. This is the base path used
+     * when searching for files that need filtering.
+     */
+    String targetDir
+
+    /**
+     * The encoding/charset used by the files in the template. This is UTF-8
+     * by default.
+     */
+    String fileEncoding
+
+    /**
+     * The reader stream from which user input will be pulled. Defaults to a
+     * wrapper around stdin using the platform's default encoding/charset.
+     */
     Reader reader
 
-    String targetDir
-    String encoding = DEFAULT_ENCODING
+    String getFileEncoding() {
+        if (fileEncoding) return fileEncoding
 
-    String getEncoding() {
-        if (encoding) {
-            return encoding
-        }
-        encoding = DEFAULT_ENCODING
+        fileEncoding = DEFAULT_ENCODING
     }
 
     Reader getReader() {
         if (reader) return reader
 
+        // Default to default platform encoding on the assumption that is what
+        // System.in is using.
         reader = new InputStreamReader(System.in)
     }
 
     /**
-     * prints a message asking for a property value.  If options already contains the value, that
+     * Prints a message asking for a property value.  If options already contains the value, that
      * value is returned and the question is not asked.  If the user has no response the default
      * value will be returned.  null can be returned
      *
@@ -43,9 +58,8 @@ class LazybonesScript extends Script {
      */
     def ask(String message, defaultValue = null) {
 
-        String line
         System.out.print message
-        line = getReader().readLine()
+        String line = reader.readLine()
 
         return line ?: defaultValue
     }
@@ -63,7 +77,7 @@ class LazybonesScript extends Script {
         boolean atLeastOneFileFiltered = filterFilesHelper(scanner, substitutionVariables)
 
         if (!atLeastOneFileFiltered) {
-            log.warning("No files filtered with file pattern [$filePattern] and target directory [$targetDir]")
+            log.warning "No files filtered with file pattern [$filePattern] and target directory [$targetDir]"
         }
 
         return this
@@ -91,12 +105,13 @@ class LazybonesScript extends Script {
         if (!file.exists()) {
             throw new IllegalArgumentException("file ${file} does not exist")
         }
-        log.info "filtering file $file"
+        log.info "Filtering file $file"
+
         def engine = new SimpleTemplateEngine()
-        def reader = file.newReader(getEncoding())
+        def reader = file.newReader(getFileEncoding())
         def template = engine.createTemplate(reader).make(properties)
         def out = new FileOutputStream(file)
-        Writer writer = new OutputStreamWriter(out, getEncoding())
+        Writer writer = new OutputStreamWriter(out, getFileEncoding())
         template.writeTo(writer)
     }
 

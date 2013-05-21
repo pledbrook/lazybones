@@ -33,14 +33,16 @@ repositories {
 
 dependencies {
     groovy "org.codehaus.groovy:groovy:2.1.3"
-    compile "org.codehaus.groovy:groovy-ant:2.1.3"
-    compile "org.apache.commons:commons-compress:1.5",
+
+    compile "org.codehaus.groovy:groovy-ant:2.1.3",
+            "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:0.7.2"
 
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+
     integTestCompile "commons-io:commons-io:2.4",
-            "org.spockframework:spock-core:0.7-groovy-2.0",
-            "co.freeside:betamax:1.1.2"
+                     "org.spockframework:spock-core:0.7-groovy-2.0",
+                     "co.freeside:betamax:1.1.2"
 }
 
 //for a single test, you can run "gradle -DintegTests.single=<test name>"
@@ -69,7 +71,7 @@ task verifyProps << {
     def missingProps = requiredProps.findAll { !project.hasProperty(it) }
 
     if (missingProps) {
-        throw new GradleException("You must define the build properties '${missingProps.join('\', \'')}'" +
+        throw new GradleException("You must define the build properties '${missingProps.join("', '")}'" +
                 " before you can execute this target.")
     }
 }
