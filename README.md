@@ -14,8 +14,15 @@ the packages to the relevant [Bintray repository](https://bintray.com/repo/brows
 
 [![Build Status](https://drone.io/github.com/pledbrook/lazybones/status.png)](https://drone.io/github.com/pledbrook/lazybones/latest)
 
+Contributors
+------------
+
+* [Peter Ledbrook](https://github.com/pledbrook)
+* [Kyle Boon](https://github.com/kyleboon)
+* [Tommy Barker](https://github.com/tbarker9)
+
 Configuration
-----------
+-------------
 
 Lazybones configuration can be specified in `~/.lazybones/lazybones.properties`. Currently the only thing you
 can specify is a list of template repositories. They must all be bintray repositories and are specified like this:
