@@ -2,8 +2,10 @@ package uk.co.cacoethes.lazybones
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
-import java.util.logging.LogManager
+import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.util.ArchiveMethods
+
+import java.util.logging.LogManager
 
 @CompileStatic
 @Log
@@ -28,10 +30,10 @@ class LazybonesMain {
 
         // Execute the corresponding command
         def cmdMap = [
-            create: this.&createCommand,
-            list: this.&listCommand,
-            info: this.&infoCommand,
-            help: this.&helpCommand ] as Map<String, Closure>
+                create: this.&createCommand,
+                list: this.&listCommand,
+                info: this.&infoCommand,
+                help: this.&helpCommand] as Map<String, Closure>
 
         def cmdClosure = cmdMap[cmd]
         if (!cmdClosure) {
@@ -87,8 +89,18 @@ USAGE: create <template> <version>? <dir>
         targetDir.mkdirs()
         ArchiveMethods.unzip(templateZip, targetDir)
 
+        try {
+            runPostInstallScript(targetDir)
+        }
+        catch (Throwable throwable) {
+            //TODO: once we support --stacktrace, we should handle this better
+            log.warning("lazybones script caused an exception, project might be corrupted")
+            log.throwing(LazybonesMain.name, "runPostInstallScript", throwable)
+            return 1
+        }
+
         // Find a suitable README and display that if it exists.
-        def readmeFiles = targetDir.listFiles( { File dir, String name ->
+        def readmeFiles = targetDir.listFiles({ File dir, String name ->
             name == "README" || name.startsWith("README")
         } as FilenameFilter)
 
@@ -100,6 +112,28 @@ USAGE: create <template> <version>? <dir>
         println "Project created in ${args[2]}!"
 
         return 0
+    }
+
+    /**
+     *
+     * @param targetDir the target directory that contains the lazybones.groovy script
+     * @return the lazybones script if it exists
+     */
+    static private Script runPostInstallScript(File targetDir) {
+        def file = new File(targetDir, "lazybones.groovy")
+        if (file.exists()) {
+            def compiler = new CompilerConfiguration()
+            compiler.setScriptBaseClass(LazybonesScript.class.name)
+            def shell = new GroovyShell(this.class.classLoader, new Binding(), compiler)
+
+            LazybonesScript script = shell.parse(file) as LazybonesScript
+            script.setTargetDir(targetDir.path)
+            script.run()
+            file.delete()
+            return script
+        }
+
+        return null
     }
 
     static int listCommand(List<String> args) {
@@ -152,9 +186,9 @@ USAGE: info <template>
     static int helpCommand(List<String> args) {
 
         final cmdDescriptions = [
-            create: "Creates a new project structure from a named template.",
-            list: "Lists the available project templates.",
-            info: "Displays information about a given template." ] as Map<String, String>
+                create: "Creates a new project structure from a named template.",
+                list: "Lists the available project templates.",
+                info: "Displays information about a given template."] as Map<String, String>
 
         println "Lazybones is a command-line based tool for creating basic software projects from templates."
         println ""
@@ -192,7 +226,7 @@ USAGE: info <template>
         return packageFile
 
     }
-    
+
     private static void initLogging() {
         def inputStream = new ByteArrayInputStream(LOG_CONFIG.getBytes("UTF-8"))
         LogManager.logManager.readConfiguration(inputStream)

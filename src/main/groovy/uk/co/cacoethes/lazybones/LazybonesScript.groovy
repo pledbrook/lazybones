@@ -14,7 +14,7 @@ import java.lang.reflect.Method
 class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
-    final Map options = [:]
+    Reader reader
 
     String targetDir
     String encoding = DEFAULT_ENCODING
@@ -26,28 +26,26 @@ class LazybonesScript extends Script {
         encoding = DEFAULT_ENCODING
     }
 
+    Reader getReader() {
+        if (reader) return reader
+
+        reader = new InputStreamReader(System.in)
+    }
+
     /**
      * prints a message asking for a property value.  If options already contains the value, that
      * value is returned and the question is not asked.  If the user has no response the default
      * value will be returned.  null can be returned
      *
      * @param message
-     * @param optionName
      * @param defaultValue
      * @return
      */
-    def ask(String message, String optionName = null, defaultValue = null) {
-        if (optionName) {
-            if (options.containsKey(optionName)) {
-                return options[optionName]
-            }
-        }
+    def ask(String message, defaultValue = null) {
 
         String line
         System.out.print message
-        System.in.withReader { Reader reader ->
-            line = reader.readLine()
-        }
+        line = getReader().readLine()
 
         return line ?: defaultValue
     }
@@ -62,31 +60,38 @@ class LazybonesScript extends Script {
                 include(name: filePattern)
             }
         } as Iterable<File>
-        filterFilesHelper(scanner, getEncoding(), substitutionVariables)
+        boolean atLeastOneFileFiltered = filterFilesHelper(scanner, substitutionVariables)
+
+        if (!atLeastOneFileFiltered) {
+            log.warning("No files filtered with file pattern [$filePattern] and target directory [$targetDir]")
+        }
+
         return this
     }
 
     /**
-     * uses the options / cli variables to filter files.  filePattern is used by the Ant <code>fileScanner</code>.
-     * See {@link http://groovy.codehaus.org/Using+Ant+from+Groovy} for more details.
      *
-     * @param filePattern The pattern matching the files you want to process, using Ant-style
-     * path wildcards.
+     * @param files files to filter
+     * @param properties properties used to filter files
+     * @return true if at least one file was filtered
      */
-    def filterFiles(String filePattern) {
-        filterFiles(filePattern, options)
-    }
+    private boolean filterFilesHelper(Iterable<File> files, Map properties) {
+        boolean atLeastOneFileFiltered = false
 
-    private void filterFilesHelper(Iterable<File> files, Map properties) {
-        files.each { File file ->
-            filterFile(file, getEncoding(), properties)
+        //have to use for instead of each, closure causes issues when script is used as base script
+        for (file in files) {
+            filterFileHelper(file, properties)
+            atLeastOneFileFiltered = true
         }
+
+        return atLeastOneFileFiltered
     }
 
     private void filterFileHelper(File file, Map properties) {
         if (!file.exists()) {
             throw new IllegalArgumentException("file ${file} does not exist")
         }
+        log.info "filtering file $file"
         def engine = new SimpleTemplateEngine()
         def reader = file.newReader(getEncoding())
         def template = engine.createTemplate(reader).make(properties)
