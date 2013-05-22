@@ -21,19 +21,6 @@ Contributors
 * [Kyle Boon](https://github.com/kyleboon)
 * [Tommy Barker](https://github.com/tbarker9)
 
-Configuration
--------------
-
-Lazybones configuration can be specified in `~/.lazybones/lazybones.properties`. Currently the only thing you
-can specify is a list of template repositories. They must all be bintray repositories and are specified like this:
-
-    bintrayRepositories = [
-          "kyleboon/lazybones",
-          "pledbrook/lazybones-templates"
-    ]
-
-If a template exists in mutlitple repositories, the one in the first repository mentioned will be used.
-
 Running it
 ----------
 
@@ -67,6 +54,56 @@ You can also find out more about a template through the `info` command:
 
 This will print a description of the template and what versions are available
 for it.
+
+Configuration
+-------------
+
+Lazybones will run out of the box without any extra configuration, but you can
+control certain aspects of the tool through the configuration file
+`~/.lazybones/config.groovy`. This is parsed using Groovy's `ConfigSlurper`, so
+if you're familiar with that syntax you'll be right at home. Otherwise, just see
+the examples below.
+
+### Custom repositories
+
+Lazybones will by default download the templates from a specific BinTray
+repository. If you want to host template packages in a different repository
+you can add it to Lazybone's search path via the `bintrayRepositories`
+setting:
+
+    bintrayRepositories = [
+          "kyleboon/lazybones",
+          "pledbrook/lazybones-templates"
+    ]
+
+If a template exists in more than one repository, it will be downloaded from the
+first repository in the list that it appears in.
+
+### General options
+
+These are miscellaneous options that can be overridden on the command line:
+
+    // <-- This starts a line comment
+    // Set logging level - overridden by command line args
+    options.logLevel = "SEVERE"
+
+The logging level can either be overridden using the same `logLevel` setting:
+
+    lazybones --logLevel SEVERE info ratpack
+
+or via `--verbose`, `--quiet`, and `--info` options:
+
+    lazybones --verbose info ratpack
+
+The logging level can be one of:
+
+* OFF
+* SEVERE
+* WARNING
+* INFO
+* FINE
+* FINEST
+* ALL
 
 Building it
 -----------

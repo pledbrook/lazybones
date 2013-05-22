@@ -1,6 +1,6 @@
 package uk.co.cacoethes.lazybones
 
-class LazybonesScriptSpec extends AbstractFunctionalSpec {
+class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
 
     def "lazybones is deleted after package is installed"() {
         when: "I run lazybones with the create command for the groovy-gradle template"

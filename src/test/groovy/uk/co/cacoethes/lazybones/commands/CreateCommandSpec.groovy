@@ -1,22 +1,27 @@
-package uk.co.cacoethes.lazybones
+package uk.co.cacoethes.lazybones.commands
 
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import uk.co.cacoethes.lazybones.LazybonesMain
+import uk.co.cacoethes.lazybones.LazybonesScript
 
 /**
  * @author Tommy Barker
  */
-class LazybonesMainSpec extends Specification {
+class CreateCommandSpec extends Specification {
 
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
 
     void "lazybones gets deleted after running"() {
+        given: "a create command instance"
+        def cmd = new CreateCommand()
+
         when: "I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
         file.write("System.setProperty('ran','true')")
-        LazybonesMain.runPostInstallScript(testFolder.root)
+        cmd.runPostInstallScript(testFolder.root, [:])
 
         then: "the script is deleted"
         !file.exists()
@@ -27,21 +32,27 @@ class LazybonesMainSpec extends Specification {
     }
 
     void "lazybones has the targetDir set before running"() {
+        given: "a create command instance"
+        def cmd = new CreateCommand()
+
         when: "when I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
         file.write("//do nothing")
-        LazybonesScript script = LazybonesMain.runPostInstallScript(testFolder.root)
+        LazybonesScript script = cmd.runPostInstallScript(testFolder.root, [:])
 
         then: "the targetDir is set"
         assert script.getTargetDir()
     }
 
     void "if lazybones does not exist, nothing happens"() {
+        given: "a create command instance"
+        def cmd = new CreateCommand()
+
         when: "I runLazyBonesIfExists and file does not exist, nothing happens"
         File file = new File("foobar")
 
         then: "nothing happens"
         !file.exists()
-        null == LazybonesMain.runPostInstallScript(testFolder.root)
+        null == cmd.runPostInstallScript(testFolder.root, [:])
     }
 }
