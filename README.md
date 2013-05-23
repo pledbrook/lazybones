@@ -204,6 +204,9 @@ helper methods:
 * `ask(String message, defaultValue = null)` - asks the user a question and returns their answer, or `defaultValue` if no
 answer is provided
 
+* `ask(String message, String propertyName, defaultValue = null)` - works similarily to the ask above, but allows
+grabbing variables from the command line as well based on the `propertyName`.
+
 * `filterFiles(String filePattern, Map substitutionVariables)` - use ant pattern matching to find files and filter their
 contents in place using Groovy's `SimpleTemplateEngine`.
 
@@ -216,7 +219,7 @@ file:
 
     def params = [:]
     params["groupId"] = ask("What is the group ID for this project?")
-    params["version"] = ask("What is the project's initial version?", "0.1")
+    params["version"] = ask("What is the project's initial version?", "version", "0.1")
 
     filterFiles("*.gradle", params)
     filterFiles("pom.xml", params)
