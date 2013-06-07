@@ -24,12 +24,12 @@ Contributors
 Running it
 ----------
 
-Grab lazybones from gvm:
+Grab lazybones from [gvm](http://gvmtool.net):
 
     gvm install lazybones
 
-Alternatively, grab the distribution [from Bintray](https://bintray.com/pkg/show/general/pledbrook/lazybones-templates/lazybones),
-unpack it to a local directory, and then add its 'bin' directory to your PATH
+or alternatively, grab the distribution [from Bintray](https://bintray.com/pkg/show/general/pledbrook/lazybones-templates/lazybones),
+unpack it to a local directory, and then add its 'bin' directory to your `PATH`
 environment variable.
 
 To create a new project, run
