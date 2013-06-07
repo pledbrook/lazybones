@@ -121,6 +121,21 @@ class LazybonesScriptSpec extends Specification {
         "hello foobar and foofam" == fileToFilter.text
     }
 
+    void "if the binding already contains the property it is used instead of asking the question"() {
+        given:
+        def scriptText = """
+            return ask("give me foo", "foo")
+        """
+        LazybonesScript script = createScript(scriptText)
+        script.foo = "bar"
+
+        when:
+        def response = script.run()
+
+        then:
+        "bar" == response
+    }
+
     LazybonesScript createScript(String text) {
         def compiler = new CompilerConfiguration()
         compiler.setScriptBaseClass(LazybonesScript.class.name)

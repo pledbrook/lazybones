@@ -34,13 +34,12 @@ class LazybonesScript extends Script {
     Reader reader = new InputStreamReader(System.in)
 
     /**
-     * Prints a message asking for a property value.  If options already contains the value, that
-     * value is returned and the question is not asked.  If the user has no response the default
+     * Prints a message asking for a property value.  If the user has no response the default
      * value will be returned.  null can be returned
      *
      * @param message
      * @param defaultValue
-     * @return
+     * @return the response
      */
     def ask(String message, defaultValue = null) {
 
@@ -48,6 +47,26 @@ class LazybonesScript extends Script {
         String line = reader.readLine()
 
         return line ?: defaultValue
+    }
+
+    /**
+     * Prints a message asking for a property value.  If a value for the property already exists in
+     * the binding of the script, it is used instead of asking the question.  If the user has no resopnse
+     * the default value is returned
+     *
+     * @param message
+     * @param propertyName name of the property to check for in the binding
+     * @param defaultValue
+     * @return the response
+     */
+    def ask(String message, String propertyName, defaultValue = null) {
+        if (propertyName) {
+            if (binding.hasVariable(propertyName)) {
+                return binding.getVariable(propertyName)
+            }
+        }
+
+        return ask(message, defaultValue)
     }
 
     def filterFiles(String filePattern, Map substitutionVariables) {
