@@ -55,7 +55,7 @@ class BintrayPackageSource implements PackageSource {
         try {
             response = restClient.get(path: "/packages/${repoName}/${pkgNameWithSuffix}")
         }
-        catch(HTTPClientException ex) {
+        catch (HTTPClientException ex) {
             if (ex.response.statusCode == 404) return null
             else throw ex
         }

@@ -58,13 +58,13 @@ class LazybonesMain {
             System.exit 1
         }
 
-        int retval = (int) cmdInstance.execute(argsList, globalOptions, configuration)
+        int retval = cmdInstance.execute(argsList, globalOptions, configuration)
         System.exit retval
     }
 
     private static void initConfiguration() {
         if (CONFIG_FILE.exists()) {
-            configuration = new ConfigSlurper().parse(CONFIG_FILE.toURL())
+            configuration = new ConfigSlurper().parse(CONFIG_FILE.toURI().toURL())
         }
         else {
             // Default configuration
