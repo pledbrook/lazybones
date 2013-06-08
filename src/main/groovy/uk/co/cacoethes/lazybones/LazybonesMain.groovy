@@ -35,6 +35,15 @@ class LazybonesMain {
             globalOptions[spec.options()[0]] = valueList ? valueList[0] : true
         }
 
+        if (optionSet.has("version")) {
+            def stream = LazybonesMain.getResourceAsStream("lazybones.properties")
+            def props = new Properties()
+            props.load(stream)
+
+            println "Lazybones version ${props.getProperty("lazybones.version")}"
+            System.exit 0
+        }
+
         // We're now ready to initialise the logging system as we have the global
         // options parsed and available.
         initLogging(globalOptions)
@@ -85,7 +94,7 @@ class LazybonesMain {
         // from this parent).
         def parentLogger = Logger.getLogger("uk.co.cacoethes.lazybones")
 
-        if (options.verbose) parentLogger.level = Level.FINEST
+        if (options.v) parentLogger.level = Level.FINEST
         else if (options.quiet) parentLogger.level = Level.WARNING
         else if (options.info) parentLogger.level = Level.INFO
         else if (options.logLevel) {
@@ -103,10 +112,11 @@ class LazybonesMain {
         // These are the global options available for all commands.
         def parser = new OptionParser()
         parser.accepts("stacktrace", "Show stack traces when exceptions are thrown.")
-        parser.accepts("verbose", "Display extra information when running commands.")
+        parser.acceptsAll(["verbose", "v"], "Display extra information when running commands.")
         parser.accepts("quiet", "Show minimal output.")
         parser.accepts("info", "Show normal amount of output (default).")
         parser.accepts("logLevel", "Set logging level, e.g. OFF, SEVERE, INFO, FINE, etc.").withRequiredArg()
+        parser.accepts("version", "Print out the Lazybones finish and then end.")
 
         // Ensures that only options up to the sub-command ('create, 'list',
         // etc.) are parsed.

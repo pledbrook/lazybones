@@ -46,9 +46,19 @@ dependencies {
                      "co.freeside:betamax:1.1.2"
 }
 
+task generateAppResources(type: GenerateProjectProperties) {
+    target = file("${sourceSets.main.output.classesDir}/uk/co/cacoethes/lazybones/lazybones.properties")
+}
+
+tasks.processResources.dependsOn generateAppResources
+
+task generateIntegTestResources(type: GenerateProjectProperties) {
+    target = file("${sourceSets.integTest.output.classesDir}/uk/co/cacoethes/lazybones/lazybones.properties")
+}
+
 //for a single test, you can run "gradle -DintegTests.single=<test name>"
-task integTests(type: Test, dependsOn: ["installApp", "installTemplates"]) {
-    systemProperty "lazybones.testWorkDir", new File(buildDir, "testWork").path
+task integTests(type: Test, dependsOn: ["installApp", "installTemplates", "generateIntegTestResources"]) {
+    systemProperty "lazybones.testWorkDir", file("$buildDir/testWork").path
     systemProperty "lazybones.installDir", tasks.installApp.destinationDir.path
 
     testClassesDir = sourceSets.integTest.output.classesDir
@@ -216,6 +226,21 @@ class BintrayGenericUpload extends DefaultTask {
             }
 
             assert responseCode >= 200 && responseCode < 300
+        }
+    }
+}
+
+class GenerateProjectProperties extends DefaultTask {
+    @OutputFile
+    File target
+
+    @TaskAction
+    void generate() {
+        def props = new Properties()
+        props.setProperty("lazybones.version", project.version)
+
+        target.withWriter { w ->
+            props.store(w, "Lazybones project properties")
         }
     }
 }

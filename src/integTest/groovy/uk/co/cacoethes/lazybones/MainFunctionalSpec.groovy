@@ -21,7 +21,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
 
     def "Verbose command line option displays extra info"() {
         when: "I run lazybones with the create command and the 'verbose' option"
-        def exitCode = runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
+        runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
 
         then: "I see INFO and FINE messages"
         output.contains "Project created in ratapp"
@@ -33,7 +33,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
 
     def "Quiet command line option displays minimal info"() {
         when: "I run lazybones with the create command and the 'quiet' option"
-        def exitCode = runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
+        runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
 
         then: "I see only WARNING and SEVERE messages"
         !output.contains("Project created in ratapp")
@@ -45,7 +45,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
 
     def "Info command line option displays normal level of information"() {
         when: "I run lazybones with the create command and the 'info' option"
-        def exitCode = runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
+        runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
 
         then: "I see INFO messages"
         output.contains "Project created in ratapp"
@@ -53,5 +53,20 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
 
         where:
         option << ["--info", "--logLevel=INFO"]
+    }
+
+    def "The version option prints Lazybones' version"() {
+        given: "The version from the lazybones.properties file"
+        def stream = getClass().getResourceAsStream("lazybones.properties")
+        def props = new Properties()
+        props.load(stream)
+        def appVersion = props.getProperty("lazybones.version")
+
+        when: "I run lazybones with the version option"
+        def exitCode = runCommand(["--version"], baseWorkDir)
+
+        then: "I see the app version printed out"
+        exitCode == 0
+        output.contains "Lazybones version $appVersion"
     }
 }
