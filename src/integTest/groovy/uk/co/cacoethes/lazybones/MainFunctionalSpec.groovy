@@ -69,4 +69,21 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
         exitCode == 0
         output.contains "Lazybones version $appVersion"
     }
+
+    def "An unknown option prints out usage"() {
+        when: "I run lazybones with an unknown option"
+        def exitCode = runCommand(["--unknown", "help"], baseWorkDir)
+
+        then: "The exit code is non-zero and a usage string is displayed"
+        exitCode != 0
+        output =~ /'unknown' is not a recognized option/
+        output =~ /USAGE: lazybones \[OPTIONS\] \[COMMAND\]/
+        !(output =~ /Exception/)
+
+        and: "The message displayed does not include the log level"
+        !(output =~ /^SEVERE:\b/)
+
+        where:
+        option << ["--verbose", "--quiet", "--info", "--logLevel=WARNING"]
+    }
 }

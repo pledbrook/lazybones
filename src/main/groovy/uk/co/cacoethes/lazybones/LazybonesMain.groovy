@@ -2,14 +2,14 @@ package uk.co.cacoethes.lazybones
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
+import joptsimple.OptionException
+import joptsimple.OptionSet
+
 import java.util.logging.Level
 import java.util.logging.LogManager
 import joptsimple.OptionParser
-import joptsimple.OptionSet
 import joptsimple.OptionSpec
-import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.commands.*
-import uk.co.cacoethes.util.ArchiveMethods
 
 import java.util.logging.Logger
 
@@ -20,11 +20,23 @@ class LazybonesMain {
     static final File CONFIG_FILE = new File(System.getProperty('user.home'), '.lazybones/config.groovy')
     static final String DEFAULT_REPOSITORY = 'pledbrook/lazybones-templates'
 
+    static final String USAGE = "USAGE: lazybones [OPTIONS] [COMMAND]\n"
+
     static ConfigObject configuration
 
     static void main(String[] args) {
         initConfiguration()
-        def optionSet = parseArguments(args)
+
+        OptionParser parser = createParser(args)
+        OptionSet optionSet
+        try {
+            optionSet = parser.parse(args)
+        }
+        catch (OptionException ex) {
+            // Logging not initialised yet, so use println()
+            println getHelp(ex.message, parser)
+            System.exit 1
+        }
 
         // Create a map of options from the "options.*" key in the user's
         // configuration and then add any command line options to that map,
@@ -108,7 +120,7 @@ class LazybonesMain {
         }
     }
 
-    private static OptionSet parseArguments(String[] args) {
+    private static OptionParser createParser(String[] args) {
         // These are the global options available for all commands.
         def parser = new OptionParser()
         parser.accepts("stacktrace", "Show stack traces when exceptions are thrown.")
@@ -121,7 +133,22 @@ class LazybonesMain {
         // Ensures that only options up to the sub-command ('create, 'list',
         // etc.) are parsed.
         parser.posixlyCorrect(true)
-        return parser.parse(args)
+        return parser
+    }
+
+    /**
+     * Returns a help string to display for usage. It incorporates the given
+     * message, the command's usage string, and the supported JOptSimple options.
+     */
+    protected static String getHelp(String message, OptionParser parser) {
+        def writer = new StringWriter()
+        parser.printHelpOn(writer)
+
+        return """\
+${message}
+
+${USAGE}
+${writer}"""
     }
 
     /**
