@@ -15,10 +15,10 @@ class PlainFormatter extends Formatter {
         //copied from SimpleFormatter
         if (record.thrown) {
             StringWriter sw = new StringWriter()
-            PrintWriter pw = new PrintWriter(sw)
-            pw.println()
-            record.getThrown().printStackTrace(pw)
-            pw.close()
+            sw.withPrintWriter { PrintWriter pw ->
+                record.getThrown().printStackTrace(pw)
+                pw.close()
+            }
             message += sw.toString()
         }
 
