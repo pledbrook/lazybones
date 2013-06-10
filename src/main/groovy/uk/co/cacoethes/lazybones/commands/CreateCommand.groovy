@@ -2,8 +2,6 @@ package uk.co.cacoethes.lazybones.commands
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
-
-import java.util.logging.Level
 import joptsimple.OptionParser
 import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.BintrayPackageSource
@@ -11,6 +9,8 @@ import uk.co.cacoethes.lazybones.LazybonesScript
 import uk.co.cacoethes.lazybones.PackageInfo
 import uk.co.cacoethes.lazybones.PackageSource
 import uk.co.cacoethes.util.ArchiveMethods
+
+import java.util.logging.Level
 
 /**
  * Implements Lazybone's create command, which creates a new project based on
@@ -97,7 +97,7 @@ USAGE: create <template> <version>? <dir>
         ArchiveMethods.unzip(templateZip, targetDir)
 
         try {
-            def scriptVariables = cmdOptions.valuesOf("P").collectEntries { String it -> it.split('=') }
+            def scriptVariables = cmdOptions.valuesOf("P").collectEntries { String it -> it.split('=') as List }
             runPostInstallScript(targetDir, scriptVariables)
         }
         catch (Throwable throwable) {
