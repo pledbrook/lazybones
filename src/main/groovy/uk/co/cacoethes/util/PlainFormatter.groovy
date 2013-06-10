@@ -1,6 +1,7 @@
 package uk.co.cacoethes.util
 
-import java.util.logging.*
+import java.util.logging.Formatter
+import java.util.logging.LogRecord
 
 /**
  * This is a java.util.logging formatter that simply prints the log messages
@@ -10,6 +11,17 @@ import java.util.logging.*
 @groovy.transform.CompileStatic
 class PlainFormatter extends Formatter {
     String format(LogRecord record) {
-        return record.message + '\n'
+        def message = record.message + '\n'
+        //copied from SimpleFormatter
+        if (record.thrown) {
+            StringWriter sw = new StringWriter()
+            sw.withPrintWriter { PrintWriter pw ->
+                record.getThrown().printStackTrace(pw)
+                pw.close()
+            }
+            message += sw.toString()
+        }
+
+        return message
     }
 }
