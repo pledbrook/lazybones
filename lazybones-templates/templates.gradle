@@ -1,0 +1,23 @@
+buildscript {
+    repositories {
+        maven {
+            url "http://dl.bintray.com/pledbrook/plugins"
+        }
+    }
+
+    dependencies {
+        classpath "uk.co.cacoethes:lazybones-gradle:1.0"
+    }
+}
+
+apply plugin: "lazybones-templates"
+
+lazybones {
+    repositoryUrl = project.'repo.url'
+    repositoryUsername = project.'repo.username'
+    repositoryApiKey = project.'repo.apiKey'
+}
+
+// The test-tmpl template should *not* be published, so we exclude that particular
+// task from the build.
+gradle.taskGraph.useFilter({ task -> task.name != "publishTemplateTestTmpl" } as Spec)

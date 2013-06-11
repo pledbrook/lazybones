@@ -1,0 +1,98 @@
+import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
+
+apply plugin: "groovy"
+apply plugin: "application"
+
+applicationName = "lazybones"
+mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
+version = "0.4-SNAPSHOT"
+
+sourceCompatibility = "1.6"
+targetCompatibility = "1.6"
+
+ext {
+    installDir = new File(System.getProperty('user.home'), ".lazybones/templates")
+}
+
+sourceSets {
+    integTest {
+        groovy {
+            srcDir "src/integ/groovy"
+        }
+        resources {
+            srcDir "src/integ/resources"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.codehaus.groovy:groovy:2.1.3"
+
+    compile "org.codehaus.groovy:groovy-ant:2.1.3",
+            "org.apache.commons:commons-compress:1.5",
+            "com.github.groovy-wslite:groovy-wslite:0.7.2",
+            "net.sf.jopt-simple:jopt-simple:4.4"
+
+    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+
+    integTestCompile "commons-io:commons-io:2.4",
+                     "org.spockframework:spock-core:0.7-groovy-2.0",
+                     "co.freeside:betamax:1.1.2"
+}
+
+task generateAppResources(type: GenerateProjectProperties) {
+    target = file("${sourceSets.main.output.classesDir}/uk/co/cacoethes/lazybones/lazybones.properties")
+}
+
+tasks.processResources.dependsOn generateAppResources
+
+task generateIntegTestResources(type: GenerateProjectProperties) {
+    target = file("${sourceSets.integTest.output.classesDir}/uk/co/cacoethes/lazybones/lazybones.properties")
+}
+
+//for a single test, you can run "gradle -DintegTests.single=<test name>"
+task integTests(type: Test) {
+    dependsOn ":lazybones-templates:installTemplateTestTmpl", "installApp", "generateIntegTestResources"
+
+    systemProperty "lazybones.testWorkDir", file("$buildDir/testWork").path
+    systemProperty "lazybones.installDir", installApp.destinationDir.path
+
+    testClassesDir = sourceSets.integTest.output.classesDir
+    classpath = sourceSets.integTest.runtimeClasspath
+
+    include "**/*Spec*"
+    exclude "**/Abstract*Spec*"
+}
+
+distZip.dependsOn("test", "integTests")
+
+task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
+    artifactFile = distZip.archivePath
+    artifactUrlPath = "lazybones/$version/${distZip.archiveName}"
+    repositoryUrl = project.'repo.url'
+    username = project.'repo.username'
+    apiKey = project.'repo.apiKey'
+}
+
+/**
+ * Simple task that writes a selection of the project's build properties into
+ * a file. At the moment, only the Lazybones version gets written.
+ */
+class GenerateProjectProperties extends DefaultTask {
+    @OutputFile
+    File target
+
+    @TaskAction
+    void generate() {
+        def props = new Properties()
+        props.setProperty("lazybones.version", project.version)
+
+        target.withWriter { w ->
+            props.store(w, "Lazybones project properties")
+        }
+    }
+}
