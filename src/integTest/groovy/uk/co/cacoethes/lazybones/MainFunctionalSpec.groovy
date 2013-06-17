@@ -1,10 +1,20 @@
 package uk.co.cacoethes.lazybones
 
+import co.freeside.betamax.Betamax
+import co.freeside.betamax.Recorder
+import org.junit.Rule
+
 /**
  * Functional tests for the code explicitly in LazybonesMain that isn't tested
  * implicitly by other functional tests. At the moment, verifies the logging levels.
  */
 class MainFunctionalSpec extends AbstractFunctionalSpec {
+    @Rule Recorder recorder = new Recorder()
+
+    void setup() {
+        def proxyAddress = recorder.proxy.address()
+        env["JAVA_OPTS"] = "-Dhttps.proxyHost=" + proxyAddress.hostName + " -Dhttps.proxyPort=" + proxyAddress.port
+    }
 
     def "Error message displayed if command unrecognised"() {
         when: "I run lazybones with an unknown command"
@@ -19,6 +29,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
         option << ["--verbose", "--quiet", "--info", "--logLevel=WARNING"]
     }
 
+    @Betamax(tape="create-tape")
     def "Verbose command line option displays extra info"() {
         when: "I run lazybones with the create command and the 'verbose' option"
         runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
@@ -43,6 +54,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
         option << ["-q", "--quiet", "--logLevel=WARNING"]
     }
 
+    @Betamax(tape="create-tape")
     def "Info command line option displays normal level of information"() {
         when: "I run lazybones with the create command and the 'info' option"
         runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
