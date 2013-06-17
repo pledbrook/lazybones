@@ -9,6 +9,9 @@ testContent << "Version: " << lazybonesVersion << '\n'
 
 
 // Tests that the versions are provided as integers.
+assert lazybonesMajorVersion instanceof Number
+assert lazybonesMinorVersion instanceof Number
+
 if (lazybonesMajorVersion == 0 && lazybonesMinorVersion < 4) {
     testContent << "Your Lazybones version is too old\n"
 } else {

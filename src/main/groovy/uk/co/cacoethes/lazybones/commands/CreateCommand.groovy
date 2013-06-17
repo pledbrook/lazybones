@@ -142,8 +142,8 @@ USAGE: create <template> <version>? <dir>
         def versionParts = version.split(/\./)
         assert versionParts.size() > 1
 
-        vars["lazybonesMajorVersion"] = versionParts[0]
-        vars["lazybonesMinorVersion"] = versionParts[1]
+        vars["lazybonesMajorVersion"] = versionParts[0]?.toInteger()
+        vars["lazybonesMinorVersion"] = versionParts[1]?.toInteger()
 
         return vars
     }
