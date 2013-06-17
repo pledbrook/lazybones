@@ -1,5 +1,5 @@
 Gradle Groovy project template
------------------------------
+------------------------------
 
 You have just created a basic Groovy application. It provides a standard
 project structure, and Spock for writing tests
