@@ -1,10 +1,24 @@
 package uk.co.cacoethes.lazybones
 
-class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
+import co.freeside.betamax.Betamax
+import co.freeside.betamax.Recorder
+import org.junit.Rule
 
+class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
+    @Rule Recorder recorder = new Recorder()
+
+    void setup() {
+        def proxyAddress = recorder.proxy.address()
+        env["JAVA_OPTS"] = "-Dhttps.proxyHost=" + proxyAddress.hostName + " -Dhttps.proxyPort=" + proxyAddress.port
+    }
+
+    @Betamax(tape="create-tape")
     def "lazybones is deleted after package is installed"() {
+        given: "The Lazybones version"
+        def lazybonesVersion = readLazybonesVersion()
+
         when: "I run lazybones with the create command for the groovy-gradle template"
-        def exitCode = runCommand(["create", "groovy-app", "0.2", "groovyapp"], baseWorkDir, ["foo", "0.1"])
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "0.1"])
 
         then: "It successfully completes, deleting the lazybones script after unpacking the template"
         exitCode == 0
@@ -15,11 +29,26 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         def text = new File(appDir, "build.gradle").text
         text.contains("group = \"foo\"")
         text.contains("version = \"0.1\"")
+
+        and: "the post-install script creates a text file containing the version number"
+        def testText = new File(appDir, "test.txt").text
+        testText.contains("Your Lazybones version is OK - you're good to go!")
+        !testText.contains("Your Lazybones version is too old")
+        testText.contains("Version: ${lazybonesVersion}")
     }
 
+    @Betamax(tape="create-tape")
     def "lazybones passes commandline P args to the root script"() {
         when: "creating a groovyapp with all options passed in"
-        def exitCode = runCommand(["--stacktrace", "create", "groovy-app", "0.2", "groovyappWithArgs", "-Pversion=0.2", "-Pgroup=bar"], baseWorkDir)
+        def args = [
+                "--stacktrace",
+                "create",
+                "test-tmpl",
+                "0.2",
+                "groovyappWithArgs",
+                "-Pversion=0.2",
+                "-Pgroup=bar"]
+        def exitCode = runCommand(args, baseWorkDir)
 
         then: "It successfully completes"
         exitCode == 0

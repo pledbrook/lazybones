@@ -48,11 +48,7 @@ class LazybonesMain {
         }
 
         if (optionSet.has("version")) {
-            def stream = LazybonesMain.getResourceAsStream("lazybones.properties")
-            def props = new Properties()
-            props.load(stream)
-
-            println "Lazybones version ${props.getProperty("lazybones.version")}"
+            println "Lazybones version ${readVersion()}"
             System.exit 0
         }
 
@@ -81,6 +77,13 @@ class LazybonesMain {
 
         int retval = cmdInstance.execute(argsList, globalOptions, configuration)
         System.exit retval
+    }
+
+    public static String readVersion() {
+        def stream = LazybonesMain.getResourceAsStream("lazybones.properties")
+        def props = new Properties()
+        props.load(stream)
+        return props.getProperty("lazybones.version")
     }
 
     private static void initConfiguration() {

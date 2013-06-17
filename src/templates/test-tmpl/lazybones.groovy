@@ -1,0 +1,18 @@
+def filterProperties = [:]
+filterProperties.group = ask("Define value for 'group': ", "group")
+filterProperties.version = ask("Define value for 'version' [0.1]: ", "version","0.1")
+
+filterFiles("build.gradle", filterProperties)
+
+def testContent = new StringBuilder()
+testContent << "Version: " << lazybonesVersion << '\n'
+
+
+// Tests that the versions are provided as integers.
+if (lazybonesMajorVersion == 0 && lazybonesMinorVersion < 4) {
+    testContent << "Your Lazybones version is too old\n"
+} else {
+    testContent << "Your Lazybones version is OK - you're good to go!\n"
+}
+
+new File(targetDir, "test.txt").text = testContent.toString()

@@ -102,6 +102,17 @@ abstract class AbstractFunctionalSpec extends Specification {
         }
     }
 
+    /**
+     * Reads the current version of Lazybones from a properties file and
+     * returns it as a string.
+     */
+    protected String readLazybonesVersion() {
+        def stream = getClass().getResourceAsStream("lazybones.properties")
+        def props = new Properties()
+        props.load(stream)
+        return props.getProperty("lazybones.version")
+    }
+
     private Thread consumeProcessStream(final InputStream stream) {
         char[] buffer = new char[256]
         Thread.start {

@@ -57,7 +57,7 @@ task generateIntegTestResources(type: GenerateProjectProperties) {
 }
 
 //for a single test, you can run "gradle -DintegTests.single=<test name>"
-task integTests(type: Test, dependsOn: ["installApp", "installTemplates", "generateIntegTestResources"]) {
+task integTests(type: Test, dependsOn: ["installApp", "installTemplate-test-tmpl", "generateIntegTestResources"]) {
     systemProperty "lazybones.testWorkDir", file("$buildDir/testWork").path
     systemProperty "lazybones.installDir", tasks.installApp.destinationDir.path
 
@@ -118,7 +118,9 @@ tasks.addRule("Pattern: packageTemplate-<proj>") { String taskName ->
  * Packages all the project templates into zip archives.
  */
 def templateDirs = templatesDir.listFiles({ f -> f.directory } as FileFilter)
-task packageTemplates(dependsOn: templateDirs.collect { project.tasks["packageTemplate-${it.name}"] })
+task packageTemplates(dependsOn: templateDirs.findAll { it.name != "test-tmpl" }.collect {
+    project.tasks["packageTemplate-${it.name}"]
+})
 
 /**
  * Generates tasks to install individual project templates so they can be used without bintray.
@@ -137,7 +139,9 @@ tasks.addRule("Pattern: installTemplate-<proj>") { String taskName ->
     }
 }
 
-task installTemplates(dependsOn: templateDirs.collect { project.tasks["installTemplate-${it.name}"] })
+task installTemplates(dependsOn: templateDirs.findAll { it.name != "test-tmpl" }.collect {
+    project.tasks["installTemplate-${it.name}"]
+})
 
 /**
  * Generates tasks to publish individual project template archives to Bintray.

@@ -57,10 +57,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
 
     def "The version option prints Lazybones' version"() {
         given: "The version from the lazybones.properties file"
-        def stream = getClass().getResourceAsStream("lazybones.properties")
-        def props = new Properties()
-        props.load(stream)
-        def appVersion = props.getProperty("lazybones.version")
+        def appVersion = readLazybonesVersion()
 
         when: "I run lazybones with the version option"
         def exitCode = runCommand(["--version"], baseWorkDir)

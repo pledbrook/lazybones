@@ -5,6 +5,7 @@ import groovy.util.logging.Log
 import joptsimple.OptionParser
 import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.BintrayPackageSource
+import uk.co.cacoethes.lazybones.LazybonesMain
 import uk.co.cacoethes.lazybones.LazybonesScript
 import uk.co.cacoethes.lazybones.PackageInfo
 import uk.co.cacoethes.lazybones.PackageSource
@@ -96,8 +97,13 @@ USAGE: create <template> <version>? <dir>
         targetDir.mkdirs()
         ArchiveMethods.unzip(templateZip, targetDir)
 
+        // Run the post-install script if it exists. The user can pass variables
+        // to the script via -P command line arguments. This also places
+        // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
+        // variables into the script binding.
         try {
             def scriptVariables = cmdOptions.valuesOf("P").collectEntries { String it -> it.split('=') as List }
+            scriptVariables << evaluateVersionScriptVariables()
             runPostInstallScript(targetDir, scriptVariables)
         }
         catch (Throwable throwable) {
@@ -122,6 +128,24 @@ USAGE: create <template> <version>? <dir>
         log.info "Project created in ${targetDir.path}!"
 
         return 0
+    }
+
+    /**
+     * Reads the Lazybones version, breaks it up, and adds {@code lazybonesVersion},
+     * {@code lazybonesMajorVersion}, and {@code lazybonesMinorVersion} variables
+     * to a map that is then returned.
+     */
+    protected Map evaluateVersionScriptVariables() {
+        def version = LazybonesMain.readVersion()
+        def vars = [lazybonesVersion: version]
+
+        def versionParts = version.split(/\./)
+        assert versionParts.size() > 1
+
+        vars["lazybonesMajorVersion"] = versionParts[0]
+        vars["lazybonesMinorVersion"] = versionParts[1]
+
+        return vars
     }
 
     @Override
