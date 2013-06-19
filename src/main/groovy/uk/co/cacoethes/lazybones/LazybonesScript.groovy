@@ -42,7 +42,6 @@ class LazybonesScript extends Script {
      * @return the response
      */
     def ask(String message, defaultValue = null) {
-
         System.out.print message
         String line = reader.readLine()
 
@@ -54,19 +53,20 @@ class LazybonesScript extends Script {
      * the binding of the script, it is used instead of asking the question.  If the user has no resopnse
      * the default value is returned
      *
-     * @param message
-     * @param propertyName name of the property to check for in the binding
-     * @param defaultValue
-     * @return the response
+     * @param message The message to display to the user requesting some information.
+     * @param defaultValue If the user doesn't provide a value, return this.
+     * @param propertyName The name of the property in the binding whose value will
+     * be used instead of prompting the user for input if that property exists.
+     * @return The required value based on whether the message was displayed and
+     * whether the user entered a value.
      */
-    def ask(String message, String propertyName, defaultValue = null) {
-        if (propertyName) {
-            if (binding.hasVariable(propertyName)) {
-                return binding.getVariable(propertyName)
-            }
+    def ask(String message, defaultValue, String propertyName) {
+        if (propertyName && binding.hasVariable(propertyName)) {
+            return binding.getVariable(propertyName)
         }
-
-        return ask(message, defaultValue)
+        else {
+            return ask(message, defaultValue)
+        }
     }
 
     def filterFiles(String filePattern, Map substitutionVariables) {
