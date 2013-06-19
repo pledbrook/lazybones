@@ -124,10 +124,10 @@ class LazybonesScriptSpec extends Specification {
     void "if the binding already contains the property it is used instead of asking the question"() {
         given:
         def scriptText = """
-            return ask("give me foo", "foo")
+            return ask("give me foo", null, "foo")
         """
         LazybonesScript script = createScript(scriptText)
-        script.foo = "bar"
+        script.binding.foo = "bar"
 
         when:
         def response = script.run()
