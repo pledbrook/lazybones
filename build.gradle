@@ -1,3 +1,3 @@
-//project(":lazybones-templates") {
-//    apply plugin: uk.co.cacoethes.gradle.LazybonesTemplatesPlugin
-//}
+task wrapper(type: Wrapper) {
+    gradleVersion = "1.6"
+}
