@@ -74,13 +74,16 @@ abstract class AbstractFunctionalSpec extends Specification {
 
         def stdoutThread = consumeProcessStream(process.inputStream)
         def stderrThread = consumeProcessStream(process.errorStream)
-        int exitCode = process.waitFor()
+        process.waitForOrKill(7000)
+        int exitCode = process.exitValue()
 
         // The process may finish before the consuming threads have finished, so
         // given them a chance to complete so that we have the command output in
         // the buffer.
         stdoutThread.join 1000
         stderrThread.join 1000
+        println "Output from executing ${cmdList.join(' ')}"
+        println "---------------------"
         println output
         return exitCode
     }
