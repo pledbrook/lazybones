@@ -1,14 +1,17 @@
 package uk.co.cacoethes.lazybones.commands
 
+import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionParser
+import joptsimple.OptionSet
 import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.BintrayPackageSource
 import uk.co.cacoethes.lazybones.LazybonesMain
 import uk.co.cacoethes.lazybones.LazybonesScript
+import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.PackageInfo
-import uk.co.cacoethes.lazybones.PackageSource
+import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.util.ArchiveMethods
 
 import java.util.logging.Level
@@ -47,56 +50,78 @@ USAGE: create <template> <version>? <dir>
         def cmdOptions = parseArguments(args, 2..3)
         if (!cmdOptions) return 1
 
-        // Inject the latest version into the args list if the user hasn't
-        // provided it.
-        String packageName = args[0]
-        PackageInfo pkgInfo = null
-        PackageSource packageSource = null
+        List<String> repositoryList = (List) configuration.bintrayRepositories
 
-        for (String bintrayRepoName in configuration.bintrayRepositories) {
-            log.fine "Searching for ${packageName} in ${bintrayRepoName}"
-            packageSource = new BintrayPackageSource(bintrayRepoName)
-            pkgInfo = packageSource.fetchPackageInfo(packageName)
+        try {
+            def createData = evaluateArgs(cmdOptions, repositoryList)
 
-            if (pkgInfo) {
-                log.fine "Found!"
-                break
-            }
+            def pkg = fetchTemplatePackage(createData, repositoryList)
+
+            createData.targetDir.mkdirs()
+            ArchiveMethods.unzip(pkg, createData.targetDir)
+
+            runPostInstallScriptWithArgs(cmdOptions, createData)
+
+            // Find a suitable README and display that if it exists.
+            def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
+                name == "README" || name.startsWith("README")
+            } as FilenameFilter)
+
+            log.info ""
+            if (!readmeFiles) log.info "This project has no README"
+            else log.info readmeFiles[0].text
+
+            log.info ""
+            log.info "Project created in ${createData.targetDir.path}!"
+
+            return 0
         }
-
-        if (!pkgInfo) {
-            log.severe "Cannot find a template named '${packageName}'. Project has not been created."
+        catch (PackageNotFoundException ex) {
+            if (ex.version) {
+                log.severe "Cannot find version ${ex.version} of template '${ex.name}'. Project has not been created."
+            }
+            else {
+                log.severe "Cannot find a template named '${ex.name}'. Project has not been created."
+            }
             return 1
         }
+        catch (LazybonesScriptException ex) {
+            log.warning "Post install script caused an exception, project might be corrupt: ${ex.cause.message}"
 
-        File targetDir
-        String requestedVersion
-        if (args.size() == 2) {
+            if (globalOptions.stacktrace) {
+                log.log Level.SEVERE, "", ex.cause
+            }
+
+            return 1
+        }
+        catch (Exception ex) {
+            ex.printStackTrace()
+            return 1
+        }
+    }
+
+    @Override
+    protected String getUsage() { return USAGE }
+
+    protected CreateCommandInfo evaluateArgs(OptionSet commandOptions, List<String> repositories) {
+        def mainArgs = commandOptions.nonOptionArguments()
+        def packageName = mainArgs[0]
+        if (!hasVersionArg(mainArgs)) {
             // No version specified, so pull the latest from the package server.
-            targetDir = args[1] as File
-            requestedVersion = pkgInfo.latestVersion
+            def pkgInfo = getPackageInfo(packageName, repositories)
+
+            if (!pkgInfo) {
+                throw new PackageNotFoundException(packageName)
+            }
+
+            return new CreateCommandInfo(packageName, pkgInfo.latestVersion, mainArgs[1] as File)
         }
         else {
-            targetDir = args[2] as File
-            requestedVersion = args[1]
+            return new CreateCommandInfo(packageName, mainArgs[1], mainArgs[2] as File)
         }
+    }
 
-        log.fine "Attempting to download version ${requestedVersion} of template '${packageName}' into ${targetDir.path}"
-
-        // Can't fetch the latest version until Bintray allows anonymous API access.
-        // Or I set up a separate server for this stuff.
-        def templateZip = fetchTemplate(packageName,
-                requestedVersion,
-                packageSource.getTemplateUrl(packageName, requestedVersion))
-
-        if (!templateZip) {
-            log.severe "Cannot find version ${requestedVersion} of template '${packageName}'. Project has not been created."
-            return 1
-        }
-
-        targetDir.mkdirs()
-        ArchiveMethods.unzip(templateZip, targetDir)
-
+    protected void runPostInstallScriptWithArgs(OptionSet cmdOptions, CreateCommandInfo createData) {
         // Run the post-install script if it exists. The user can pass variables
         // to the script via -P command line arguments. This also places
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
@@ -104,60 +129,12 @@ USAGE: create <template> <version>? <dir>
         try {
             def scriptVariables = cmdOptions.valuesOf("P").collectEntries { String it -> it.split('=') as List }
             scriptVariables << evaluateVersionScriptVariables()
-            runPostInstallScript(targetDir, scriptVariables)
+            runPostInstallScript(createData.targetDir, scriptVariables)
         }
         catch (Throwable throwable) {
-            log.warning "Post install script caused an exception, project might be corrupt: ${throwable.message}"
-
-            if (globalOptions.stacktrace) {
-                log.log Level.SEVERE, "", throwable
-            }
-            return 1
+            throw new LazybonesScriptException(throwable)
         }
-
-        // Find a suitable README and display that if it exists.
-        def readmeFiles = targetDir.listFiles({ File dir, String name ->
-            name == "README" || name.startsWith("README")
-        } as FilenameFilter)
-
-        log.info ""
-        if (!readmeFiles) log.info "This project has no README"
-        else log.info readmeFiles[0].text
-
-        log.info ""
-        log.info "Project created in ${targetDir.path}!"
-
-        return 0
     }
-
-    /**
-     * Reads the Lazybones version, breaks it up, and adds {@code lazybonesVersion},
-     * {@code lazybonesMajorVersion}, and {@code lazybonesMinorVersion} variables
-     * to a map that is then returned.
-     */
-    protected Map evaluateVersionScriptVariables() {
-        def version = LazybonesMain.readVersion()
-        def vars = [lazybonesVersion: version]
-
-        def versionParts = version.split(/[\.\-]/)
-        assert versionParts.size() > 1
-
-        vars["lazybonesMajorVersion"] = versionParts[0]?.toInteger()
-        vars["lazybonesMinorVersion"] = versionParts[1]?.toInteger()
-
-        return vars
-    }
-
-    @Override
-    protected OptionParser createParser() {
-        def parser = new OptionParser()
-        parser.accepts("spaces", "Sets the number of spaces to use for indent in files.").withRequiredArg()
-        parser.accepts("P", "Add a substitution variable for file filtering.").withRequiredArg()
-        return parser
-    }
-
-    @Override
-    protected String getUsage() { return USAGE }
 
     /**
      * Runs the post install script if it exists in the unpacked template
@@ -187,27 +164,99 @@ USAGE: create <template> <version>? <dir>
         return null
     }
 
-    protected File fetchTemplate(String templateName, String requestedVersion, String externalUrl) {
+    /**
+     * Reads the Lazybones version, breaks it up, and adds {@code lazybonesVersion},
+     * {@code lazybonesMajorVersion}, and {@code lazybonesMinorVersion} variables
+     * to a map that is then returned.
+     */
+    protected Map evaluateVersionScriptVariables() {
+        def version = LazybonesMain.readVersion()
+        def vars = [lazybonesVersion: version]
+
+        def versionParts = version.split(/[\.\-]/)
+        assert versionParts.size() > 1
+
+        vars["lazybonesMajorVersion"] = versionParts[0]?.toInteger()
+        vars["lazybonesMinorVersion"] = versionParts[1]?.toInteger()
+
+        return vars
+    }
+
+    @Override
+    protected OptionParser createParser() {
+        def parser = new OptionParser()
+        parser.accepts("spaces", "Sets the number of spaces to use for indent in files.").withRequiredArg()
+        parser.accepts("P", "Add a substitution variable for file filtering.").withRequiredArg()
+        return parser
+    }
+
+    protected File fetchTemplatePackage(CreateCommandInfo info, List<String> repositories) {
         // Does it exist in the cache? If not, pull it from Bintray.
-        def packageFile = new File(INSTALL_DIR, "${templateName}-${requestedVersion}.zip")
+        def packageFile = new File(INSTALL_DIR, "${info.packageName}-${info.requestedVersion}.zip")
 
         if (!packageFile.exists()) {
             INSTALL_DIR.mkdirs()
+
+            // The package info may not have been requested yet. It depends on
+            // whether the user specified a specific version or not. Hence we
+            // try to fetch the package info first and only throw an exception
+            // if it's still null.
+            //
+            // There is an argument for having getPackageInfo() throw the exception
+            // itself. May still do that.
+            if (!info.packageInfo) info.packageInfo = getPackageInfo(info.packageName, repositories)
+            if (!info.packageInfo) throw new PackageNotFoundException(info.packageName)
+
+            def templateUrl = info.packageInfo.source.getTemplateUrl(info.packageName, info.requestedVersion)
+            log.fine "Attempting to download version ${info.requestedVersion} " +
+                    "of template '${info.packageName}' into ${INSTALL_DIR}"
+
             try {
                 packageFile.withOutputStream { OutputStream out ->
-                    new URL(externalUrl).withInputStream { InputStream input ->
+                    new URL(templateUrl).withInputStream { InputStream input ->
                         out << input
                     }
                 }
             }
-            catch (all) {
-                log.log Level.SEVERE, "${externalUrl} was not found.", all
+            catch (FileNotFoundException ex) {
                 packageFile.deleteOnExit()
-                return null
+                throw new PackageNotFoundException(info.packageName, info.requestedVersion, ex)
+            }
+            catch (all) {
+                packageFile.deleteOnExit()
+                throw all
             }
         }
 
         return packageFile
     }
 
+    protected boolean hasVersionArg(List<String> args) {
+        return args.size() == 3
+    }
+
+    protected PackageInfo getPackageInfo(String packageName, List<String> repositories) {
+        PackageInfo pkgInfo = null
+
+        for (String bintrayRepoName in repositories) {
+            log.fine "Searching for ${packageName} in ${bintrayRepoName}"
+            def packageSource = new BintrayPackageSource(bintrayRepoName)
+            pkgInfo = packageSource.fetchPackageInfo(packageName)
+
+            if (pkgInfo) {
+                log.fine "Found!"
+                break
+            }
+        }
+
+        return pkgInfo
+    }
+}
+
+@Canonical
+class CreateCommandInfo {
+    String packageName
+    String requestedVersion
+    File targetDir
+    PackageInfo packageInfo
 }

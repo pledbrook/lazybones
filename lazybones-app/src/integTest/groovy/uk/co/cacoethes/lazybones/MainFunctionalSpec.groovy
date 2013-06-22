@@ -32,7 +32,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
     @Betamax(tape="create-tape")
     def "Verbose command line option displays extra info"() {
         when: "I run lazybones with the create command and the 'verbose' option"
-        runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
+        runCommand([option, "create", "ratpack", "ratapp"], baseWorkDir)
 
         then: "I see INFO and FINE messages"
         output.contains "Project created in ratapp"
@@ -45,7 +45,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
     @Betamax(tape="create-tape")
     def "Quiet command line option displays minimal info"() {
         when: "I run lazybones with the create command and the 'quiet' option"
-        runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
+        runCommand([option, "create", "ratpack", "ratapp"], baseWorkDir)
 
         then: "I see only WARNING and SEVERE messages"
         !output.contains("Project created in ratapp")
@@ -58,7 +58,7 @@ class MainFunctionalSpec extends AbstractFunctionalSpec {
     @Betamax(tape="create-tape")
     def "Info command line option displays normal level of information"() {
         when: "I run lazybones with the create command and the 'info' option"
-        runCommand([option, "create", "ratpack", "0.1", "ratapp"], baseWorkDir)
+        runCommand([option, "create", "ratpack", "ratapp"], baseWorkDir)
 
         then: "I see INFO messages"
         output.contains "Project created in ratapp"

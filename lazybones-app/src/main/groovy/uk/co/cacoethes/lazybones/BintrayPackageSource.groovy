@@ -56,12 +56,12 @@ class BintrayPackageSource implements PackageSource {
             response = restClient.get(path: "/packages/${repoName}/${pkgNameWithSuffix}")
         }
         catch (HTTPClientException ex) {
-            if (ex.response.statusCode == 404) return null
+            if (ex.response?.statusCode == 404) return null
             else throw ex
         }
 
         def data = response.json
-        def pkgInfo = new PackageInfo(data.name - PACKAGE_SUFFIX, data.'latest_version')
+        def pkgInfo = new PackageInfo(this, data.name - PACKAGE_SUFFIX, data.'latest_version')
 
         pkgInfo.with {
             versions = data.versions as List

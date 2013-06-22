@@ -96,6 +96,21 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         !new File(baseWorkDir, "myapp").exists()
     }
 
+    def "Create can install from cache without template being in repository"() {
+        when: "I run lazybones with the create command for a template that's only in the cache"
+        def exitCode = runCommand(
+                ["create", "test-tmpl", "0.2", "testapp", "-Pgroup=foo", "-Pversion=0.1"],
+                baseWorkDir)
+
+        then: "It unpacks the template, retaining file permissions"
+        exitCode == 0
+
+        def appDir = new File(baseWorkDir, "testapp")
+        appDir.exists()
+        new File(appDir, "gradlew").canExecute()
+        new File(appDir, "src/main/groovy").isDirectory()
+    }
+
     def "Create command displays usage when incorrect number of arguments are provided"() {
         when: "I run lazybones with the create command without an extra argument"
         def exitCode = runCommand(["create"], baseWorkDir)
