@@ -64,16 +64,17 @@ USAGE: create <template> <version>? <dir>
             }
         }
 
-        if (!pkgInfo) {
-            log.severe "Cannot find a template named '${packageName}'. Project has not been created."
-            return 1
-        }
-
         File targetDir
         String requestedVersion
         if (args.size() == 2) {
             // No version specified, so pull the latest from the package server.
             targetDir = args[1] as File
+
+            if (!pkgInfo) {
+                log.severe "Cannot find a template named '${packageName}'. Project has not been created."
+                return 1
+            }
+
             requestedVersion = pkgInfo.latestVersion
         }
         else {
