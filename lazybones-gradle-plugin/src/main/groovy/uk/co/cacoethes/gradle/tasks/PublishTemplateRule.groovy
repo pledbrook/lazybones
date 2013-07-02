@@ -33,7 +33,7 @@ class PublishTemplateRule implements Rule {
             def pkgTask = (Zip) project.tasks.getByName("packageTemplate${camelCaseTmplName}")
             if (!pkgTask) return
 
-            project.tasks.create(taskName, BintrayGenericUpload).with {
+            project.tasks.create(taskName, BintrayGenericUpload).with { t ->
                 dependsOn pkgTask
                 artifactFile = pkgTask.archivePath
                 artifactUrlPath = "${pkgTask.baseName}/${pkgTask.version}/${pkgTask.archiveName}"
@@ -43,7 +43,7 @@ class PublishTemplateRule implements Rule {
                 repositoryUrl = project.lazybones.repositoryUrl
 
                 doFirst {
-                    def missingProps = verifyPublishProperties()
+                    def missingProps = verifyPublishProperties(t)
                     if (missingProps) {
                         throw new GradleException(
                                 """\
@@ -74,10 +74,10 @@ For example, in your build file:
      * @return a list of convention properties that are required for publishing
      * to Bintray but don't have values set by the user.
      */
-    protected List verifyPublishProperties() {
-        ["repositoryUsername",
-         "repositoryApiKey",
-         "repositoryUrl"].findAll { !project.extensions.lazybones.getProperty(it) }
+    protected List verifyPublishProperties(task) {
+        ["username",
+         "apiKey",
+         "repositoryUrl"].findAll { !task.getProperty(it) }
     }
 
     @Override
