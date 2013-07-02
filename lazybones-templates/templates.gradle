@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.0.1-SNAPSHOT"
+        classpath "uk.co.cacoethes:lazybones-gradle:1.0.1"
     }
 }
 
