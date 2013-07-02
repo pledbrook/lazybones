@@ -1,3 +1,8 @@
+allprojects {
+    apply plugin: "idea"
+    apply plugin: "eclipse"
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = "1.6"
 }
