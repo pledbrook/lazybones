@@ -17,12 +17,30 @@ dependencies {
     testCompile "org.spockframework:spock-core:0.7-groovy-1.8"
 }
 
-uploadArchives {
+uploadArchives { task ->
     repositories {
         mavenDeployer {
-            repository url: "https://api.bintray.com/maven/pledbrook/plugins/lazybones-gradle", {
-                authentication userName: project.'repo.username', password: project.'repo.apiKey'
+
+            // Not every build user will want to publish the plugin, so defer
+            // resolution of the publishing credentials.
+            gradle.taskGraph.whenReady { graph ->
+                if (graph.hasTask(task)) {
+                    verifyProperty(project, 'repo.url')
+                    verifyProperty(project, 'repo.username')
+                    verifyProperty(project, 'repo.apiKey')
+
+                    repository url: "https://api.bintray.com/maven/pledbrook/plugins/lazybones-gradle", {
+                        authentication userName: project.'repo.username', password: project.'repo.apiKey'
+                    }
+                }
             }
         }
+    }
+}
+
+
+void verifyProperty(Project proj, String name) {
+    if (!project.hasProperty(name)) {
+        throw new GradleException("You must define the project property '$name'")
     }
 }

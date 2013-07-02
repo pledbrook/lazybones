@@ -81,9 +81,29 @@ distZip.dependsOn("test", "integTests")
 task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
     artifactFile = distZip.archivePath
     artifactUrlPath = "lazybones/$version/${distZip.archiveName}"
-    repositoryUrl = project.'repo.url'
-    username = project.'repo.username'
-    apiKey = project.'repo.apiKey'
+}
+
+// Lazy initialisation of uploadDist task so that not all build users need to
+// set the repo.* project properties.
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(":lazybones-app:uploadDist")) {
+        verifyProperty(project, 'repo.url')
+        verifyProperty(project, 'repo.username')
+        verifyProperty(project, 'repo.apiKey')
+
+        uploadDist.repositoryUrl = project.'repo.url'
+        uploadDist.username = project.'repo.username'
+        uploadDist.apiKey = project.'repo.apiKey'
+    }
+}
+
+
+
+
+void verifyProperty(Project proj, String name) {
+    if (!project.hasProperty(name)) {
+        throw new GradleException("You must define the project property '$name'")
+    }
 }
 
 /**
