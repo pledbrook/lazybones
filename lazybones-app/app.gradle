@@ -81,9 +81,15 @@ distZip.dependsOn("test", "integTests")
 task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
     artifactFile = distZip.archivePath
     artifactUrlPath = "lazybones/$version/${distZip.archiveName}"
-    repositoryUrl = project.'repo.url'
-    username = project.'repo.username'
-    apiKey = project.'repo.apiKey'
+    if (hasProperty('repo.url')) {
+        repositoryUrl = project.'repo.url'
+    }
+    if (hasProperty('repo.username')) {
+        username = project.'repo.username'
+    }
+    if (hasProperty('repo.apiKey')) {
+        apiKey = project.'repo.apiKey'
+    }
 }
 
 /**

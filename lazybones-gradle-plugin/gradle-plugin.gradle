@@ -21,7 +21,9 @@ uploadArchives {
     repositories {
         mavenDeployer {
             repository url: "https://api.bintray.com/maven/pledbrook/plugins/lazybones-gradle", {
-                authentication userName: project.'repo.username', password: project.'repo.apiKey'
+                if (hasProperty('repo.username') && hasProperty('repo.apiKey')) {
+                    authentication userName: project.'repo.username', password: project.'repo.apiKey'
+                }
             }
         }
     }
