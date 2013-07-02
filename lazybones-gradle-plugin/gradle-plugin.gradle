@@ -14,7 +14,7 @@ dependencies {
     // to specify localGroovy() too
     compile localGroovy(), gradleApi()
 
-    testCompile "org.spockframework:spock-core:0.7-groovy-1.8"
+    testCompile "org.spockframework:spock-core:0.7-groovy-1.8", "cglib:cglib-nodep:2.2.2"
 }
 
 uploadArchives { task ->

@@ -33,10 +33,9 @@ class BintrayGenericUpload extends DefaultTask {
 
     @TaskAction
     def publish() {
-
-        def targetUrl = new URI(repositoryUrl).resolve(artifactUrlPath)
+        def targetUrl = calculateFullUrl()
         logger.lifecycle "Streaming artifact to Bintray at URL ${targetUrl}"
-        targetUrl.toURL().openConnection().with {
+        new URI(targetUrl).toURL().openConnection().with {
             // Add basic authentication header.
             setRequestProperty "Authorization", "Basic " + "$username:$apiKey".getBytes().encodeBase64().toString()
 
@@ -55,6 +54,10 @@ class BintrayGenericUpload extends DefaultTask {
 
             assert responseCode >= 200 && responseCode < 300
         }
+    }
+
+    protected String calculateFullUrl() {
+        return repositoryUrl + (!repositoryUrl.endsWith('/') ? '/' : '') + artifactUrlPath
     }
 }
 
