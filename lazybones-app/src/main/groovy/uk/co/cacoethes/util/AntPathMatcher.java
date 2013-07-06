@@ -16,17 +16,34 @@
 
 package uk.co.cacoethes.util;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ *
  * PathMatcher implementation for Ant-style path patterns. Examples are provided below.
+ *
+ * <p>
+ *     Class originally from spring-core.  Modified to keep all logic in one class.  All original javadoc has been 
+ *     maintained
+ * </p>
+ *
+ * <p>
+ *     The folowing methods were copied from spring's StringUtils class
+ * </p>
+ * <ul>
+ *     <li>countOccurrencesOf</li>
+ *     <li>hasText</li>
+ *     <li>hasLength</li>
+ *     <li>toStringArray</li>
+ *     <li>tokenizeToStringArray</li>
+ * </ul>
+ *
+ * <p>
+ *     Original javadoc below
+ * </p>
  *
  * <p>Part of this mapping code has been kindly borrowed from <a href="http://ant.apache.org">Apache Ant</a>.
  *
@@ -101,8 +118,8 @@ public class AntPathMatcher {
             return false;
         }
 
-        String[] pattDirs = StringUtils.tokenizeToStringArray(pattern, this.pathSeparator, this.trimTokens, true);
-        String[] pathDirs = StringUtils.tokenizeToStringArray(path, this.pathSeparator, this.trimTokens, true);
+        String[] pattDirs = tokenizeToStringArray(pattern, this.pathSeparator, this.trimTokens, true);
+        String[] pathDirs = tokenizeToStringArray(path, this.pathSeparator, this.trimTokens, true);
 
         int pattIdxStart = 0;
         int pattIdxEnd = pattDirs.length - 1;
@@ -252,8 +269,8 @@ public class AntPathMatcher {
      * does <strong>not</strong> enforce this.
      */
     public String extractPathWithinPattern(String pattern, String path) {
-        String[] patternParts = StringUtils.tokenizeToStringArray(pattern, this.pathSeparator, this.trimTokens, true);
-        String[] pathParts = StringUtils.tokenizeToStringArray(path, this.pathSeparator, this.trimTokens, true);
+        String[] patternParts = tokenizeToStringArray(pattern, this.pathSeparator, this.trimTokens, true);
+        String[] pathParts = tokenizeToStringArray(path, this.pathSeparator, this.trimTokens, true);
 
         StringBuilder builder = new StringBuilder();
 
@@ -284,7 +301,7 @@ public class AntPathMatcher {
     public Map<String, String> extractUriTemplateVariables(String pattern, String path) {
         Map<String, String> variables = new LinkedHashMap<String, String>();
         boolean result = doMatch(pattern, path, true, variables);
-        Assert.state(result, "Pattern \"" + pattern + "\" is not a match for \"" + path + "\"");
+        state(result, "Pattern \"" + pattern + "\" is not a match for \"" + path + "\"");
         return variables;
     }
 
@@ -308,13 +325,13 @@ public class AntPathMatcher {
      * @throws IllegalArgumentException when the two patterns cannot be combined
      */
     public String combine(String pattern1, String pattern2) {
-        if (!StringUtils.hasText(pattern1) && !StringUtils.hasText(pattern2)) {
+        if (!hasText(pattern1) && !hasText(pattern2)) {
             return "";
         }
-        else if (!StringUtils.hasText(pattern1)) {
+        else if (!hasText(pattern1)) {
             return pattern2;
         }
-        else if (!StringUtils.hasText(pattern2)) {
+        else if (!hasText(pattern2)) {
             return pattern1;
         }
 
@@ -391,6 +408,164 @@ public class AntPathMatcher {
         return new AntPatternComparator(path);
     }
 
+    /**
+     * Tokenize the given String into a String array via a StringTokenizer.
+     * <p>The given delimiters string is supposed to consist of any number of
+     * delimiter characters. Each of those characters can be used to separate
+     * tokens. A delimiter is always a single character; for multi-character
+     * delimiters, consider using {@code delimitedListToStringArray}
+     * @param str the String to tokenize
+     * @param delimiters the delimiter characters, assembled as String
+     * (each of those characters is individually considered as delimiter)
+     * @param trimTokens trim the tokens via String's {@code trim}
+     * @param ignoreEmptyTokens omit empty tokens from the result array
+     * (only applies to tokens that are empty after trimming; StringTokenizer
+     * will not consider subsequent delimiters as token in the first place).
+     * @return an array of the tokens ({@code null} if the input String
+     * was {@code null})
+     * @see java.util.StringTokenizer
+     * @see String#trim()
+     */
+    public static String[] tokenizeToStringArray(
+            String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
+
+        if (str == null) {
+            return null;
+        }
+        StringTokenizer st = new StringTokenizer(str, delimiters);
+        List<String> tokens = new ArrayList<String>();
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            if (trimTokens) {
+                token = token.trim();
+            }
+            if (!ignoreEmptyTokens || token.length() > 0) {
+                tokens.add(token);
+            }
+        }
+        return toStringArray(tokens);
+    }
+
+    /**
+     * Copy the given Collection into a String array.
+     * The Collection must contain String elements only.
+     * @param collection the Collection to copy
+     * @return the String array ({@code null} if the passed-in
+     * Collection was {@code null})
+     */
+    public static String[] toStringArray(Collection<String> collection) {
+        if (collection == null) {
+            return null;
+        }
+        return collection.toArray(new String[collection.size()]);
+    }
+
+    /**
+     * Check that the given CharSequence is neither {@code null} nor of length 0.
+     * Note: Will return {@code true} for a CharSequence that purely consists of whitespace.
+     * <p><pre class="code">
+     * AntPathMatcher.hasLength(null) = false
+     * AntPathMatcher.hasLength("") = false
+     * AntPathMatcher.hasLength(" ") = true
+     * AntPathMatcher.hasLength("Hello") = true
+     * </pre>
+     * @param str the CharSequence to check (may be {@code null})
+     * @return {@code true} if the CharSequence is not null and has length
+     * @see #hasText(String)
+     */
+    public static boolean hasLength(CharSequence str) {
+        return (str != null && str.length() > 0);
+    }
+
+    /**
+     * Check whether the given CharSequence has actual text.
+     * More specifically, returns {@code true} if the string not {@code null},
+     * its length is greater than 0, and it contains at least one non-whitespace character.
+     * <p><pre class="code">
+     * AntPathMatcher.hasText(null) = false
+     * AntPathMatcher.hasText("") = false
+     * AntPathMatcher.hasText(" ") = false
+     * AntPathMatcher.hasText("12345") = true
+     * AntPathMatcher.hasText(" 12345 ") = true
+     * </pre>
+     * @param str the CharSequence to check (may be {@code null})
+     * @return {@code true} if the CharSequence is not {@code null},
+     * its length is greater than 0, and it does not contain whitespace only
+     * @see Character#isWhitespace
+     */
+    public static boolean hasText(CharSequence str) {
+        if (!hasLength(str)) {
+            return false;
+        }
+        int strLen = str.length();
+        for (int i = 0; i < strLen; i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check whether the given String has actual text.
+     * More specifically, returns {@code true} if the string not {@code null},
+     * its length is greater than 0, and it contains at least one non-whitespace character.
+     * @param str the String to check (may be {@code null})
+     * @return {@code true} if the String is not {@code null}, its length is
+     * greater than 0, and it does not contain whitespace only
+     * @see #hasText(CharSequence)
+     */
+    public static boolean hasText(String str) {
+        return hasText((CharSequence) str);
+    }
+
+    /**
+     * Count the occurrences of the substring in string s.
+     * @param str string to search in. Return 0 if this is null.
+     * @param sub string to search for. Return 0 if this is null.
+     */
+    public static int countOccurrencesOf(String str, String sub) {
+        if (str == null || sub == null || str.length() == 0 || sub.length() == 0) {
+            return 0;
+        }
+        int count = 0;
+        int pos = 0;
+        int idx;
+        while ((idx = str.indexOf(sub, pos)) != -1) {
+            ++count;
+            pos = idx + sub.length();
+        }
+        return count;
+    }
+
+    /**
+     * Assert a boolean expression, throwing {@code IllegalArgumentException}
+     * if the test result is {@code false}.
+     * <pre class="code">Assert.isTrue(i &gt; 0, "The value must be greater than zero");</pre>
+     * @param expression a boolean expression
+     * @param message the exception message to use if the assertion fails
+     * @throws IllegalArgumentException if expression is {@code false}
+     */
+    public static void isTrue(boolean expression, String message) {
+        if (!expression) {
+            throw new IllegalArgumentException(message);
+        }
+    }
+
+    /**
+     * Assert a boolean expression, throwing {@code IllegalStateException}
+     * if the test result is {@code false}. Call isTrue if you wish to
+     * throw IllegalArgumentException on an assertion failure.
+     * <pre class="code">Assert.state(id == null, "The id property must not already be initialized");</pre>
+     * @param expression a boolean expression
+     * @param message the exception message to use if the assertion fails
+     * @throws IllegalStateException if expression is {@code false}
+     */
+    public static void state(boolean expression, String message) {
+        if (!expression) {
+            throw new IllegalStateException(message);
+        }
+    }
 
     private static class AntPatternComparator implements Comparator<String> {
 
@@ -425,8 +600,8 @@ public class AntPathMatcher {
             int wildCardCount1 = getWildCardCount(pattern1);
             int wildCardCount2 = getWildCardCount(pattern2);
 
-            int bracketCount1 = StringUtils.countOccurrencesOf(pattern1, "{");
-            int bracketCount2 = StringUtils.countOccurrencesOf(pattern2, "{");
+            int bracketCount1 = countOccurrencesOf(pattern1, "{");
+            int bracketCount2 = countOccurrencesOf(pattern2, "{");
 
             int totalCount1 = wildCardCount1 + bracketCount1;
             int totalCount2 = wildCardCount2 + bracketCount2;
@@ -463,7 +638,7 @@ public class AntPathMatcher {
             if (pattern.endsWith(".*")) {
                 pattern = pattern.substring(0, pattern.length() - 2);
             }
-            return StringUtils.countOccurrencesOf(pattern, "*");
+            return countOccurrencesOf(pattern, "*");
         }
 
         /**
@@ -541,7 +716,7 @@ public class AntPathMatcher {
             if (matcher.matches()) {
                 if (uriTemplateVariables != null) {
                     // SPR-8455
-                    Assert.isTrue(this.variableNames.size() == matcher.groupCount(),
+                    isTrue(this.variableNames.size() == matcher.groupCount(),
                             "The number of capturing groups in the pattern segment " + this.pattern +
                                     " does not match the number of URI template variables it defines, which can occur if " +
                                     " capturing groups are used in a URI template regex. Use non-capturing groups instead.");
