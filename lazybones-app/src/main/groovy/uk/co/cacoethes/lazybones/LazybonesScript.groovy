@@ -1,7 +1,9 @@
 package uk.co.cacoethes.lazybones
 
+import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
 import groovy.util.logging.Log
+import uk.co.cacoethes.util.AntPathMatcher
 
 import java.lang.reflect.Method
 
@@ -14,6 +16,7 @@ import java.lang.reflect.Method
 class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
+    String fileSeparator = System.getProperty("file.separator")
 
     /**
      * The root directory of the unpacked template. This is the base path used
@@ -69,17 +72,32 @@ class LazybonesScript extends Script {
         }
     }
 
+    /**
+     *
+     * TODO: need to check windows path separators
+     *
+     * @param filePattern
+     * @param substitutionVariables
+     * @return
+     */
     def filterFiles(String filePattern, Map substitutionVariables) {
+        String normalizedPattern = filePattern.replaceAll(/\//, fileSeparator)
         if (!targetDir) {
             throw new IllegalStateException("targetDir has not been set")
         }
-        def ant = new AntBuilder()
-        def scanner = ant.fileScanner {
-            fileset(dir: targetDir) {
-                include(name: filePattern)
+        def antPathMatcher = new AntPathMatcher(pathSeparator: fileSeparator)
+
+        def filesToFilter = []
+
+        def filePatternWithUserDir = antPathMatcher.combine(targetDir, normalizedPattern)
+
+        new File(targetDir).eachFileRecurse(FileType.FILES) { File file ->
+            if(antPathMatcher.match(filePatternWithUserDir, file.path)) {
+                filesToFilter << file
             }
-        } as Iterable<File>
-        boolean atLeastOneFileFiltered = filterFilesHelper(scanner, substitutionVariables)
+        }
+
+        boolean atLeastOneFileFiltered = filterFilesHelper(filesToFilter, substitutionVariables)
 
         if (!atLeastOneFileFiltered) {
             log.warning "No files filtered with file pattern [$filePattern] and target directory [$targetDir]"
