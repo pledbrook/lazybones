@@ -81,7 +81,7 @@ class LazybonesScript extends Script {
      * @return
      */
     def filterFiles(String filePattern, Map substitutionVariables) {
-        String normalizedPattern = filePattern.replaceAll(/\//, fileSeparator)
+        String osSpecificPattern = filePattern.replaceAll(/\//, fileSeparator)
         if (!targetDir) {
             throw new IllegalStateException("targetDir has not been set")
         }
@@ -89,7 +89,14 @@ class LazybonesScript extends Script {
 
         def filesToFilter = []
 
-        def filePatternWithUserDir = antPathMatcher.combine(targetDir, normalizedPattern)
+        def filePatternWithUserDir
+
+        if(!targetDir.endsWith(fileSeparator)) {
+            filePatternWithUserDir = targetDir + fileSeparator + osSpecificPattern
+        }
+        else {
+            filePatternWithUserDir = targetDir + osSpecificPattern
+        }
 
         new File(targetDir).eachFileRecurse(FileType.FILES) { File file ->
             if(antPathMatcher.match(filePatternWithUserDir, file.path)) {
