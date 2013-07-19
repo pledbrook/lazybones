@@ -19,3 +19,6 @@ if (lazybonesMajorVersion == 0 && lazybonesMinorVersion < 4) {
 }
 
 new File(targetDir, "test.txt").text = testContent.toString()
+
+filterProperties.name = "foo"
+filterFiles("**/Print*.groovy", filterProperties)
