@@ -42,6 +42,14 @@ import java.util.regex.Pattern;
  * </ul>
  *
  * <p>
+ *     The following methods were copied from spring's Assert class
+ * </p>
+ * <ul>
+ *     <li>isTrue</li>
+ *     <li>state</li>
+ * </ul>
+ *
+ * <p>
  *     Original javadoc below
  * </p>
  *
