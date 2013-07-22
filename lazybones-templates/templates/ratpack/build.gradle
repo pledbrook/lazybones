@@ -1,25 +1,33 @@
-apply plugin: 'ratpack-groovy'
+apply plugin: "ratpack-groovy"
 
 buildscript {
     repositories {
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "http://oss.jfrog.org/repo" }
         mavenCentral()
     }
     dependencies {
-        classpath 'org.ratpack-framework.netty:ratpack-gradle:0.7.0-SNAPSHOT'
+        classpath "org.ratpack-framework:ratpack-gradle:0.9.0-SNAPSHOT"
     }
 }
 
 repositories {
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url "http://oss.jfrog.org/repo" }
     mavenCentral()
     maven { url "http://repo.springsource.org/repo" } // for springloaded
 }
 
 dependencies {
-    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+
+    // SpringLoaded enables runtime hot reloading.
+    // It is not part of the app runtime and is not shipped in the distribution.
+    springloaded "org.springsource.springloaded:springloaded-core:1.1.1"
+}
+
+run {
+    systemProperty "ratpack.reloadable", "true"
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.5'
+    gradleVersion = "1.6"
 }

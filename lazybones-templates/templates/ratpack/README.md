@@ -9,9 +9,9 @@ use it).
 In this project you get:
 
 * A Gradle build file with pre-built Gradle wrapper
-* A tiny home page at src/ratpack/public/index.html
+* A tiny home page at src/ratpack/templates/index.html (it's a template)
 * A routing file at src/ratpack/ratpack.groovy
-* Reloading enabled via src/ratpack/config.groovy
+* Reloading enabled in build.gradle
 * A standard project structure:
 
     <proj>

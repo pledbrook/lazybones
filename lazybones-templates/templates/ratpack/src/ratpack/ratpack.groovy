@@ -1,10 +1,11 @@
-import org.ratpackframework.app.*
-import org.ratpackframework.groovy.app.Routing
+import org.ratpackframework.groovy.templating.TemplateRenderer
 
-(this as Routing).with {
+import static org.ratpackframework.groovy.RatpackScript.ratpack
 
-	get('/') { Request request, Response response ->
-		response.redirect('index.html')
-	}
-
+ratpack {
+    handlers {
+        get {
+            get(TemplateRenderer).render "index.html", title: "My Ratpack App"
+        }
+    }
 }
