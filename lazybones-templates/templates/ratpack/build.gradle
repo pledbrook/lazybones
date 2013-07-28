@@ -24,10 +24,6 @@ dependencies {
     springloaded "org.springsource.springloaded:springloaded-core:1.1.1"
 }
 
-run {
-    systemProperty "ratpack.reloadable", "true"
-}
-
 task wrapper(type: Wrapper) {
     gradleVersion = "1.6"
 }
