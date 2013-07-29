@@ -59,7 +59,7 @@ class LazybonesMain {
         // Determine the command to run and its argument list.
         String cmd
         List argsList = optionSet.nonOptionArguments() as List
-        if (argsList.size() == 0) {
+        if (argsList.size() == 0 || optionSet.hasArgument("h")) {
             cmd = "help"
             argsList = []
         }
@@ -132,6 +132,7 @@ class LazybonesMain {
         parser.accepts("info", "Show normal amount of output (default).")
         parser.accepts("logLevel", "Set logging level, e.g. OFF, SEVERE, INFO, FINE, etc.").withRequiredArg()
         parser.accepts("version", "Print out the Lazybones finish and then end.")
+        parser.acceptsAll(["help", "h"], "Print out the Lazybones finish and then end.")
 
         // Ensures that only options up to the sub-command ('create, 'list',
         // etc.) are parsed.
