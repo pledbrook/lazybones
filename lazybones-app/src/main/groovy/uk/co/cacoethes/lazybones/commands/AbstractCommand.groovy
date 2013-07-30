@@ -11,6 +11,7 @@ import joptsimple.OptionSet
  */
 @CompileStatic
 @Log
+@SuppressWarnings('FactoryMethodName')
 abstract class AbstractCommand implements Command {
     protected abstract String getUsage()
 
@@ -32,6 +33,7 @@ abstract class AbstractCommand implements Command {
      * returns null and prints an error to the console.
      * @return The option set.
      */
+    @SuppressWarnings('ReturnNullFromCatchBlock')
     protected OptionSet parseArguments(List<String> args, IntRange validArgCount) {
         try {
             def options = createParser().parse(args as String[])
@@ -43,7 +45,7 @@ abstract class AbstractCommand implements Command {
 
             return options
         }
-        catch(OptionException ex) {
+        catch (OptionException ex) {
             log.severe getHelp(ex.message)
             return null
         }

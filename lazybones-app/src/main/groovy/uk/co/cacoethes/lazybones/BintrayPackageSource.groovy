@@ -57,7 +57,7 @@ class BintrayPackageSource implements PackageSource {
         }
         catch (HTTPClientException ex) {
             if (ex.response?.statusCode == 404) return null
-            else throw ex
+            throw ex
         }
 
         // The package may have no published versions, so we need to handle the

@@ -11,6 +11,7 @@ import org.apache.commons.compress.archivers.zip.ZipFile
  */
 @groovy.transform.CompileStatic
 class ArchiveMethods {
+    private static final String EXCEPTION_TEXT = "File#unzip() has to be called on a *.zip file."
 
     /**
      * Unzips a file to a target directory, retaining the file permissions where
@@ -24,34 +25,34 @@ class ArchiveMethods {
      * single argument that is a File and return {@code true} if that zip entry
      * should be extracted, or {@code false} otherwise.
      */
-    static Collection<File> unzip (File self, File destination, Closure<Boolean> filter = null) {
+    static Collection<File> unzip (File self, File originalDestination, Closure<Boolean> filter = null) {
         checkUnzipFileType(self)
-        checkUnzipDestination(destination)
+        checkUnzipDestination(originalDestination)
 
         // if destination directory is not given, we'll fall back to the parent directory of 'self'
-        if (destination == null) destination = new File(self.parent)
+        def destination = originalDestination ?: new File(self.parent)
 
         def unzippedFiles = []
         def zipFile = new ZipFile(self)
 
         // The type coercion here is down to http://jira.codehaus.org/browse/GROOVY-6123
         for (ZipArchiveEntry entry in (zipFile.entries as List<ZipArchiveEntry>)) {
-            final file = new File(destination, entry.name)
-            if (filter == null || filter(file)) {
-                if (!entry.isDirectory())  {
-                    file.parentFile?.mkdirs()
+            final FILE = new File(destination, entry.name)
+            if (filter == null || filter(FILE)) {
+                if (entry.isDirectory())  {
+                    FILE.mkdirs()
+                }
+                else {
+                    FILE.parentFile?.mkdirs()
 
-                    def output = new FileOutputStream(file)
+                    def output = new FileOutputStream(FILE)
                     output.withStream {
                         output << zipFile.getInputStream(entry)
                     }
                 }
-                else {
-                    file.mkdirs()
-                }
 
-                unzippedFiles << file
-                updateFilePermissions(file, entry.unixMode)
+                unzippedFiles << FILE
+                updateFilePermissions(FILE, entry.unixMode)
             }
         }
 
@@ -80,10 +81,10 @@ class ArchiveMethods {
      * and that its name has a .zip extension.
      */
     private static void checkUnzipFileType(File self) {
-        if (!self.isFile()) throw new IllegalArgumentException("File#unzip() has to be called on a *.zip file.")
+        if (!self.isFile()) throw new IllegalArgumentException(EXCEPTION_TEXT)
 
         def filename = self.name
-        if (!filename.toLowerCase().endsWith(".zip")) throw new IllegalArgumentException("File#unzip() has to be called on a *.zip file.")
+        if (!filename.toLowerCase().endsWith(".zip")) throw new IllegalArgumentException(EXCEPTION_TEXT)
     }
 
     /**

@@ -1,15 +1,19 @@
 buildscript {
     repositories {
+        mavenCentral()
         maven { url "http://dl.bintray.com/pledbrook/plugins" }
     }
 
     dependencies { classpath "uk.co.cacoethes:lazybones-gradle:1.0" }
+    dependencies { classpath 'net.saliman:gradle-cobertura-plugin:1.1.2' }
 }
 
 import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
 
 apply plugin: "groovy"
 apply plugin: "application"
+apply plugin: "cobertura"
+apply plugin: "codenarc"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
@@ -77,6 +81,18 @@ task integTests(type: Test) {
     exclude "**/Abstract*Spec*"
 }
 
+codenarc {
+    configFile = rootProject.file('codenarc.groovy')
+}
+codenarcTest.enabled = false
+codenarcIntegTest.enabled = false
+
+/** Cobertura (Coverage) Configuration */
+cobertura {
+    coverageFormats = ['html', 'xml']
+    coverageSourceDirs = sourceSets.main.allSource.srcDirs
+}
+
 distZip.dependsOn("test", "integTests")
 
 task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
@@ -97,9 +113,6 @@ gradle.taskGraph.whenReady { graph ->
         uploadDist.apiKey = project.'repo.apiKey'
     }
 }
-
-
-
 
 void verifyProperty(Project proj, String name) {
     if (!project.hasProperty(name)) {

@@ -30,18 +30,16 @@ USAGE: help <cmd>?
         if (!cmdOptions) return 1
 
         def cmdArgs = cmdOptions.nonOptionArguments()
-        if (!cmdArgs) {
-            showGenericHelp()
-        }
-        else {
-            def cmd = Commands.ALL_COMMANDS.find { Command it -> it.name == cmdArgs[0] }
-            if (!cmd) {
+        if (cmdArgs) {
+            def cmd = Commands.ALL.find { Command it -> it.name == cmdArgs[0] }
+            if (cmd) {
+                println cmd.getHelp(cmd.description)
+            } else {
                 log.severe "There is no command '${cmdArgs[0]}'"
                 return 1
             }
-            else {
-                println cmd.getHelp(cmd.description)
-            }
+        } else {
+            showGenericHelp()
         }
 
         return 0
@@ -52,7 +50,7 @@ USAGE: help <cmd>?
         println ""
         println "Available commands:"
         println ""
-        for (Command cmd in Commands.ALL_COMMANDS) {
+        for (Command cmd in Commands.ALL) {
             println "    " + cmd.name.padRight(15) + cmd.description
         }
         println ""

@@ -16,7 +16,7 @@ class PlainFormatter extends Formatter {
         if (record.thrown) {
             StringWriter sw = new StringWriter()
             sw.withPrintWriter { PrintWriter pw ->
-                record.getThrown().printStackTrace(pw)
+                record.thrown.printStackTrace(pw)
                 pw.close()
             }
             message += sw.toString()

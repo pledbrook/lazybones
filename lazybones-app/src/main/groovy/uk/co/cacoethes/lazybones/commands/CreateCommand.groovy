@@ -23,6 +23,7 @@ import java.util.logging.Level
  */
 @CompileStatic
 @Log
+@SuppressWarnings('PrintStackTrace')
 class CreateCommand extends AbstractCommand {
     /** Where the template packages are stored/cached */
     static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
@@ -37,6 +38,9 @@ USAGE: create <template> <version>? <dir>
                     structure. This can be '.' to mean 'in the current
                     directory.'
 """
+    private static final String README = "README"
+    private static final String SPACES = "spaces"
+    private static final String P = "P"
 
     @Override
     String getName() { return "create" }
@@ -64,8 +68,8 @@ USAGE: create <template> <version>? <dir>
             runPostInstallScriptWithArgs(cmdOptions, createData)
 
             // Find a suitable README and display that if it exists.
-            def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
-                name == "README" || name.startsWith("README")
+            def readmeFiles = createData.targetDir.listFiles( { File dir, String name ->
+                name == README || name.startsWith(README)
             } as FilenameFilter)
 
             log.info ""
@@ -99,8 +103,8 @@ USAGE: create <template> <version>? <dir>
 
             return 1
         }
-        catch (Exception ex) {
-            ex.printStackTrace()
+        catch (all) {
+            all.printStackTrace()
             return 1
         }
     }
@@ -111,19 +115,19 @@ USAGE: create <template> <version>? <dir>
     protected CreateCommandInfo evaluateArgs(OptionSet commandOptions, List<String> repositories) {
         def mainArgs = commandOptions.nonOptionArguments()
         def packageName = mainArgs[0]
-        if (!hasVersionArg(mainArgs)) {
-            // No version specified, so pull the latest from the package server.
-            def pkgInfo = getPackageInfo(packageName, repositories)
 
-            if (!pkgInfo) {
-                throw new PackageNotFoundException(packageName)
-            }
-
-            return new CreateCommandInfo(packageName, pkgInfo.latestVersion, mainArgs[1] as File)
-        }
-        else {
+        if (hasVersionArg(mainArgs)) {
             return new CreateCommandInfo(packageName, mainArgs[1], mainArgs[2] as File)
         }
+
+        // No version specified, so pull the latest from the package server.
+        def pkgInfo = getPackageInfo(packageName, repositories)
+
+        if (!pkgInfo) {
+            throw new PackageNotFoundException(packageName)
+        }
+
+        return new CreateCommandInfo(packageName, pkgInfo.latestVersion, mainArgs[1] as File)
     }
 
     protected void runPostInstallScriptWithArgs(OptionSet cmdOptions, CreateCommandInfo createData) {
@@ -132,12 +136,12 @@ USAGE: create <template> <version>? <dir>
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
         // variables into the script binding.
         try {
-            def scriptVariables = cmdOptions.valuesOf("P").collectEntries { String it -> it.split('=') as List }
+            def scriptVariables = cmdOptions.valuesOf(P).collectEntries { String it -> it.split('=') as List }
             scriptVariables << evaluateVersionScriptVariables()
             runPostInstallScript(createData.targetDir, scriptVariables)
         }
-        catch (Throwable throwable) {
-            throw new LazybonesScriptException(throwable)
+        catch (all) {
+            throw new LazybonesScriptException(all)
         }
     }
 
@@ -190,8 +194,8 @@ USAGE: create <template> <version>? <dir>
     @Override
     protected OptionParser createParser() {
         def parser = new OptionParser()
-        parser.accepts("spaces", "Sets the number of spaces to use for indent in files.").withRequiredArg()
-        parser.accepts("P", "Add a substitution variable for file filtering.").withRequiredArg()
+        parser.accepts(SPACES, "Sets the number of spaces to use for indent in files.").withRequiredArg()
+        parser.accepts(P, "Add a substitution variable for file filtering.").withRequiredArg()
         return parser
     }
 
