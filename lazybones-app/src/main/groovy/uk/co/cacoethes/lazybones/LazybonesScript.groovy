@@ -81,7 +81,7 @@ class LazybonesScript extends Script {
      * @return
      */
     def filterFiles(String filePattern, Map substitutionVariables) {
-        String osSpecificPattern = filePattern.replaceAll(/\//, fileSeparator)
+        String osSpecificPattern = filePattern.replace("/", fileSeparator)
         if (!targetDir) {
             throw new IllegalStateException("targetDir has not been set")
         }
