@@ -1,7 +1,9 @@
 package uk.co.cacoethes.lazybones
 
+import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
 import groovy.util.logging.Log
+import uk.co.cacoethes.util.AntPathMatcher
 
 import java.lang.reflect.Method
 
@@ -14,6 +16,7 @@ import java.lang.reflect.Method
 class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
+    String fileSeparator = System.getProperty("file.separator")
 
     /**
      * The root directory of the unpacked template. This is the base path used
@@ -69,17 +72,39 @@ class LazybonesScript extends Script {
         }
     }
 
-    def filterFiles(String filePattern, Map substitutionVariables) {
+    /**
+     *
+     * TODO: need to check windows path separators
+     *
+     * @param filePattern
+     * @param substitutionVariables
+     * @return
+     */
+    def processTemplates(String filePattern, Map substitutionVariables) {
+        String osSpecificPattern = filePattern.replace("/", fileSeparator)
         if (!targetDir) {
             throw new IllegalStateException("targetDir has not been set")
         }
-        def ant = new AntBuilder()
-        def scanner = ant.fileScanner {
-            fileset(dir: targetDir) {
-                include(name: filePattern)
+        def antPathMatcher = new AntPathMatcher(pathSeparator: fileSeparator)
+
+        def filesToFilter = []
+
+        def filePatternWithUserDir
+
+        if (!targetDir.endsWith(fileSeparator)) {
+            filePatternWithUserDir = targetDir + fileSeparator + osSpecificPattern
+        }
+        else {
+            filePatternWithUserDir = targetDir + osSpecificPattern
+        }
+
+        new File(targetDir).eachFileRecurse(FileType.FILES) { File file ->
+            if (antPathMatcher.match(filePatternWithUserDir, file.path)) {
+                filesToFilter << file
             }
-        } as Iterable<File>
-        boolean atLeastOneFileFiltered = filterFilesHelper(scanner, substitutionVariables)
+        }
+
+        boolean atLeastOneFileFiltered = processTemplatesHelper(filesToFilter, substitutionVariables)
 
         if (!atLeastOneFileFiltered) {
             log.warning "No files filtered with file pattern [$filePattern] and target directory [$targetDir]"
@@ -94,19 +119,19 @@ class LazybonesScript extends Script {
      * @param properties properties used to filter files
      * @return true if at least one file was filtered
      */
-    private boolean filterFilesHelper(Iterable<File> files, Map properties) {
+    private boolean processTemplatesHelper(Iterable<File> files, Map properties) {
         boolean atLeastOneFileFiltered = false
 
         //have to use for instead of each, closure causes issues when script is used as base script
         for (file in files) {
-            filterFileHelper(file, properties)
+            processTemplatesHelper(file, properties)
             atLeastOneFileFiltered = true
         }
 
         return atLeastOneFileFiltered
     }
 
-    private void filterFileHelper(File file, Map properties) {
+    private void processTemplatesHelper(File file, Map properties) {
         if (!file.exists()) {
             throw new IllegalArgumentException("file ${file} does not exist")
         }
@@ -129,7 +154,7 @@ class LazybonesScript extends Script {
     /**
      * Determines whether the version of Lazybones loading the post-installation
      * script supports a particular feature. Current features include "ask" and
-     * filterFiles for example.
+     * processTemplates for example.
      */
     boolean hasFeature(String featureName) {
         return this.getClass().methods.any { Method method -> method.name == featureName }

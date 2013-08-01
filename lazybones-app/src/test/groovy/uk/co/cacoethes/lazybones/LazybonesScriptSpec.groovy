@@ -24,7 +24,7 @@ class LazybonesScriptSpec extends Specification {
         lazybonesScript.write("""
             def foo = ask("give me foo")
             def bar = ask("give me bar")
-            filterFiles('foo', [foo:foo, bar:bar])
+            processTemplates('foo', [foo:foo, bar:bar])
         """)
         fileToFilter = testFolder.newFile("foo")
         fileToFilter.write("hello \${foo} and \${bar}")
@@ -43,7 +43,7 @@ class LazybonesScriptSpec extends Specification {
         !script.hasFeature(b)
 
         where:
-        a << ["run", "ask", "filterFiles"]
+        a << ["run", "ask", "processTemplates"]
         b << ["foobar", "foobaz", "foofam"]
     }
 
@@ -57,7 +57,7 @@ class LazybonesScriptSpec extends Specification {
 
     void "basic tests for filtering an individual file"() {
         when:
-        script.filterFileHelper(fileToFilter, [foo: "bar", bar: "bam"])
+        script.processTemplatesHelper(fileToFilter, [foo: "bar", bar: "bam"])
 
         then:
         "hello bar and bam" == fileToFilter.text
@@ -65,7 +65,7 @@ class LazybonesScriptSpec extends Specification {
 
     void "illegal argument exception is thrown if the file does not exist"() {
         when:
-        script.filterFileHelper(new File("bar"), [foo: "bar"])
+        script.processTemplatesHelper(new File("bar"), [foo: "bar"])
 
         then:
         thrown(IllegalArgumentException)
@@ -101,7 +101,7 @@ class LazybonesScriptSpec extends Specification {
 
     void "filter files throws error if targetDir is not set"() {
         when:
-        script.filterFiles("*", [:])
+        script.processTemplates("*", [:])
 
         then:
         thrown(IllegalStateException)
