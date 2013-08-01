@@ -1,6 +1,7 @@
 package uk.co.cacoethes.lazybones
 
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
 import spock.lang.Specification
 
 /**
@@ -43,8 +44,12 @@ abstract class AbstractFunctionalSpec extends Specification {
         resetOutput()
         workDir.mkdirs()
 
-        def lazybonesInstallDir = System.getProperty("lazybones.installDir") ?: System.getProperty("user.dir") + "/build/install"
-        lazybonesInstallDir = new File(lazybonesInstallDir)
+        def lazybonesInstallDir = System.getProperty("lazybones.installDir") ?:
+                System.getProperty("user.dir") + "/build/install"
+        def lzbExecutable = FilenameUtils.concat(lazybonesInstallDir, "bin/lazybones")
+        if (windows) {
+            lzbExecutable = FilenameUtils.separatorsToWindows(lzbExecutable + ".bat")
+        }
 
         // The PATH environment is needed to find the `java` command.
         if (!env["PATH"]) {
@@ -55,7 +60,7 @@ abstract class AbstractFunctionalSpec extends Specification {
         // the form VAR=value.
         def envp = env.collect { key, value -> key + "=" + value }
 
-        Process process = (["${lazybonesInstallDir}/bin/lazybones", "--stacktrace"] + cmdList).execute(envp, workDir)
+        Process process = ([lzbExecutable, "--stacktrace"] + cmdList).execute(envp, workDir)
 
         if (inputs) {
             def newLine = System.getProperty("line.separator")
@@ -74,7 +79,7 @@ abstract class AbstractFunctionalSpec extends Specification {
 
         def stdoutThread = consumeProcessStream(process.inputStream)
         def stderrThread = consumeProcessStream(process.errorStream)
-        process.waitForOrKill(7000)
+        process.waitForOrKill(10000)
         int exitCode = process.exitValue()
 
         // The process may finish before the consuming threads have finished, so
@@ -82,7 +87,7 @@ abstract class AbstractFunctionalSpec extends Specification {
         // the buffer.
         stdoutThread.join 1000
         stderrThread.join 1000
-        println "Output from executing ${cmdList.join(' ')}"
+        println "Output from executing ${cmdList.join(' ')} (exit code: $exitCode)"
         println "---------------------"
         println output
         return exitCode
@@ -115,6 +120,8 @@ abstract class AbstractFunctionalSpec extends Specification {
         props.load(stream)
         return props.getProperty("lazybones.version")
     }
+
+    protected final boolean isWindows() { return System.getProperty("os.name")?.startsWith("Windows") }
 
     private Thread consumeProcessStream(final InputStream stream) {
         char[] buffer = new char[256]
