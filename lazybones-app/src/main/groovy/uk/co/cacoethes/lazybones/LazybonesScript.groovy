@@ -80,7 +80,7 @@ class LazybonesScript extends Script {
      * @param substitutionVariables
      * @return
      */
-    def filterFiles(String filePattern, Map substitutionVariables) {
+    def processTemplates(String filePattern, Map substitutionVariables) {
         String osSpecificPattern = filePattern.replace("/", fileSeparator)
         if (!targetDir) {
             throw new IllegalStateException("targetDir has not been set")
@@ -91,7 +91,7 @@ class LazybonesScript extends Script {
 
         def filePatternWithUserDir
 
-        if(!targetDir.endsWith(fileSeparator)) {
+        if (!targetDir.endsWith(fileSeparator)) {
             filePatternWithUserDir = targetDir + fileSeparator + osSpecificPattern
         }
         else {
@@ -99,12 +99,12 @@ class LazybonesScript extends Script {
         }
 
         new File(targetDir).eachFileRecurse(FileType.FILES) { File file ->
-            if(antPathMatcher.match(filePatternWithUserDir, file.path)) {
+            if (antPathMatcher.match(filePatternWithUserDir, file.path)) {
                 filesToFilter << file
             }
         }
 
-        boolean atLeastOneFileFiltered = filterFilesHelper(filesToFilter, substitutionVariables)
+        boolean atLeastOneFileFiltered = processTemplatesHelper(filesToFilter, substitutionVariables)
 
         if (!atLeastOneFileFiltered) {
             log.warning "No files filtered with file pattern [$filePattern] and target directory [$targetDir]"
@@ -119,19 +119,19 @@ class LazybonesScript extends Script {
      * @param properties properties used to filter files
      * @return true if at least one file was filtered
      */
-    private boolean filterFilesHelper(Iterable<File> files, Map properties) {
+    private boolean processTemplatesHelper(Iterable<File> files, Map properties) {
         boolean atLeastOneFileFiltered = false
 
         //have to use for instead of each, closure causes issues when script is used as base script
         for (file in files) {
-            filterFileHelper(file, properties)
+            processTemplatesHelper(file, properties)
             atLeastOneFileFiltered = true
         }
 
         return atLeastOneFileFiltered
     }
 
-    private void filterFileHelper(File file, Map properties) {
+    private void processTemplatesHelper(File file, Map properties) {
         if (!file.exists()) {
             throw new IllegalArgumentException("file ${file} does not exist")
         }
@@ -154,7 +154,7 @@ class LazybonesScript extends Script {
     /**
      * Determines whether the version of Lazybones loading the post-installation
      * script supports a particular feature. Current features include "ask" and
-     * filterFiles for example.
+     * processTemplates for example.
      */
     boolean hasFeature(String featureName) {
         return this.getClass().methods.any { Method method -> method.name == featureName }
