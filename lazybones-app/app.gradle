@@ -41,7 +41,7 @@ dependencies {
     compile "org.codehaus.groovy:groovy:2.1.3"
 
     compile "commons-io:commons-io:2.4",
-            "org.codehaus.groovy:groovy-ant:2.1.3",
+            "org.codehaus.groovy:groovy-templates:2.1.3",
             "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:0.7.2",
             "net.sf.jopt-simple:jopt-simple:4.4"
