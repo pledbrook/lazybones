@@ -3,6 +3,7 @@ package uk.co.cacoethes.lazybones
 import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
 import groovy.util.logging.Log
+import org.apache.commons.io.FilenameUtils
 import uk.co.cacoethes.util.AntPathMatcher
 
 import java.lang.reflect.Method
@@ -16,7 +17,6 @@ import java.lang.reflect.Method
 class LazybonesScript extends Script {
 
     protected static final String DEFAULT_ENCODING = "utf-8"
-    String fileSeparator = System.getProperty("file.separator")
 
     /**
      * The root directory of the unpacked template. This is the base path used
@@ -81,22 +81,15 @@ class LazybonesScript extends Script {
      * @return
      */
     def processTemplates(String filePattern, Map substitutionVariables) {
-        String osSpecificPattern = filePattern.replace("/", fileSeparator)
         if (!targetDir) {
             throw new IllegalStateException("targetDir has not been set")
         }
+
+        def fileSeparator = System.getProperty("file.separator")
         def antPathMatcher = new AntPathMatcher(pathSeparator: fileSeparator)
 
         def filesToFilter = []
-
-        def filePatternWithUserDir
-
-        if (!targetDir.endsWith(fileSeparator)) {
-            filePatternWithUserDir = targetDir + fileSeparator + osSpecificPattern
-        }
-        else {
-            filePatternWithUserDir = targetDir + osSpecificPattern
-        }
+        def filePatternWithUserDir = FilenameUtils.separatorsToSystem(FilenameUtils.concat(targetDir, filePattern))
 
         new File(targetDir).eachFileRecurse(FileType.FILES) { File file ->
             if (antPathMatcher.match(filePatternWithUserDir, file.path)) {
