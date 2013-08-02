@@ -23,7 +23,7 @@ sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 ext {
-    installDir = new File(System.getProperty('user.home'), ".lazybones/templates")
+    installDir = new File(System.getProperty("user.home"), ".lazybones/templates")
 }
 
 sourceSets {
@@ -82,7 +82,7 @@ task integTests(type: Test) {
 }
 
 codenarc {
-    configFile = rootProject.file('codenarc.groovy')
+    configFile = rootProject.file("codenarc.groovy")
 }
 codenarcTest.enabled = false
 codenarcIntegTest.enabled = false

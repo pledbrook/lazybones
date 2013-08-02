@@ -48,6 +48,14 @@ class BintrayPackageSource implements PackageSource {
         return pkgNames
     }
 
+    /**
+     * Fetches package information from Bintray for the given package name. Null if there is no package with that name.
+     * @param pkgName
+     * @return
+     */
+    // I don't like suppressing this rule, it seems like throwing PackageNotFoundException is better but
+    // there is a fair amount of client code that needs to be changed for this to happen.
+    @SuppressWarnings("ReturnNullFromCatchBlock")
     PackageInfo fetchPackageInfo(String pkgName) {
         def pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX
 
@@ -56,8 +64,11 @@ class BintrayPackageSource implements PackageSource {
             response = restClient.get(path: "/packages/${repoName}/${pkgNameWithSuffix}")
         }
         catch (HTTPClientException ex) {
-            if (ex.response?.statusCode == 404) return null
-            throw ex
+            if (ex.response?.statusCode != 404) {
+                throw ex
+            }
+
+            return null
         }
 
         // The package may have no published versions, so we need to handle the

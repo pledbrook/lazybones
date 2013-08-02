@@ -25,7 +25,9 @@ ruleset {
         'Println' enabled: false
         'SystemOutPrint' enabled: false
     }
-    ruleset('rulesets/naming.xml')
+    ruleset('rulesets/naming.xml') {
+        'VariableName' finalRegex: "[a-z][a-zA-Z0-9]*"
+    }
     ruleset('rulesets/security.xml') {
         'JavaIoPackageAccess' enabled: false
         'SystemExit' enabled: false

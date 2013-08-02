@@ -37,22 +37,22 @@ class ArchiveMethods {
 
         // The type coercion here is down to http://jira.codehaus.org/browse/GROOVY-6123
         for (ZipArchiveEntry entry in (zipFile.entries as List<ZipArchiveEntry>)) {
-            final FILE = new File(destination, entry.name)
-            if (filter == null || filter(FILE)) {
+            final file = new File(destination, entry.name)
+            if (filter == null || filter(file)) {
                 if (entry.isDirectory())  {
-                    FILE.mkdirs()
+                    file.mkdirs()
                 }
                 else {
-                    FILE.parentFile?.mkdirs()
+                    file.parentFile?.mkdirs()
 
-                    def output = new FileOutputStream(FILE)
+                    def output = new FileOutputStream(file)
                     output.withStream {
                         output << zipFile.getInputStream(entry)
                     }
                 }
 
-                unzippedFiles << FILE
-                updateFilePermissions(FILE, entry.unixMode)
+                unzippedFiles << file
+                updateFilePermissions(file, entry.unixMode)
             }
         }
 

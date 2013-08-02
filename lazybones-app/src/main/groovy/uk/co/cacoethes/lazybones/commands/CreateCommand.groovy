@@ -38,9 +38,9 @@ USAGE: create <template> <version>? <dir>
                     structure. This can be '.' to mean 'in the current
                     directory.'
 """
-    private static final String README = "README"
-    private static final String SPACES = "spaces"
-    private static final String P = "P"
+    private static final String README_PREFIX = "README"
+    private static final String SPACES_OPT = "spaces"
+    private static final String VAR_OPT = "P"
 
     @Override
     String getName() { return "create" }
@@ -69,7 +69,7 @@ USAGE: create <template> <version>? <dir>
 
             // Find a suitable README and display that if it exists.
             def readmeFiles = createData.targetDir.listFiles( { File dir, String name ->
-                name == README || name.startsWith(README)
+                name == README_PREFIX || name.startsWith(README_PREFIX)
             } as FilenameFilter)
 
             log.info ""
@@ -136,7 +136,7 @@ USAGE: create <template> <version>? <dir>
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
         // variables into the script binding.
         try {
-            def scriptVariables = cmdOptions.valuesOf(P).collectEntries { String it -> it.split('=') as List }
+            def scriptVariables = cmdOptions.valuesOf(VAR_OPT).collectEntries { String it -> it.split('=') as List }
             scriptVariables << evaluateVersionScriptVariables()
             runPostInstallScript(createData.targetDir, scriptVariables)
         }
@@ -194,8 +194,8 @@ USAGE: create <template> <version>? <dir>
     @Override
     protected OptionParser createParser() {
         def parser = new OptionParser()
-        parser.accepts(SPACES, "Sets the number of spaces to use for indent in files.").withRequiredArg()
-        parser.accepts(P, "Add a substitution variable for file filtering.").withRequiredArg()
+        parser.accepts(SPACES_OPT, "Sets the number of spaces to use for indent in files.").withRequiredArg()
+        parser.accepts(VAR_OPT, "Add a substitution variable for file filtering.").withRequiredArg()
         return parser
     }
 

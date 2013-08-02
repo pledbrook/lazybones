@@ -34,11 +34,13 @@ USAGE: help <cmd>?
             def cmd = Commands.ALL.find { Command it -> it.name == cmdArgs[0] }
             if (cmd) {
                 println cmd.getHelp(cmd.description)
-            } else {
+            }
+            else {
                 log.severe "There is no command '${cmdArgs[0]}'"
                 return 1
             }
-        } else {
+        }
+        else {
             showGenericHelp()
         }
 
