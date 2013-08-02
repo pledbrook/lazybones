@@ -34,25 +34,36 @@ class BintrayGenericUpload extends DefaultTask {
     @TaskAction
     def publish() {
         def targetUrl = calculateFullUrl()
-        logger.lifecycle "Streaming artifact to Bintray at URL ${targetUrl}"
+        logger.lifecycle "Streaming artifact ${artifactFile} to Bintray at URL ${targetUrl}"
         new URI(targetUrl).toURL().openConnection().with {
             // Add basic authentication header.
             setRequestProperty "Authorization", "Basic " + "$username:$apiKey".getBytes().encodeBase64().toString()
 
             doOutput = true
-            fixedLengthStreamingMode = artifactFile.size()
             requestMethod = "PUT"
 
-            def inputStream = artifactFile.newInputStream()
+            def fileInputStream = artifactFile.newInputStream()
             try {
-                outputStream << inputStream
+                outputStream << fileInputStream
+            }
+            catch (Throwable ex) {
+                logger.error "Failed to upload to Bintray: " + ex.message
+                throw ex
             }
             finally {
-                inputStream.close()
+                fileInputStream.close()
                 outputStream.close()
             }
 
-            assert responseCode >= 200 && responseCode < 300
+            def status = responseCode
+            if (status < 200 || status >= 300) {
+                logger.error """\
+Failed to upload to Bintray (status ${status}):
+
+    ${errorStream.text}
+"""
+                throw new GradleException("Unexpected status ${status} from Bintray")
+            }
         }
     }
 
