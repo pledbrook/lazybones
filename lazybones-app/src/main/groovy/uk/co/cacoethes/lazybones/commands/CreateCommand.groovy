@@ -10,6 +10,7 @@ import uk.co.cacoethes.lazybones.BintrayPackageSource
 import uk.co.cacoethes.lazybones.LazybonesMain
 import uk.co.cacoethes.lazybones.LazybonesScript
 import uk.co.cacoethes.lazybones.LazybonesScriptException
+import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageInfo
 import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.util.ArchiveMethods
@@ -83,6 +84,10 @@ USAGE: create <template> <version>? <dir>
             else {
                 log.severe "Cannot find a template named '${ex.name}'. Project has not been created."
             }
+            return 1
+        }
+        catch (NoVersionsFoundException ex) {
+            log.severe "No version of '${ex.packageName}' has been published"
             return 1
         }
         catch (LazybonesScriptException ex) {

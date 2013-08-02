@@ -52,6 +52,16 @@ class InfoFunctionalSpec extends AbstractFunctionalSpec {
         output =~ /Cannot find a template named 'dummy'/
     }
 
+    @Betamax(tape='info-tape')
+    def "Info command prints useful error message if no versions of a template are available"() {
+        when: "I run lazybones with the info command for a template with no versions"
+        def exitCode = runCommand(["info", "lazybones-project"], baseWorkDir)
+
+        then: "It returns a non-zero exit code and displays an error message"
+        exitCode == 1
+        output =~ /No version of 'lazybones-project' has been published/
+    }
+
     def "Info command displays usage when incorrect number of arguments are provided"() {
         when: "I run lazybones with the info command without an extra argument"
         def exitCode = runCommand(["info"], baseWorkDir)

@@ -96,6 +96,16 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         !new File(baseWorkDir, "myapp").exists()
     }
 
+    @Betamax(tape="create-tape")
+    def "Create command prints useful error message if no versions of a template are available"() {
+        when: "I run lazybones with the create command for a template with no versions"
+        def exitCode = runCommand(["create", "lazybones-project", "my-lzb-templates"], baseWorkDir)
+
+        then: "It returns a non-zero exit code and displays an error message"
+        exitCode == 1
+        output =~ /No version of 'lazybones-project' has been published/
+    }
+
     def "Create can install from cache without template being in repository"() {
         when: "I run lazybones with the create command for a template that's only in the cache"
         def exitCode = runCommand(

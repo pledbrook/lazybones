@@ -3,6 +3,8 @@ package uk.co.cacoethes.lazybones.commands
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import uk.co.cacoethes.lazybones.BintrayPackageSource
+import uk.co.cacoethes.lazybones.NoVersionsFoundException
+import uk.co.cacoethes.lazybones.PackageInfo
 
 /**
  *
@@ -30,18 +32,21 @@ USAGE: info <template>
         def cmdOptions = parseArguments(args, 1..1)
         if (!cmdOptions) return 1
 
-        log.info "Fetching package information for '${args[0]}' from Bintray"
+        def pkgName = args[0]
+        log.info "Fetching package information for '${pkgName}' from Bintray"
 
         // grab the package from the first repository that has it
-        def pkgInfo
-        config.bintrayRepositories.find { String bintrayRepoName ->
-            def pkgSource = new BintrayPackageSource(bintrayRepoName)
-            pkgInfo = pkgSource.fetchPackageInfo(args[0])
-            pkgInfo
+        PackageInfo pkgInfo
+        try {
+            pkgInfo = findPackageInBintrayRepositories(pkgName, config.bintrayRepositories as List<String>)
+        }
+        catch (NoVersionsFoundException ex) {
+            log.severe "No version of '${pkgName}' has been published"
+            return 1
         }
 
         if (!pkgInfo) {
-            println "Cannot find a template named '${args[0]}'"
+            log.severe "Cannot find a template named '${pkgName}'"
             return 1
         }
 
@@ -60,4 +65,13 @@ USAGE: info <template>
 
     @Override
     protected String getUsage() { return USAGE }
+
+    protected PackageInfo findPackageInBintrayRepositories(String pkgName, Collection<String> repositories) {
+        for (String bintrayRepoName in repositories) {
+            def pkgInfo = new BintrayPackageSource(bintrayRepoName).fetchPackageInfo(pkgName)
+            if (pkgInfo) return pkgInfo
+        }
+
+        return null
+    }
 }
