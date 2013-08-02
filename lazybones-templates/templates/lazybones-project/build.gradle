@@ -14,6 +14,15 @@ apply plugin: "lazybones-templates"
 
 lazybones {
     repositoryUrl = "https://api.bintray.com/content/<account>/<templates-repo>"
+
+    // It's best to pull this information from a gradle.properties file in the
+    // root directory. For example, gradle.properties could contain:
+    //
+    //     bintrayUsername=dilbert
+    //     bintrayApiKey=kdshfiu2htr082hg0h2ghkhsdafkh
+    //
+    // You could then set the following properties to `project.bintrayUsername`
+    // and `project.bintrayApiKey` respectively.
     repositoryUsername = "your_bintray_username"
     repositoryApiKey = "your_bintray_api_key"
 }
