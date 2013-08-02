@@ -7,17 +7,28 @@ class HelpFunctionalSpec extends AbstractFunctionalSpec {
 
         then: "It displays the help"
         exitCode == 0
-        output.contains("Available commands")
-        output =~ /\s+create\s+/
-        !(output =~ /Exception/)
+        outputContainsHelpMessage()
     }
 
     def "The help command displays a list of available commands"() {
         when: "I run the help command"
         def exitCode = runCommand(["help"], baseWorkDir)
 
-        then: "The command successfully completes and I see a list of the available commands"
+        then: "It displays the help"
         exitCode == 0
+        outputContainsHelpMessage()
+    }
+
+    def "-h or --help print out the help command"() {
+        when: "I run lazybones with -h or --help"
+        def exitCode = runCommand(["-h", "--help"], baseWorkDir)
+
+        then: "It displays the help"
+        exitCode == 0
+        outputContainsHelpMessage()
+    }
+
+    boolean outputContainsHelpMessage() {
         output.contains("Available commands")
         output =~ /\s+create\s+/
         !(output =~ /Exception/)
