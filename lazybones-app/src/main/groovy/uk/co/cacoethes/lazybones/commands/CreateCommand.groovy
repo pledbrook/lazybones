@@ -46,9 +46,14 @@ USAGE: create <template> <version>? <dir>
     }
 
     @Override
-    int execute(List<String> args, Map globalOptions, ConfigObject configuration) {
-        def cmdOptions = parseArguments(args, 2..3)
-        if (!cmdOptions) return 1
+    protected IntRange getParameterRange() {
+        1..3
+    }
+
+    @Override
+    protected String getUsage() { return USAGE }
+
+    protected int doExecute(OptionSet cmdOptions,  Map globalOptions, ConfigObject configuration) {
 
         List<String> repositoryList = (List) configuration.bintrayRepositories
 
@@ -99,9 +104,6 @@ USAGE: create <template> <version>? <dir>
             return 1
         }
     }
-
-    @Override
-    protected String getUsage() { return USAGE }
 
     protected CreateCommandInfo evaluateArgs(OptionSet commandOptions, List<String> repositories) {
         def mainArgs = commandOptions.nonOptionArguments()
@@ -187,6 +189,8 @@ USAGE: create <template> <version>? <dir>
         def parser = new OptionParser()
         parser.accepts("spaces", "Sets the number of spaces to use for indent in files.").withRequiredArg()
         parser.accepts("P", "Add a substitution variable for file filtering.").withRequiredArg()
+        parser.accepts("h", "Displays usage.")
+
         return parser
     }
 

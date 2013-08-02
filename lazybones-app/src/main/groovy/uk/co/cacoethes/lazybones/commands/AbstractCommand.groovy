@@ -12,6 +12,24 @@ import joptsimple.OptionSet
 @CompileStatic
 @Log
 abstract class AbstractCommand implements Command {
+    @Override
+    public int execute(List<String> args, Map globalOptions, ConfigObject config) {
+        OptionSet cmdOptions = parseArguments(args, parameterRange)
+        if (!cmdOptions) return 1
+
+        if (cmdOptions.has('h')) {
+            println getHelp(getDescription())
+            return 0
+        }
+
+
+        return doExecute(cmdOptions, globalOptions, config)
+    }
+
+    protected abstract int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config)
+
+    protected abstract IntRange getParameterRange()
+
     protected abstract String getUsage()
 
     /**
@@ -19,7 +37,11 @@ abstract class AbstractCommand implements Command {
      * configured with the options supported by the command. By default this
      * returns an empty parser without any defined options.
      */
-    protected OptionParser createParser() { return new OptionParser() }
+    protected OptionParser createParser() {
+        OptionParser parser = new OptionParser()
+        parser.accepts('h',  "Displays usage.")
+        return parser
+    }
 
     /**
      * Uses the parser from {@link AbstractCommand#createParser()} to parse the

@@ -2,6 +2,7 @@ package uk.co.cacoethes.lazybones.commands
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
+import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.BintrayPackageSource
 
 /**
@@ -26,22 +27,29 @@ USAGE: info <template>
     }
 
     @Override
-    int execute(List<String> args, Map globalOptions, ConfigObject config) {
-        def cmdOptions = parseArguments(args, 1..1)
-        if (!cmdOptions) return 1
+    protected String getUsage() { return USAGE }
 
-        log.info "Fetching package information for '${args[0]}' from Bintray"
+    @Override
+    protected IntRange getParameterRange() {
+        return 1..1
+    }
+
+    @Override
+    int doExecute(OptionSet cmdOptions,  Map globalOptions, ConfigObject config) {
+        String packageName = cmdOptions.nonOptionArguments()[0]
+
+        log.info "Fetching package information for '${packageName}' from Bintray"
 
         // grab the package from the first repository that has it
         def pkgInfo
         config.bintrayRepositories.find { String bintrayRepoName ->
             def pkgSource = new BintrayPackageSource(bintrayRepoName)
-            pkgInfo = pkgSource.fetchPackageInfo(args[0])
+            pkgInfo = pkgSource.fetchPackageInfo(packageName)
             pkgInfo
         }
 
         if (!pkgInfo) {
-            println "Cannot find a template named '${args[0]}'"
+            println "Cannot find a template named '${packageName}'"
             return 1
         }
 
@@ -58,6 +66,5 @@ USAGE: info <template>
         return 0
     }
 
-    @Override
-    protected String getUsage() { return USAGE }
+
 }

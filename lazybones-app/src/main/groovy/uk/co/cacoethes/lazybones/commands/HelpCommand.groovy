@@ -2,6 +2,7 @@ package uk.co.cacoethes.lazybones.commands
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
+import joptsimple.OptionSet
 
 /**
  *
@@ -25,10 +26,15 @@ USAGE: help <cmd>?
     }
 
     @Override
-    int execute(List<String> args, Map globalOptions, ConfigObject config) {
-        def cmdOptions = parseArguments(args, 0..1)
-        if (!cmdOptions) return 1
+    protected IntRange getParameterRange() {
+        return 0..1
+    }
 
+    @Override
+    protected String getUsage() { return USAGE }
+
+    @Override
+    protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject config) {
         def cmdArgs = cmdOptions.nonOptionArguments()
         if (!cmdArgs) {
             showGenericHelp()
@@ -57,7 +63,4 @@ USAGE: help <cmd>?
         }
         println ""
     }
-
-    @Override
-    protected String getUsage() { return USAGE }
 }

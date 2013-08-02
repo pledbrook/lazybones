@@ -2,6 +2,7 @@ package uk.co.cacoethes.lazybones.commands
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
+import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.BintrayPackageSource
 
 /**
@@ -23,10 +24,15 @@ USAGE: list
     }
 
     @Override
-    int execute(List<String> args, Map globalOptions, ConfigObject config) {
-        def cmdOptions = parseArguments(args, 0..0)
-        if (!cmdOptions) return 1
+    protected IntRange getParameterRange() {
+        0..0
+    }
 
+    @Override
+    protected String getUsage() { return USAGE }
+
+    @Override
+    protected int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config) {
         for (String bintrayRepoName in config.bintrayRepositories) {
             println "Available templates in ${bintrayRepoName}:"
             println ""
@@ -41,7 +47,4 @@ USAGE: list
 
         return 0
     }
-
-    @Override
-    protected String getUsage() { return USAGE }
 }
