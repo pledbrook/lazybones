@@ -204,6 +204,8 @@ template archive.
 Contributing templates
 ----------------------
 
+*For a more comprehensive overview, read the [Template Developers Guide](https://github.com/pledbrook/lazybones/wiki/Template-developers-guide)*
+
 If you have an idea for a project template and want to add it to lazybone's
 library, then you have two options:
 
