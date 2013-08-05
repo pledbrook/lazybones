@@ -19,18 +19,59 @@ class HelpFunctionalSpec extends AbstractFunctionalSpec {
         outputContainsHelpMessage()
     }
 
-    def "-h or --help print out the help command"() {
-        when: "I run lazybones with -h or --help"
-        def exitCode = runCommand(["-h", "--help"], baseWorkDir)
+    def "help option prints out the command specific help"() {
+        when: "I run lazybones with ${option} for command ${command}"
+        def exitCode = runCommand([option, command], baseWorkDir)
+
+        then: "It displays the help"
+        exitCode == 0
+        output.contains("USAGE")
+        output =~ /\s+${command}\s+/
+        !(output =~ /Exception/)
+
+        where:
+        option  | command
+        "-h"    | "list"
+        "--help"| "list"
+        "-h"    | "info"
+        "--help"| "info"
+    }
+
+    def "a command with the help option prints the command specific help"() {
+        when: "I run lazybones with command ${command} and option ${option}"
+        def exitCode = runCommand([command, option], baseWorkDir)
+
+        then: "It displays the help"
+        exitCode == 0
+        output.contains("USAGE")
+        output =~ /\s+${command}\s+/ &&
+        !(output =~ /Exception/)
+        println output
+
+        where:
+        option  | command
+        "-h"    | "list"
+        "--help"| "list"
+        "-h"    | "create"
+        "--help"| "create"
+    }
+
+    def "help option prints out the help command"() {
+        when: "I run lazybones with ${option}"
+        def exitCode = runCommand([option], baseWorkDir)
 
         then: "It displays the help"
         exitCode == 0
         outputContainsHelpMessage()
+
+        where:
+        option << ['-h', '--help']
+
     }
 
     boolean outputContainsHelpMessage() {
-        output.contains("Available commands")
-        output =~ /\s+create\s+/
+        output.contains("Available commands") &&
+        output =~ /\s+create\s+/ &&
         !(output =~ /Exception/)
     }
 }

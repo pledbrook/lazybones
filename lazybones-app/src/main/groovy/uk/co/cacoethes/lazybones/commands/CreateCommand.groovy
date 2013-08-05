@@ -186,10 +186,9 @@ USAGE: create <template> <version>? <dir>
 
     @Override
     protected OptionParser createParser() {
-        def parser = new OptionParser()
+        OptionParser parser = super.createParser()
         parser.accepts("spaces", "Sets the number of spaces to use for indent in files.").withRequiredArg()
         parser.accepts("P", "Add a substitution variable for file filtering.").withRequiredArg()
-        parser.accepts("h", "Displays usage.")
 
         return parser
     }

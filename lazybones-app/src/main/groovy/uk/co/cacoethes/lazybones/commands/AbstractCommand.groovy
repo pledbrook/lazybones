@@ -39,7 +39,7 @@ abstract class AbstractCommand implements Command {
      */
     protected OptionParser createParser() {
         OptionParser parser = new OptionParser()
-        parser.accepts('h',  "Displays usage.")
+        parser.acceptsAll(["h", "help"],  "Displays usage.")
         return parser
     }
 
@@ -58,7 +58,7 @@ abstract class AbstractCommand implements Command {
         try {
             def options = createParser().parse(args as String[])
 
-            if (!(options.nonOptionArguments().size() in validArgCount)) {
+            if (!(options.nonOptionArguments().size() in validArgCount) && !options.has("h")) {
                 log.severe getHelp("Incorrect number of arguments.")
                 return null
             }
