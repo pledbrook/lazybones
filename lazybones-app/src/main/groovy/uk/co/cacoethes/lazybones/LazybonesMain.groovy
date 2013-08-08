@@ -2,19 +2,21 @@ package uk.co.cacoethes.lazybones
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
-import joptsimple.OptionException
-import joptsimple.OptionSet
 
 import java.util.logging.Level
+import java.util.logging.Logger
 import java.util.logging.LogManager
+
+import joptsimple.OptionException
 import joptsimple.OptionParser
+import joptsimple.OptionSet
 import joptsimple.OptionSpec
+
+import uk.co.cacoethes.lazybones.Options
 import uk.co.cacoethes.lazybones.commands.*
 
-import java.util.logging.Logger
 
 import static uk.co.cacoethes.lazybones.OptionParserBuilder.makeOptionParser
-import static uk.co.cacoethes.lazybones.OptionParserBuilder.VERSION
 
 @CompileStatic
 @Log
@@ -50,7 +52,7 @@ class LazybonesMain {
             globalOptions[spec.options()[0]] = valueList ? valueList[0] : true
         }
 
-        if (optionSet.has(VERSION)) {
+        if (optionSet.has(Options.VERSION)) {
             println "Lazybones version ${readVersion()}"
             System.exit 0
         }
@@ -63,7 +65,7 @@ class LazybonesMain {
         String cmd
         List argsList = optionSet.nonOptionArguments() as List
         if (argsList.size() == 0) {
-            cmd = 'help'
+            cmd = "help"
             argsList = []
         }
         else {

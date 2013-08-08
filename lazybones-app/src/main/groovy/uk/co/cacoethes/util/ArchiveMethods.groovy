@@ -25,7 +25,7 @@ class ArchiveMethods {
      * single argument that is a File and return {@code true} if that zip entry
      * should be extracted, or {@code false} otherwise.
      */
-    static Collection<File> unzip (File self, File originalDestination, Closure<Boolean> filter = null) {
+    static Collection<File> unzip(File self, File originalDestination, Closure<Boolean> filter = null) {
         checkUnzipFileType(self)
         checkUnzipDestination(originalDestination)
 

@@ -49,12 +49,14 @@ class BintrayPackageSource implements PackageSource {
     }
 
     /**
-     * Fetches package information from Bintray for the given package name. Null if there is no package with that name.
-     * @param pkgName
-     * @return
+     * Fetches package information from Bintray for the given package name or
+     * {@code null} if there is no such package. This may also throw instances
+     * of {@code wslite.http.HTTPClientException} if there are any problems
+     * connecting to the Bintray API.
+     * @param pkgName The name of the package for which you want the information.
+     * @return The required package info or {@code null} if the repository
+     * doesn't host the requested packaged.
      */
-    // I don't like suppressing this rule, it seems like throwing PackageNotFoundException is better but
-    // there is a fair amount of client code that needs to be changed for this to happen.
     @SuppressWarnings("ReturnNullFromCatchBlock")
     PackageInfo fetchPackageInfo(String pkgName) {
         def pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX

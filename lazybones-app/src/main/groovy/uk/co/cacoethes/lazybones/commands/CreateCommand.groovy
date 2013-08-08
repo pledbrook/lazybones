@@ -23,7 +23,6 @@ import java.util.logging.Level
  */
 @CompileStatic
 @Log
-@SuppressWarnings('PrintStackTrace')
 class CreateCommand extends AbstractCommand {
     /** Where the template packages are stored/cached */
     static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
@@ -38,7 +37,7 @@ USAGE: create <template> <version>? <dir>
                     structure. This can be '.' to mean 'in the current
                     directory.'
 """
-    private static final String README_PREFIX = "README"
+    private static final String README_BASENAME = "README"
     private static final String SPACES_OPT = "spaces"
     private static final String VAR_OPT = "P"
 
@@ -69,7 +68,7 @@ USAGE: create <template> <version>? <dir>
 
             // Find a suitable README and display that if it exists.
             def readmeFiles = createData.targetDir.listFiles( { File dir, String name ->
-                name == README_PREFIX || name.startsWith(README_PREFIX)
+                name == README_BASENAME || name.startsWith(README_BASENAME)
             } as FilenameFilter)
 
             log.info ""
@@ -104,7 +103,7 @@ USAGE: create <template> <version>? <dir>
             return 1
         }
         catch (all) {
-            all.printStackTrace()
+            log.log Level.SEVERE, "", all
             return 1
         }
     }
