@@ -11,6 +11,7 @@ import joptsimple.OptionSet
  */
 @CompileStatic
 @Log
+@SuppressWarnings('FactoryMethodName')
 abstract class AbstractCommand implements Command {
     protected abstract String getUsage()
 
@@ -30,8 +31,13 @@ abstract class AbstractCommand implements Command {
      * (those that don't begin with '-' or '--') can be provided to the command.
      * If the number of non-option arguments falls outside this range, the method
      * returns null and prints an error to the console.
-     * @return The option set.
+     * @return The option set, or {@code null} if the arguments can't be parsed
+     * for whatever reason
+     *
+     * TODO This should probably throw exceptions in the case of errors. Too much
+     * information is lost with a {@code null} return.
      */
+    @SuppressWarnings('ReturnNullFromCatchBlock')
     protected OptionSet parseArguments(List<String> args, IntRange validArgCount) {
         try {
             def options = createParser().parse(args as String[])
@@ -43,7 +49,7 @@ abstract class AbstractCommand implements Command {
 
             return options
         }
-        catch(OptionException ex) {
+        catch (OptionException ex) {
             log.severe getHelp(ex.message)
             return null
         }

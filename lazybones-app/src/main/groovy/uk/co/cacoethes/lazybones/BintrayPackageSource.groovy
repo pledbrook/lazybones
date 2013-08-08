@@ -48,6 +48,16 @@ class BintrayPackageSource implements PackageSource {
         return pkgNames
     }
 
+    /**
+     * Fetches package information from Bintray for the given package name or
+     * {@code null} if there is no such package. This may also throw instances
+     * of {@code wslite.http.HTTPClientException} if there are any problems
+     * connecting to the Bintray API.
+     * @param pkgName The name of the package for which you want the information.
+     * @return The required package info or {@code null} if the repository
+     * doesn't host the requested packaged.
+     */
+    @SuppressWarnings("ReturnNullFromCatchBlock")
     PackageInfo fetchPackageInfo(String pkgName) {
         def pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX
 
@@ -56,8 +66,11 @@ class BintrayPackageSource implements PackageSource {
             response = restClient.get(path: "/packages/${repoName}/${pkgNameWithSuffix}")
         }
         catch (HTTPClientException ex) {
-            if (ex.response?.statusCode == 404) return null
-            else throw ex
+            if (ex.response?.statusCode != 404) {
+                throw ex
+            }
+
+            return null
         }
 
         // The package may have no published versions, so we need to handle the

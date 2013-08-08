@@ -67,9 +67,8 @@ class LazybonesScript extends Script {
         if (propertyName && binding.hasVariable(propertyName)) {
             return binding.getVariable(propertyName)
         }
-        else {
-            return ask(message, defaultValue)
-        }
+
+        return ask(message, defaultValue)
     }
 
     /**

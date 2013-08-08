@@ -2,16 +2,21 @@ package uk.co.cacoethes.lazybones
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
-import joptsimple.OptionException
-import joptsimple.OptionSet
 
 import java.util.logging.Level
+import java.util.logging.Logger
 import java.util.logging.LogManager
+
+import joptsimple.OptionException
 import joptsimple.OptionParser
+import joptsimple.OptionSet
 import joptsimple.OptionSpec
+
+import uk.co.cacoethes.lazybones.Options
 import uk.co.cacoethes.lazybones.commands.*
 
-import java.util.logging.Logger
+
+import static uk.co.cacoethes.lazybones.OptionParserBuilder.makeOptionParser
 
 @CompileStatic
 @Log
@@ -27,7 +32,7 @@ class LazybonesMain {
     static void main(String[] args) {
         initConfiguration()
 
-        OptionParser parser = createParser(args)
+        OptionParser parser = makeOptionParser()
         OptionSet optionSet
         try {
             optionSet = parser.parse(args)
@@ -47,7 +52,7 @@ class LazybonesMain {
             globalOptions[spec.options()[0]] = valueList ? valueList[0] : true
         }
 
-        if (optionSet.has("version")) {
+        if (optionSet.has(Options.VERSION)) {
             println "Lazybones version ${readVersion()}"
             System.exit 0
         }
@@ -69,7 +74,7 @@ class LazybonesMain {
         }
 
         // Execute the corresponding command
-        def cmdInstance = Commands.ALL_COMMANDS.find { Command it -> it.name == cmd }
+        def cmdInstance = Commands.ALL.find { Command it -> it.name == cmd }
         if (!cmdInstance) {
             log.severe "There is no command '" + cmd + "'"
             System.exit 1
@@ -79,7 +84,7 @@ class LazybonesMain {
         System.exit retval
     }
 
-    public static String readVersion() {
+    static String readVersion() {
         def stream = LazybonesMain.getResourceAsStream("lazybones.properties")
         def props = new Properties()
         props.load(stream)
@@ -121,22 +126,6 @@ class LazybonesMain {
                 System.exit 1
             }
         }
-    }
-
-    private static OptionParser createParser(String[] args) {
-        // These are the global options available for all commands.
-        def parser = new OptionParser()
-        parser.accepts("stacktrace", "Show stack traces when exceptions are thrown.")
-        parser.acceptsAll(["verbose", "v"], "Display extra information when running commands.")
-        parser.accepts("quiet", "Show minimal output.")
-        parser.accepts("info", "Show normal amount of output (default).")
-        parser.accepts("logLevel", "Set logging level, e.g. OFF, SEVERE, INFO, FINE, etc.").withRequiredArg()
-        parser.accepts("version", "Print out the Lazybones finish and then end.")
-
-        // Ensures that only options up to the sub-command ('create, 'list',
-        // etc.) are parsed.
-        parser.posixlyCorrect(true)
-        return parser
     }
 
     /**
