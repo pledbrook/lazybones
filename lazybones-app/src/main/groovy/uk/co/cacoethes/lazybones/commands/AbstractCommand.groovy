@@ -5,6 +5,7 @@ import groovy.util.logging.Log
 import joptsimple.OptionException
 import joptsimple.OptionParser
 import joptsimple.OptionSet
+import uk.co.cacoethes.lazybones.Options
 
 /**
  *
@@ -13,6 +14,31 @@ import joptsimple.OptionSet
 @Log
 @SuppressWarnings('FactoryMethodName')
 abstract class AbstractCommand implements Command {
+    @Override
+    public int execute(List<String> args, Map globalOptions, ConfigObject config) {
+        OptionSet cmdOptions = parseArguments(args, parameterRange)
+        if (!cmdOptions) return 1
+
+        if (cmdOptions.has(Options.HELP_SHORT)) {
+            println getHelp(getDescription())
+            return 0
+        }
+
+
+        return doExecute(cmdOptions, globalOptions, config)
+    }
+
+    protected abstract int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config)
+
+    /**
+     * Returns the number of arguments this command can accept, on top of the
+     * default ones handled by this class, such as {@code -h/--help}.
+     */
+    protected abstract IntRange getParameterRange()
+
+    /**
+     * Returns the USAGE string for this command.
+     */
     protected abstract String getUsage()
 
     /**
@@ -20,7 +46,14 @@ abstract class AbstractCommand implements Command {
      * configured with the options supported by the command. By default this
      * returns an empty parser without any defined options.
      */
-    protected OptionParser createParser() { return new OptionParser() }
+    protected OptionParser createParser() {
+        OptionParser parser = new OptionParser()
+        parser.acceptsAll([Options.HELP_SHORT, Options.HELP],  "Displays usage.")
+
+        return doAddToParser(parser)
+    }
+
+    protected OptionParser doAddToParser(OptionParser parser) { return parser }
 
     /**
      * Uses the parser from {@link AbstractCommand#createParser()} to parse the
@@ -42,7 +75,7 @@ abstract class AbstractCommand implements Command {
         try {
             def options = createParser().parse(args as String[])
 
-            if (!(options.nonOptionArguments().size() in validArgCount)) {
+            if (!(options.nonOptionArguments().size() in validArgCount) && !options.has(Options.HELP_SHORT)) {
                 log.severe getHelp("Incorrect number of arguments.")
                 return null
             }

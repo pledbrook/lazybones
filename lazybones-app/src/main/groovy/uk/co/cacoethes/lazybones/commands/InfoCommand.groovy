@@ -2,6 +2,7 @@ package uk.co.cacoethes.lazybones.commands
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
+import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.BintrayPackageSource
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageInfo
@@ -28,25 +29,31 @@ USAGE: info <template>
     }
 
     @Override
-    int execute(List<String> args, Map globalOptions, ConfigObject config) {
-        def cmdOptions = parseArguments(args, 1..1)
-        if (!cmdOptions) return 1
+    protected String getUsage() { return USAGE }
 
-        def pkgName = args[0]
-        log.info "Fetching package information for '${pkgName}' from Bintray"
+    @Override
+    protected IntRange getParameterRange() {
+        return 1..1
+    }
+
+    @Override
+    int doExecute(OptionSet cmdOptions,  Map globalOptions, ConfigObject config) {
+        String packageName = cmdOptions.nonOptionArguments()[0]
+
+        log.info "Fetching package information for '${packageName}' from Bintray"
 
         // grab the package from the first repository that has it
         PackageInfo pkgInfo
         try {
-            pkgInfo = findPackageInBintrayRepositories(pkgName, config.bintrayRepositories as List<String>)
+            pkgInfo = findPackageInBintrayRepositories(packageName, config.bintrayRepositories as List<String>)
         }
         catch (NoVersionsFoundException ex) {
-            log.severe "No version of '${pkgName}' has been published"
+            log.severe "No version of '${packageName}' has been published"
             return 1
         }
 
         if (!pkgInfo) {
-            log.severe "Cannot find a template named '${pkgName}'"
+            println "Cannot find a template named '${packageName}'"
             return 1
         }
 
@@ -62,9 +69,6 @@ USAGE: info <template>
         }
         return 0
     }
-
-    @Override
-    protected String getUsage() { return USAGE }
 
     protected PackageInfo findPackageInBintrayRepositories(String pkgName, Collection<String> repositories) {
         for (String bintrayRepoName in repositories) {

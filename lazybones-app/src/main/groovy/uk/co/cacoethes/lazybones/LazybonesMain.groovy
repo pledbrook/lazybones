@@ -64,9 +64,9 @@ class LazybonesMain {
         // Determine the command to run and its argument list.
         String cmd
         List argsList = optionSet.nonOptionArguments() as List
-        if (argsList.size() == 0) {
+
+        if (argsList.size() == 0 || optionSet.has("h")) {
             cmd = "help"
-            argsList = []
         }
         else {
             cmd = argsList.head()
