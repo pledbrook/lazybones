@@ -65,7 +65,7 @@ class LazybonesMain {
         String cmd
         List argsList = optionSet.nonOptionArguments() as List
 
-        if (argsList.size() == 0 || optionSet.has("h")) {
+        if (argsList.size() == 0 || optionSet.has(Options.HELP_SHORT)) {
             cmd = "help"
         }
         else {
@@ -114,12 +114,12 @@ class LazybonesMain {
         // from this parent).
         def parentLogger = Logger.getLogger("uk.co.cacoethes.lazybones")
 
-        if (options.v) parentLogger.level = Level.FINEST
-        else if (options.quiet) parentLogger.level = Level.WARNING
-        else if (options.info) parentLogger.level = Level.INFO
-        else if (options.logLevel) {
+        if (options[Options.VERBOSE_SHORT]) parentLogger.level = Level.FINEST
+        else if (options[Options.QUIET]) parentLogger.level = Level.WARNING
+        else if (options[Options.INFO]) parentLogger.level = Level.INFO
+        else if (options[Options.LOG_LEVEL]) {
             try {
-                parentLogger.level = Level.parse((String) options.logLevel)
+                parentLogger.level = Level.parse((String) options[Options.LOG_LEVEL])
             }
             catch (IllegalArgumentException ex) {
                 log.severe "Invalid log level provided: ${ex.message}"
