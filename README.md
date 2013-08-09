@@ -246,7 +246,7 @@ answer is provided
 * `ask(String message, String propertyName, defaultValue = null)` - works similarily to the ask above, but allows
 grabbing variables from the command line as well based on the `propertyName`.
 
-* `filterFiles(String filePattern, Map substitutionVariables)` - use ant pattern matching to find files and filter their
+* `processTemplates(String filePattern, Map substitutionVariables)` - use ant pattern matching to find files and filter their
 contents in place using Groovy's `SimpleTemplateEngine`.
 
 * `hasFeature(String featureName)` - checks if the script has access to a feature, `hasFeature("ask")` or
@@ -260,8 +260,8 @@ file:
     params["groupId"] = ask("What is the group ID for this project?")
     params["version"] = ask("What is the project's initial version?", "version", "0.1")
 
-    filterFiles("*.gradle", params)
-    filterFiles("pom.xml", params)
+    processTemplates("*.gradle", params)
+    processTemplates("pom.xml", params)
 
 The main Gradle build file might then look like this:
 
@@ -271,6 +271,6 @@ The main Gradle build file might then look like this:
     version = "${version}"
 
 The `${}` expressions are executed as Groovy expressions and they have access
-to any variables in the parameter map passed to `filterFiles()`. Scriptlets,
+to any variables in the parameter map passed to `processTemplates()`. Scriptlets,
 i.e. code inside `<% %>` delimiters, allow for more complex logic.
 
