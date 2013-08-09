@@ -100,6 +100,7 @@ USAGE: create <template> <version>? <dir>
         }
         catch (LazybonesScriptException ex) {
             log.warning "Post install script caused an exception, project might be corrupt: ${ex.cause.message}"
+            log.warning "The unpacked template will remain in place to help you diagnose the problem"
 
             if (globalOptions.stacktrace) {
                 log.log Level.SEVERE, "", ex.cause
