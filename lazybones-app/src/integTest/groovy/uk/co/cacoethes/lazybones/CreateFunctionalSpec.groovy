@@ -9,7 +9,8 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
 
     void setup() {
         def proxyAddress = recorder.proxy.address()
-        env["JAVA_OPTS"] = "-Dhttps.proxyHost=" + proxyAddress.hostName + " -Dhttps.proxyPort=" + proxyAddress.port
+        env["JAVA_OPTS"] = "-Dhttps.proxyHost=" + proxyAddress.hostName + " -Dhttps.proxyPort=" + proxyAddress.port +
+                " -Dhttp.proxyHost=" + proxyAddress.hostName + " -Dhttp.proxyPort=" + proxyAddress.port
     }
 
     @Betamax(tape="create-tape")
