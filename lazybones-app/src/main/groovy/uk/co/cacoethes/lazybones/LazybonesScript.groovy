@@ -72,11 +72,20 @@ class LazybonesScript extends Script {
     }
 
     /**
+     * Been deprecated as of lazybones 0.5, please use {@link LazybonesScript#processTemplates(java.lang.String, java.util.Map)}
      *
-     * TODO: need to check windows path separators
-     *
+     * @deprecated
      * @param filePattern
      * @param substitutionVariables
+     */
+    def filterFiles(String filePattern, Map substitutionVariables) {
+        log.warning("[filterFiles] has been deprecated since lazybones 0.5, use [processTemplates] instead")
+        processTemplates(filePattern, substitutionVariables)
+    }
+
+    /**
+     * @param filePattern classic ant pattern matcher
+     * @param substitutionVariables model for processing the template
      * @return
      */
     def processTemplates(String filePattern, Map substitutionVariables) {
