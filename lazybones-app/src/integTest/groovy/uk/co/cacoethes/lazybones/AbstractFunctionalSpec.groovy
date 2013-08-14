@@ -83,7 +83,7 @@ abstract class AbstractFunctionalSpec extends Specification {
         int exitCode = process.exitValue()
 
         // The process may finish before the consuming threads have finished, so
-        // given them a chance to complete so that we have the command output in
+        // give them a chance to complete so that we have the command output in
         // the buffer.
         stdoutThread.join 1000
         stderrThread.join 1000
