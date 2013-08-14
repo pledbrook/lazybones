@@ -26,6 +26,9 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         new File(appDir, "gradlew").canExecute()
         new File(appDir, "src/main/groovy").isDirectory()
         new File(appDir, "src/ratpack/public/index.html").isFile()
+
+        and: "It says that the given version of the package is being installed in the target directory"
+        output =~ /Creating project from template ratpack 0.1 in 'ratapp'/
     }
 
     @Betamax(tape="create-tape")
@@ -41,6 +44,9 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         new File(appDir, "gradlew").canExecute()
         new File(appDir, "src/main/groovy").isDirectory()
         new File(appDir, "src/ratpack/public/index.html").isFile()
+
+        and: "It says that the latest version of the package is being installed in the target directory"
+        output =~ /Creating project from template ratpack \(latest\) in 'ratapp'/
     }
 
     @Betamax(tape="create-tape")
@@ -59,6 +65,9 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         new File(appDir, "gradlew").canExecute()
         new File(appDir, "src/main/groovy").isDirectory()
         new File(appDir, "src/ratpack/public/index.html").isFile()
+
+        and: "It says that the package is being installed in the current directory"
+        output =~ /Creating project from template ratpack 0.1 in current directory/
     }
 
     @Betamax(tape="create-tape")

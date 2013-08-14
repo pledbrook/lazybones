@@ -5,6 +5,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
+import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.BintrayPackageSource
 import uk.co.cacoethes.lazybones.LazybonesMain
@@ -63,7 +64,6 @@ USAGE: create <template> <version>? <dir>
 
         try {
             def createData = evaluateArgs(cmdOptions, repositoryList)
-
             def pkg = fetchTemplatePackage(createData, repositoryList)
 
             createData.targetDir.mkdirs()
@@ -81,7 +81,8 @@ USAGE: create <template> <version>? <dir>
             else log.info readmeFiles[0].text
 
             log.info ""
-            log.info "Project created in ${createData.targetDir.path}!"
+            log.info "Project created in " + (isPathCurrentDirectory(createData.targetDir.path) ?
+                        'current directory' : createData.targetDir.path) + '!'
 
             return 0
         }
@@ -116,20 +117,25 @@ USAGE: create <template> <version>? <dir>
 
     protected CreateCommandInfo evaluateArgs(OptionSet commandOptions, List<String> repositories) {
         def mainArgs = commandOptions.nonOptionArguments()
-        def packageName = mainArgs[0]
+        def createCmdInfo = getCreateInfoFromArgs(mainArgs)
 
+        logStart createCmdInfo.packageName, createCmdInfo.requestedVersion, createCmdInfo.targetDir.path
+
+        if (!createCmdInfo.requestedVersion) {
+            // No version specified, so pull the latest from the package server.
+            createCmdInfo.requestedVersion = getPackageInfo(createCmdInfo.packageName, repositories).latestVersion
+        }
+
+        return createCmdInfo
+    }
+
+    private CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
         if (hasVersionArg(mainArgs)) {
-            return new CreateCommandInfo(packageName, mainArgs[1], mainArgs[2] as File)
+            return new CreateCommandInfo(mainArgs[0], mainArgs[1], mainArgs[2] as File)
         }
-
-        // No version specified, so pull the latest from the package server.
-        def pkgInfo = getPackageInfo(packageName, repositories)
-
-        if (!pkgInfo) {
-            throw new PackageNotFoundException(packageName)
+        else {
+            return new CreateCommandInfo(mainArgs[0], '', mainArgs[1] as File)
         }
-
-        return new CreateCommandInfo(packageName, pkgInfo.latestVersion, mainArgs[1] as File)
     }
 
     protected void runPostInstallScriptWithArgs(OptionSet cmdOptions, CreateCommandInfo createData) {
@@ -214,8 +220,9 @@ USAGE: create <template> <version>? <dir>
             //
             // There is an argument for having getPackageInfo() throw the exception
             // itself. May still do that.
+            log.fine "${info.packageName} ${info.requestedVersion} is not cached locally." +
+                    " Searching the repositories for it."
             if (!info.packageInfo) info.packageInfo = getPackageInfo(info.packageName, repositories)
-            if (!info.packageInfo) throw new PackageNotFoundException(info.packageName)
 
             def templateUrl = info.packageInfo.source.getTemplateUrl(info.packageName, info.requestedVersion)
             log.fine "Attempting to download version ${info.requestedVersion} " +
@@ -246,20 +253,29 @@ USAGE: create <template> <version>? <dir>
     }
 
     protected PackageInfo getPackageInfo(String packageName, List<String> repositories) {
-        PackageInfo pkgInfo = null
-
         for (String bintrayRepoName in repositories) {
             log.fine "Searching for ${packageName} in ${bintrayRepoName}"
-            def packageSource = new BintrayPackageSource(bintrayRepoName)
-            pkgInfo = packageSource.fetchPackageInfo(packageName)
 
+            def pkgInfo = new BintrayPackageSource(bintrayRepoName).fetchPackageInfo(packageName)
             if (pkgInfo) {
                 log.fine "Found!"
-                break
+                return pkgInfo
             }
         }
 
-        return pkgInfo
+        throw new PackageNotFoundException(packageName)
+    }
+
+    private void logStart(String packageName, String version, String targetPath) {
+        if (log.isLoggable(Level.INFO)) {
+            log.info "Creating project from template " + packageName + ' ' +
+                    (version ? version : "(latest)") + " in " +
+                    (isPathCurrentDirectory(targetPath) ? "current directory" : "'${targetPath}'")
+        }
+    }
+
+    private boolean isPathCurrentDirectory(String path) {
+        return FilenameUtils.equalsNormalized(path, ".")
     }
 }
 
