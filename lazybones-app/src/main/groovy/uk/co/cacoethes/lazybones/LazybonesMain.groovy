@@ -96,10 +96,11 @@ class LazybonesMain {
             configuration = new ConfigSlurper().parse(CONFIG_FILE.toURI().toURL())
         }
         else {
-            // Default configuration
             configuration = new ConfigObject()
-            configuration.bintrayRepositories = [DEFAULT_REPOSITORY]
         }
+
+        // Set up defaults
+        if (!configuration.bintrayRepositories) configuration.bintrayRepositories = [DEFAULT_REPOSITORY]
     }
 
     private static void initLogging(Map options) {
