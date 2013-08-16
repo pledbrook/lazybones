@@ -79,7 +79,9 @@ class LazybonesScript extends Script {
      * @param substitutionVariables
      */
     def filterFiles(String filePattern, Map substitutionVariables) {
-        log.warning("[filterFiles] has been deprecated since lazybones 0.5, use [processTemplates] instead")
+        String warningMessage = "The template you are using depends on a deprecated part of the API, [filterFiles], " +
+                "which will be removed in Lazybones 1.0. Use a version of Lazybones prior to 0.5 with this template."
+        log.warning(warningMessage)
         processTemplates(filePattern, substitutionVariables)
     }
 
