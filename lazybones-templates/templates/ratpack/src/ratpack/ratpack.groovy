@@ -6,5 +6,7 @@ ratpack {
         get {
             render groovyTemplate("index.html", title: "My Ratpack App")
         }
+        
+        assets "public"
     }
 }
