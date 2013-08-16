@@ -1,11 +1,10 @@
-import org.ratpackframework.groovy.templating.TemplateRenderer
-
 import static org.ratpackframework.groovy.RatpackScript.ratpack
+import static org.ratpackframework.groovy.Template.groovyTemplate
 
 ratpack {
     handlers {
         get {
-            get(TemplateRenderer).render "index.html", title: "My Ratpack App"
+            render groovyTemplate("index.html", title: "My Ratpack App")
         }
     }
 }
