@@ -14,12 +14,19 @@ the packages to the relevant [Bintray repository](https://bintray.com/repo/brows
 
 [![Build Status](https://drone.io/github.com/pledbrook/lazybones/status.png)](https://drone.io/github.com/pledbrook/lazybones/latest)
 
-Contributors
-------------
+Developers
+----------
 
 * [Peter Ledbrook](https://github.com/pledbrook)
 * [Kyle Boon](https://github.com/kyleboon)
 * [Tommy Barker](https://github.com/tbarker9)
+
+Contributors
+------------
+
+* [Luke Daley](https://github.com/alkemist)
+* [Tomas Lin](https://github.com/tomaslin)
+
 
 Running it
 ----------
