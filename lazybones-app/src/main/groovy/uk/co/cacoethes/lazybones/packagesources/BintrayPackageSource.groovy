@@ -1,5 +1,7 @@
-package uk.co.cacoethes.lazybones
+package uk.co.cacoethes.lazybones.packagesources
 
+import uk.co.cacoethes.lazybones.NoVersionsFoundException
+import uk.co.cacoethes.lazybones.PackageInfo
 import wslite.http.HTTPClientException
 import wslite.rest.*
 

@@ -1,8 +1,11 @@
 package uk.co.cacoethes.lazybones.scm
 
+import groovy.util.logging.Log
+
 /**
  * An SCM adapter for git.
  */
+@Log
 class GitAdapter implements ScmAdapter {
     @Override
     String getExclusionsFilename() {
@@ -27,7 +30,7 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
-        ["git", "add", "."].execute([], location)
+        ["git", "add", "-A"].execute([], location)
         ["git", "commit", "-m", message].execute([], location)
     }
 }

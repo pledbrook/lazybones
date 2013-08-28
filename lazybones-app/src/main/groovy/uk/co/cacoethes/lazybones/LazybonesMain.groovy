@@ -12,9 +12,7 @@ import joptsimple.OptionParser
 import joptsimple.OptionSet
 import joptsimple.OptionSpec
 
-import uk.co.cacoethes.lazybones.Options
 import uk.co.cacoethes.lazybones.commands.*
-
 
 import static uk.co.cacoethes.lazybones.OptionParserBuilder.makeOptionParser
 

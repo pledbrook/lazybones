@@ -1,4 +1,6 @@
-package uk.co.cacoethes.lazybones
+package uk.co.cacoethes.lazybones.packagesources
+
+import uk.co.cacoethes.lazybones.PackageInfo
 
 /**
  * Represents a source of information about Lazybones packaged templates. This

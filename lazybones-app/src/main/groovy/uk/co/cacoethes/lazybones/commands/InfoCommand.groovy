@@ -3,7 +3,7 @@ package uk.co.cacoethes.lazybones.commands
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionSet
-import uk.co.cacoethes.lazybones.BintrayPackageSource
+import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageInfo
 

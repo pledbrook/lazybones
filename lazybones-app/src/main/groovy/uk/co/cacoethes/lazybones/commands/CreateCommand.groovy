@@ -1,19 +1,15 @@
 package uk.co.cacoethes.lazybones.commands
 
-import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
 import org.apache.commons.io.FilenameUtils
-import org.codehaus.groovy.control.CompilerConfiguration
-import uk.co.cacoethes.lazybones.BintrayPackageSource
-import uk.co.cacoethes.lazybones.LazybonesMain
-import uk.co.cacoethes.lazybones.LazybonesScript
 import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
-import uk.co.cacoethes.lazybones.PackageInfo
 import uk.co.cacoethes.lazybones.PackageNotFoundException
+import uk.co.cacoethes.lazybones.packagesources.PackageSource
+import uk.co.cacoethes.lazybones.packagesources.PackageSourceFactory
 import uk.co.cacoethes.lazybones.scm.GitAdapter
 import uk.co.cacoethes.lazybones.scm.ScmAdapter
 import uk.co.cacoethes.util.ArchiveMethods
@@ -27,8 +23,10 @@ import java.util.logging.Level
 @CompileStatic
 @Log
 class CreateCommand extends AbstractCommand {
-    /** Where the template packages are stored/cached */
-    static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
+    static final PackageSourceFactory packageSourceFactory = new PackageSourceFactory()
+    final PackageLocationFactory packageLocationFactory = new PackageLocationFactory()
+    final PackageDownloader packageDownloader = new PackageDownloader()
+    InstallationScriptExecuter installationScriptExecuter = new InstallationScriptExecuter()
 
     static final String USAGE = """\
 USAGE: create <template> <version>? <dir>
@@ -42,6 +40,7 @@ USAGE: create <template> <version>? <dir>
 """
     private static final String README_BASENAME = "README"
     private static final String SPACES_OPT = "spaces"
+    protected static final String VAR_OPT = "P"
     private static final String VAR_OPT = "P"
     private static final String GIT_OPT = "with-git"
 
@@ -56,6 +55,13 @@ USAGE: create <template> <version>? <dir>
     }
 
     @Override
+    protected OptionParser doAddToParser(OptionParser parser) {
+        parser.accepts(SPACES_OPT, "Sets the number of spaces to use for indent in files.").withRequiredArg()
+        parser.accepts(VAR_OPT, "Add a substitution variable for file filtering.").withRequiredArg()
+        return parser
+    }
+
+    @Override
     protected IntRange getParameterRange() {
         1..3
     }
@@ -64,29 +70,21 @@ USAGE: create <template> <version>? <dir>
     protected String getUsage() { return USAGE }
 
     protected int doExecute(OptionSet cmdOptions,  Map globalOptions, ConfigObject configuration) {
-
-        List<String> repositoryList = (List) configuration.bintrayRepositories
-
         try {
-            def createData = evaluateArgs(cmdOptions, repositoryList)
-            def pkg = fetchTemplatePackage(createData, repositoryList)
+            def createData = evaluateArgs(cmdOptions)
+
+            List<PackageSource> packageSources = packageSourceFactory.buildPackageSourceList(configuration)
+            PackageLocation packageLocation = packageLocationFactory.createPackageLocation(createData, packageSources)
+            File pkg = packageDownloader.downloadPackage(packageLocation, createData)
 
             createData.targetDir.mkdirs()
             ArchiveMethods.unzip(pkg, createData.targetDir)
 
-            runPostInstallScriptWithArgs(cmdOptions, createData)
-
+            installationScriptExecuter.runPostInstallScriptWithArgs(cmdOptions, createData)
             initScmRepo(createData.targetDir.absoluteFile)
 
-            // Find a suitable README and display that if it exists.
-            def readmeFiles = createData.targetDir.listFiles( { File dir, String name ->
-                name == README_BASENAME || name.startsWith(README_BASENAME)
-            } as FilenameFilter)
-
-            log.info ""
-            if (!readmeFiles) log.info "This project has no README"
-            else log.info readmeFiles[0].text
-
+            logReadme(createData)
+            
             log.info ""
             log.info "Project created in " + (isPathCurrentDirectory(createData.targetDir.path) ?
                         'current directory' : createData.targetDir.path) + '!'
@@ -122,6 +120,17 @@ USAGE: create <template> <version>? <dir>
         }
     }
 
+    private void logReadme(CreateCommandInfo createData) {
+        // Find a suitable README and display that if it exists.
+        def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
+            name == README_BASENAME || name.startsWith(README_BASENAME)
+        } as FilenameFilter)
+
+        log.info ""
+        if (!readmeFiles) log.info "This project has no README"
+        else log.info readmeFiles[0].text
+    }
+
     private void initScmRepo(File location) {
         if (scmAdapter) {
             scmAdapter.createRepository(location)
@@ -129,16 +138,11 @@ USAGE: create <template> <version>? <dir>
         }
     }
 
-    protected CreateCommandInfo evaluateArgs(OptionSet commandOptions, List<String> repositories) {
+    protected CreateCommandInfo evaluateArgs(OptionSet commandOptions) {
         def mainArgs = commandOptions.nonOptionArguments()
         def createCmdInfo = getCreateInfoFromArgs(mainArgs)
 
         logStart createCmdInfo.packageName, createCmdInfo.requestedVersion, createCmdInfo.targetDir.path
-
-        if (!createCmdInfo.requestedVersion) {
-            // No version specified, so pull the latest from the package server.
-            createCmdInfo.requestedVersion = getPackageInfo(createCmdInfo.packageName, repositories).latestVersion
-        }
 
         // SCM repository requested?
         if (commandOptions.has(GIT_OPT)) scmAdapter = new GitAdapter()
@@ -155,135 +159,10 @@ USAGE: create <template> <version>? <dir>
         }
     }
 
-    protected void runPostInstallScriptWithArgs(OptionSet cmdOptions, CreateCommandInfo createData) {
-        // Run the post-install script if it exists. The user can pass variables
-        // to the script via -P command line arguments. This also places
-        // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
-        // variables into the script binding.
-        try {
-            def scriptVariables = cmdOptions.valuesOf(VAR_OPT).collectEntries { String it -> it.split('=') as List }
-            scriptVariables << evaluateVersionScriptVariables()
-            runPostInstallScript(createData.targetDir, scriptVariables)
-        }
-        catch (all) {
-            throw new LazybonesScriptException(all)
-        }
-    }
-
-    /**
-     * Runs the post install script if it exists in the unpacked template
-     * package. Once the script has been run, it is deleted.
-     * @param targetDir the target directory that contains the lazybones.groovy script
-     * @param model a map of variables available to the script
-     * @return the lazybones script if it exists
-     */
-    protected Script runPostInstallScript(File targetDir, Map<String, String> model) {
-        def file = new File(targetDir, "lazybones.groovy")
-        if (file.exists()) {
-            def compiler = new CompilerConfiguration()
-            compiler.scriptBaseClass = LazybonesScript.name
-
-            // Can't use 'this' here because the static type checker does not
-            // treat it as the class instance:
-            //       https://jira.codehaus.org/browse/GROOVY-6162
-            def shell = new GroovyShell(getClass().classLoader, new Binding(model), compiler)
-
-            LazybonesScript script = shell.parse(file) as LazybonesScript
-            script.targetDir = targetDir.path
-            script.scmExclusionFile = scmAdapter ? new File(targetDir, scmAdapter.exclusionsFilename) : null
-            script.run()
-            file.delete()
-            return script
-        }
-
-        return null
-    }
-
-    /**
-     * Reads the Lazybones version, breaks it up, and adds {@code lazybonesVersion},
-     * {@code lazybonesMajorVersion}, and {@code lazybonesMinorVersion} variables
-     * to a map that is then returned.
-     */
-    protected Map evaluateVersionScriptVariables() {
-        def version = LazybonesMain.readVersion()
-        def vars = [lazybonesVersion: version]
-
-        def versionParts = version.split(/[\.\-]/)
-        assert versionParts.size() > 1
-
-        vars["lazybonesMajorVersion"] = versionParts[0]?.toInteger()
-        vars["lazybonesMinorVersion"] = versionParts[1]?.toInteger()
-
-        return vars
-    }
-
-    @Override
-    protected OptionParser doAddToParser(OptionParser parser) {
-        parser.accepts(SPACES_OPT, "Sets the number of spaces to use for indent in files.").withRequiredArg()
-        parser.accepts(VAR_OPT, "Add a substitution variable for file filtering.").withRequiredArg()
-        parser.accepts(GIT_OPT, "Creates a git repository in the new project.")
-        return parser
-    }
-
-    protected File fetchTemplatePackage(CreateCommandInfo info, List<String> repositories) {
-        // Does it exist in the cache? If not, pull it from Bintray.
-        def packageFile = new File(INSTALL_DIR, "${info.packageName}-${info.requestedVersion}.zip")
-
-        if (!packageFile.exists()) {
-            INSTALL_DIR.mkdirs()
-
-            // The package info may not have been requested yet. It depends on
-            // whether the user specified a specific version or not. Hence we
-            // try to fetch the package info first and only throw an exception
-            // if it's still null.
-            //
-            // There is an argument for having getPackageInfo() throw the exception
-            // itself. May still do that.
-            log.fine "${info.packageName} ${info.requestedVersion} is not cached locally." +
-                    " Searching the repositories for it."
-            if (!info.packageInfo) info.packageInfo = getPackageInfo(info.packageName, repositories)
-
-            def templateUrl = info.packageInfo.source.getTemplateUrl(info.packageName, info.requestedVersion)
-            log.fine "Attempting to download version ${info.requestedVersion} " +
-                    "of template '${info.packageName}' into ${INSTALL_DIR}"
-
-            try {
-                packageFile.withOutputStream { OutputStream out ->
-                    new URL(templateUrl).withInputStream { InputStream input ->
-                        out << input
-                    }
-                }
-            }
-            catch (FileNotFoundException ex) {
-                packageFile.deleteOnExit()
-                throw new PackageNotFoundException(info.packageName, info.requestedVersion, ex)
-            }
-            catch (all) {
-                packageFile.deleteOnExit()
-                throw all
-            }
-        }
-
-        return packageFile
-    }
-
     protected boolean hasVersionArg(List<String> args) {
         return args.size() == 3
     }
 
-    protected PackageInfo getPackageInfo(String packageName, List<String> repositories) {
-        for (String bintrayRepoName in repositories) {
-            log.fine "Searching for ${packageName} in ${bintrayRepoName}"
-
-            def pkgInfo = new BintrayPackageSource(bintrayRepoName).fetchPackageInfo(packageName)
-            if (pkgInfo) {
-                log.fine "Found!"
-                return pkgInfo
-            }
-        }
-
-        throw new PackageNotFoundException(packageName)
-    }
 
     private void logStart(String packageName, String version, String targetPath) {
         if (log.isLoggable(Level.INFO)) {
@@ -296,12 +175,4 @@ USAGE: create <template> <version>? <dir>
     private boolean isPathCurrentDirectory(String path) {
         return FilenameUtils.equalsNormalized(path, ".")
     }
-}
-
-@Canonical
-class CreateCommandInfo {
-    String packageName
-    String requestedVersion
-    File targetDir
-    PackageInfo packageInfo
 }
