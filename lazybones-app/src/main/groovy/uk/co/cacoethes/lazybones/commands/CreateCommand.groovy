@@ -14,6 +14,8 @@ import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageInfo
 import uk.co.cacoethes.lazybones.PackageNotFoundException
+import uk.co.cacoethes.lazybones.scm.GitAdapter
+import uk.co.cacoethes.lazybones.scm.ScmAdapter
 import uk.co.cacoethes.util.ArchiveMethods
 
 import java.util.logging.Level
@@ -41,6 +43,9 @@ USAGE: create <template> <version>? <dir>
     private static final String README_BASENAME = "README"
     private static final String SPACES_OPT = "spaces"
     private static final String VAR_OPT = "P"
+    private static final String GIT_OPT = "with-git"
+
+    private ScmAdapter scmAdapter
 
     @Override
     String getName() { return "create" }
@@ -70,6 +75,8 @@ USAGE: create <template> <version>? <dir>
             ArchiveMethods.unzip(pkg, createData.targetDir)
 
             runPostInstallScriptWithArgs(cmdOptions, createData)
+
+            initScmRepo(createData.targetDir.absoluteFile)
 
             // Find a suitable README and display that if it exists.
             def readmeFiles = createData.targetDir.listFiles( { File dir, String name ->
@@ -115,6 +122,13 @@ USAGE: create <template> <version>? <dir>
         }
     }
 
+    private void initScmRepo(File location) {
+        if (scmAdapter) {
+            scmAdapter.createRepository(location)
+            scmAdapter.commitInitialFiles(location, "Initial commit")
+        }
+    }
+
     protected CreateCommandInfo evaluateArgs(OptionSet commandOptions, List<String> repositories) {
         def mainArgs = commandOptions.nonOptionArguments()
         def createCmdInfo = getCreateInfoFromArgs(mainArgs)
@@ -125,6 +139,9 @@ USAGE: create <template> <version>? <dir>
             // No version specified, so pull the latest from the package server.
             createCmdInfo.requestedVersion = getPackageInfo(createCmdInfo.packageName, repositories).latestVersion
         }
+
+        // SCM repository requested?
+        if (commandOptions.has(GIT_OPT)) scmAdapter = new GitAdapter()
 
         return createCmdInfo
     }
@@ -173,6 +190,7 @@ USAGE: create <template> <version>? <dir>
 
             LazybonesScript script = shell.parse(file) as LazybonesScript
             script.targetDir = targetDir.path
+            script.scmExclusionFile = scmAdapter ? new File(targetDir, scmAdapter.exclusionsFilename) : null
             script.run()
             file.delete()
             return script
@@ -203,6 +221,7 @@ USAGE: create <template> <version>? <dir>
     protected OptionParser doAddToParser(OptionParser parser) {
         parser.accepts(SPACES_OPT, "Sets the number of spaces to use for indent in files.").withRequiredArg()
         parser.accepts(VAR_OPT, "Add a substitution variable for file filtering.").withRequiredArg()
+        parser.accepts(GIT_OPT, "Creates a git repository in the new project.")
         return parser
     }
 

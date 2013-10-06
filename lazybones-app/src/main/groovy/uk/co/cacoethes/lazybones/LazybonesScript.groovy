@@ -36,6 +36,22 @@ class LazybonesScript extends Script {
      */
     Reader reader = new InputStreamReader(System.in)
 
+    File scmExclusionFile
+
+    /**
+     * Declares the list of file patterns that should be excluded from SCM.
+     */
+    void scmExclusions(String... exclusions) {
+        if (!scmExclusionFile) return
+
+        log.fine "Writing SCM exclusions file with: ${exclusions}"
+        scmExclusionFile.withPrintWriter(fileEncoding) { writer ->
+            for (String exclusion in exclusions) {
+                writer.println exclusion
+            }
+        }
+    }
+
     /**
      * Prints a message asking for a property value.  If the user has no response the default
      * value will be returned.  null can be returned

@@ -116,6 +116,37 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         output =~ /No version of 'lazybones-project' has been published/
     }
 
+    @Betamax(tape="create-tape")
+    def "lazybones creates git repository on --with-git"() {
+        when: "creating a groovyapp with all options passed in"
+        def args = [
+                "create",
+                "test-tmpl",
+                "0.2",
+                "groovyappWithGit",
+                "-Pversion=0.2",
+                "-Pgroup=bar",
+                "--with-git"]
+        def exitCode = runCommand(args, baseWorkDir)
+
+        then: "It successfully completes"
+        exitCode == 0
+
+        and: "Creates a git repository"
+        def appDir = new File(baseWorkDir, "groovyappWithGit")
+        new File(appDir, ".git").exists()
+
+        and: "The .gitignore file contains the expected entries"
+        def text = new File(appDir, ".gitignore").text.trim()
+        text == """\
+*.iws
+build/
+*.log"""
+
+        and: "There are no untracked files"
+        ["git", "status"].execute([], appDir).text.contains("nothing to commit")
+    }
+
     def "Create can install from cache without template being in repository"() {
         when: "I run lazybones with the create command for a template that's only in the cache"
         def exitCode = runCommand(
