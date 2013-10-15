@@ -1,5 +1,6 @@
 package uk.co.cacoethes.lazybones.packagesources
 
+import groovy.util.logging.Log
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageInfo
 import wslite.http.HTTPClientException
@@ -11,6 +12,7 @@ import wslite.rest.*
  * the Lazybones template repository for information on what packages are
  * available and to get extra information about them.
  */
+@Log
 class BintrayPackageSource implements PackageSource {
     static final String TEMPLATE_BASE_URL = "http://dl.bintray.com/v1/content/"
     static final String API_BASE_URL = "https://bintray.com/api/v1"
@@ -74,6 +76,7 @@ class BintrayPackageSource implements PackageSource {
 
             return null
         }
+
 
         // The package may have no published versions, so we need to handle the
         // case where `latest_version` is null.

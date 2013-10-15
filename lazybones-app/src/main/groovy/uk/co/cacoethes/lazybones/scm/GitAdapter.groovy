@@ -30,7 +30,7 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
-        ["git", "add", "-A"].execute([], location)
+        ["git", "add", "."].execute([], location)
         ["git", "commit", "-m", message].execute([], location)
     }
 }

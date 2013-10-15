@@ -10,8 +10,6 @@ import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.lazybones.packagesources.PackageSource
 import uk.co.cacoethes.lazybones.packagesources.PackageSourceFactory
-import uk.co.cacoethes.lazybones.scm.GitAdapter
-import uk.co.cacoethes.lazybones.scm.ScmAdapter
 import uk.co.cacoethes.util.ArchiveMethods
 
 import java.util.logging.Level
@@ -41,10 +39,7 @@ USAGE: create <template> <version>? <dir>
     private static final String README_BASENAME = "README"
     private static final String SPACES_OPT = "spaces"
     protected static final String VAR_OPT = "P"
-    private static final String VAR_OPT = "P"
-    private static final String GIT_OPT = "with-git"
-
-    private ScmAdapter scmAdapter
+    protected static final String GIT_OPT = "with-git"
 
     @Override
     String getName() { return "create" }
@@ -58,6 +53,7 @@ USAGE: create <template> <version>? <dir>
     protected OptionParser doAddToParser(OptionParser parser) {
         parser.accepts(SPACES_OPT, "Sets the number of spaces to use for indent in files.").withRequiredArg()
         parser.accepts(VAR_OPT, "Add a substitution variable for file filtering.").withRequiredArg()
+        parser.accepts(GIT_OPT, "Creates a git repository in the new project.")
         return parser
     }
 
@@ -81,13 +77,10 @@ USAGE: create <template> <version>? <dir>
             ArchiveMethods.unzip(pkg, createData.targetDir)
 
             installationScriptExecuter.runPostInstallScriptWithArgs(cmdOptions, createData)
-            initScmRepo(createData.targetDir.absoluteFile)
 
             logReadme(createData)
-            
-            log.info ""
-            log.info "Project created in " + (isPathCurrentDirectory(createData.targetDir.path) ?
-                        'current directory' : createData.targetDir.path) + '!'
+
+            logSuccess(createData)
 
             return 0
         }
@@ -120,32 +113,11 @@ USAGE: create <template> <version>? <dir>
         }
     }
 
-    private void logReadme(CreateCommandInfo createData) {
-        // Find a suitable README and display that if it exists.
-        def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
-            name == README_BASENAME || name.startsWith(README_BASENAME)
-        } as FilenameFilter)
-
-        log.info ""
-        if (!readmeFiles) log.info "This project has no README"
-        else log.info readmeFiles[0].text
-    }
-
-    private void initScmRepo(File location) {
-        if (scmAdapter) {
-            scmAdapter.createRepository(location)
-            scmAdapter.commitInitialFiles(location, "Initial commit")
-        }
-    }
-
     protected CreateCommandInfo evaluateArgs(OptionSet commandOptions) {
         def mainArgs = commandOptions.nonOptionArguments()
         def createCmdInfo = getCreateInfoFromArgs(mainArgs)
 
         logStart createCmdInfo.packageName, createCmdInfo.requestedVersion, createCmdInfo.targetDir.path
-
-        // SCM repository requested?
-        if (commandOptions.has(GIT_OPT)) scmAdapter = new GitAdapter()
 
         return createCmdInfo
     }
@@ -170,6 +142,23 @@ USAGE: create <template> <version>? <dir>
                     (version ? version : "(latest)") + " in " +
                     (isPathCurrentDirectory(targetPath) ? "current directory" : "'${targetPath}'")
         }
+    }
+
+    private void logSuccess(CreateCommandInfo createData) {
+        log.info ""
+        log.info "Project created in " + (isPathCurrentDirectory(createData.targetDir.path) ?
+                'current directory' : createData.targetDir.path) + '!'
+    }
+
+    private void logReadme(CreateCommandInfo createData) {
+        // Find a suitable README and display that if it exists.
+        def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
+            name == README_BASENAME || name.startsWith(README_BASENAME)
+        } as FilenameFilter)
+
+        log.info ""
+        if (!readmeFiles) log.info "This project has no README"
+        else log.info readmeFiles[0].text
     }
 
     private boolean isPathCurrentDirectory(String path) {

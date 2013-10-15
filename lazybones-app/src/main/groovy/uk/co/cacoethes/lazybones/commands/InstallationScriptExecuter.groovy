@@ -1,14 +1,23 @@
 package uk.co.cacoethes.lazybones.commands
 
+import groovy.util.logging.Log
 import joptsimple.OptionSet
 import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.LazybonesMain
 import uk.co.cacoethes.lazybones.LazybonesScript
 import uk.co.cacoethes.lazybones.LazybonesScriptException
+import uk.co.cacoethes.lazybones.scm.GitAdapter
+import uk.co.cacoethes.lazybones.scm.ScmAdapter
 
 
+@Log
 class InstallationScriptExecuter {
+    private ScmAdapter scmAdapter
+
     void runPostInstallScriptWithArgs(OptionSet cmdOptions, CreateCommandInfo createData) {
+
+        if (cmdOptions.has(CreateCommand.GIT_OPT)) scmAdapter = new GitAdapter()
+
         // Run the post-install script if it exists. The user can pass variables
         // to the script via -P command line arguments. This also places
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
@@ -17,6 +26,7 @@ class InstallationScriptExecuter {
             def scriptVariables = cmdOptions.valuesOf(CreateCommand.VAR_OPT).collectEntries { String it -> it.split('=') as List }
             scriptVariables << evaluateVersionScriptVariables()
             runPostInstallScript(createData.targetDir, scriptVariables)
+            initScmRepo(createData.targetDir.absoluteFile)
         }
         catch (all) {
             throw new LazybonesScriptException(all)
@@ -43,6 +53,7 @@ class InstallationScriptExecuter {
 
             LazybonesScript script = shell.parse(file) as LazybonesScript
             script.setTargetDir(targetDir.path)
+            script.scmExclusionFile = scmAdapter ? new File(targetDir, scmAdapter.exclusionsFilename) : null
             script.run()
             file.delete()
             return script
@@ -67,5 +78,14 @@ class InstallationScriptExecuter {
         vars["lazybonesMinorVersion"] = versionParts[1]?.toInteger()
 
         return vars
+    }
+
+    private void initScmRepo(File location) {
+        if (scmAdapter) {
+            log.severe("Creating repository")
+            scmAdapter.createRepository(location)
+            log.severe("Committing Files")
+            scmAdapter.commitInitialFiles(location, "Initial commit")
+        }
     }
 }

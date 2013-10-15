@@ -30,25 +30,20 @@ class PackageLocationFactory {
     }
 
     private PackageLocation createForBintray(CreateCommandInfo commandInfo, List<PackageSource> packageSources) {
-        try {
-            PackageInfo packageInfo = getPackageInfo(commandInfo.packageName, packageSources)
-            String versionToDownload = commandInfo.requestedVersion ?: packageInfo.latestVersion
-            String cacheLocation = INSTALL_DIR.absolutePath + '/' + commandInfo.packageName + '-' + versionToDownload + '.zip'
-            String remoteLocation = packageInfo.source.getTemplateUrl(packageInfo.name, versionToDownload)
-
-            return new PackageLocation(remoteLocation: remoteLocation, cacheLocation: cacheLocation)
-        } catch (PackageNotFoundException e) {
-            if (commandInfo.requestedVersion) {
-                String cacheLocation = INSTALL_DIR.absolutePath + '/' + commandInfo.packageName + '-' + commandInfo.requestedVersion + '.zip'
-                File cacheFile = new File(cacheLocation)
-                if (cacheFile.exists()) {
-                    return new PackageLocation(cacheLocation: cacheLocation)
-                }
+        if (commandInfo.requestedVersion) {
+            String cacheLocation = INSTALL_DIR.absolutePath + '/' + commandInfo.packageName + '-' + commandInfo.requestedVersion + '.zip'
+            File cacheFile = new File(cacheLocation)
+            if (cacheFile.exists()) {
+                return new PackageLocation(cacheLocation: cacheLocation)
             }
-
-            throw e
         }
 
+        PackageInfo packageInfo = getPackageInfo(commandInfo.packageName, packageSources)
+        String versionToDownload = commandInfo.requestedVersion ?: packageInfo.latestVersion
+        String cacheLocation = INSTALL_DIR.absolutePath + '/' + commandInfo.packageName + '-' + versionToDownload + '.zip'
+        String remoteLocation = packageInfo.source.getTemplateUrl(packageInfo.name, versionToDownload)
+
+        return new PackageLocation(remoteLocation: remoteLocation, cacheLocation: cacheLocation)
     }
 
     protected PackageInfo getPackageInfo(String packageName, List<PackageSource> packageSources) {
