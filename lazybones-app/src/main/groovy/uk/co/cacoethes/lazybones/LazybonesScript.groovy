@@ -88,7 +88,8 @@ class LazybonesScript extends Script {
     }
 
     /**
-     * Been deprecated as of lazybones 0.5, please use {@link LazybonesScript#processTemplates(java.lang.String, java.util.Map)}
+     * Been deprecated as of lazybones 0.5, please use
+     * {@link LazybonesScript#processTemplates(java.lang.String, java.util.Map)}
      *
      * @deprecated
      * @param filePattern

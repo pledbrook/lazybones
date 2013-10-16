@@ -12,12 +12,12 @@ import java.security.ProtectionDomain
  * <a href="http://jaasbook.com/chapters/06/jaas_in_action_chapter0.html">JAAS in Action</a>.
  */
 class CompositePolicy extends Policy {
-    private List policies = Collections.EMPTY_LIST
+    List policies = Collections.EMPTY_LIST
 
     CompositePolicy(List policies) { this.policies = new ArrayList(policies) }
 
     PermissionCollection getPermissions(CodeSource codeSource) {
-        return aggregatePermissions { Policy policy -> policy.getPermissions(codeSource) };
+        return aggregatePermissions { Policy policy -> policy.getPermissions(codeSource) }
     }
 
     PermissionCollection getPermissions(ProtectionDomain domain) {
@@ -30,8 +30,9 @@ class CompositePolicy extends Policy {
 
     void refresh() {
         for (Iterator itr = policies.iterator(); itr.hasNext();) {
-            Policy p = (Policy) itr.next();
-            p.refresh(); }
+            Policy p = (Policy) itr.next()
+            p.refresh()
+        }
     }
 
     protected PermissionCollection aggregatePermissions(Closure cl) {

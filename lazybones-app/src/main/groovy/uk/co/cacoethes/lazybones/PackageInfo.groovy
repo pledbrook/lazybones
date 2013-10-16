@@ -1,5 +1,7 @@
 package uk.co.cacoethes.lazybones
 
+import uk.co.cacoethes.lazybones.packagesources.PackageSource
+
 @groovy.transform.Canonical
 class PackageInfo {
     PackageSource source
@@ -9,4 +11,8 @@ class PackageInfo {
     String owner
     String description
     String url
+
+    Boolean hasVersion() {
+        versions as boolean
+    }
 }

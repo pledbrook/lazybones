@@ -15,7 +15,8 @@ import uk.co.cacoethes.lazybones.Options
 @SuppressWarnings('FactoryMethodName')
 abstract class AbstractCommand implements Command {
     @Override
-    public int execute(List<String> args, Map globalOptions, ConfigObject config) {
+    @SuppressWarnings('UnnecessaryGetter')
+    int execute(List<String> args, Map globalOptions, ConfigObject config) {
         OptionSet cmdOptions = parseArguments(args, parameterRange)
         if (!cmdOptions) return 1
 
