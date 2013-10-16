@@ -1,7 +1,7 @@
 package uk.co.cacoethes.lazybones.packagesources
 
 
-class PackageSourceFactory {
+class PackageSourceBuilder {
     /**
      * Builds an ordered list of package sources which could provide the given package name.
      *

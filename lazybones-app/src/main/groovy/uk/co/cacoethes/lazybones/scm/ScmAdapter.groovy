@@ -14,7 +14,7 @@ interface ScmAdapter {
     /**
      * Creates a new local repository in the given location.
      */
-    void createRepository(File location)
+    void initializeRepository(File location)
 
     /**
      * Adds and commits all the files in the given location. It should take

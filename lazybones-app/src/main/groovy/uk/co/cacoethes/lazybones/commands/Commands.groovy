@@ -10,5 +10,5 @@ final class Commands {
             new InfoCommand(),
             new HelpCommand() ])
 
-    private Commands() {}
+    private Commands() { }
 }

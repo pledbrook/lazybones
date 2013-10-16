@@ -9,7 +9,7 @@ import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.lazybones.packagesources.PackageSource
-import uk.co.cacoethes.lazybones.packagesources.PackageSourceFactory
+import uk.co.cacoethes.lazybones.packagesources.PackageSourceBuilder
 import uk.co.cacoethes.util.ArchiveMethods
 
 import java.util.logging.Level
@@ -21,10 +21,10 @@ import java.util.logging.Level
 @CompileStatic
 @Log
 class CreateCommand extends AbstractCommand {
-    static final PackageSourceFactory packageSourceFactory = new PackageSourceFactory()
-    final PackageLocationFactory packageLocationFactory = new PackageLocationFactory()
+    final PackageSourceBuilder packageSourceFactory = new PackageSourceBuilder()
+    final PackageLocationBuilder packageLocationFactory = new PackageLocationBuilder()
     final PackageDownloader packageDownloader = new PackageDownloader()
-    InstallationScriptExecuter installationScriptExecuter = new InstallationScriptExecuter()
+    final InstallationScriptExecuter installationScriptExecuter = new InstallationScriptExecuter()
 
     static final String USAGE = """\
 USAGE: create <template> <version>? <dir>
@@ -70,7 +70,7 @@ USAGE: create <template> <version>? <dir>
             def createData = evaluateArgs(cmdOptions)
 
             List<PackageSource> packageSources = packageSourceFactory.buildPackageSourceList(configuration)
-            PackageLocation packageLocation = packageLocationFactory.createPackageLocation(createData, packageSources)
+            PackageLocation packageLocation = packageLocationFactory.buildPackageLocation(createData, packageSources)
             File pkg = packageDownloader.downloadPackage(packageLocation, createData)
 
             createData.targetDir.mkdirs()
@@ -126,9 +126,8 @@ USAGE: create <template> <version>? <dir>
         if (hasVersionArg(mainArgs)) {
             return new CreateCommandInfo(mainArgs[0], mainArgs[1], mainArgs[2] as File)
         }
-        else {
-            return new CreateCommandInfo(mainArgs[0], '', mainArgs[1] as File)
-        }
+
+        return new CreateCommandInfo(mainArgs[0], '', mainArgs[1] as File)
     }
 
     protected boolean hasVersionArg(List<String> args) {
@@ -139,7 +138,7 @@ USAGE: create <template> <version>? <dir>
     private void logStart(String packageName, String version, String targetPath) {
         if (log.isLoggable(Level.INFO)) {
             log.info "Creating project from template " + packageName + ' ' +
-                    (version ? version : "(latest)") + " in " +
+                    (version ?: "(latest)") + " in " +
                     (isPathCurrentDirectory(targetPath) ? "current directory" : "'${targetPath}'")
         }
     }
@@ -152,7 +151,7 @@ USAGE: create <template> <version>? <dir>
 
     private void logReadme(CreateCommandInfo createData) {
         // Find a suitable README and display that if it exists.
-        def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
+        def readmeFiles = createData.targetDir.listFiles( { File dir, String name ->
             name == README_BASENAME || name.startsWith(README_BASENAME)
         } as FilenameFilter)
 

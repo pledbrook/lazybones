@@ -7,6 +7,8 @@ import groovy.util.logging.Log
  */
 @Log
 class GitAdapter implements ScmAdapter {
+    private static final String GIT = "git"
+
     @Override
     String getExclusionsFilename() {
         return ".gitignore"
@@ -17,8 +19,8 @@ class GitAdapter implements ScmAdapter {
      * external {@code git init} command.
      */
     @Override
-    void createRepository(File location) {
-        ["git", "init"].execute([], location)
+    void initializeRepository(File location) {
+        [GIT, "init"].execute([], location)
     }
 
     /**
@@ -30,7 +32,7 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
-        ["git", "add", "."].execute([], location)
-        ["git", "commit", "-m", message].execute([], location)
+        [GIT, "add", "."].execute([], location)
+        [GIT, "commit", "-m", message].execute([], location)
     }
 }

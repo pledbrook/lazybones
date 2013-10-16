@@ -23,7 +23,9 @@ class InstallationScriptExecuter {
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
         // variables into the script binding.
         try {
-            def scriptVariables = cmdOptions.valuesOf(CreateCommand.VAR_OPT).collectEntries { String it -> it.split('=') as List }
+            def scriptVariables = cmdOptions.valuesOf(CreateCommand.VAR_OPT).
+                    collectEntries { String it -> it.split('=') as List }
+
             scriptVariables << evaluateVersionScriptVariables()
             runPostInstallScript(createData.targetDir, scriptVariables)
             initScmRepo(createData.targetDir.absoluteFile)
@@ -82,9 +84,7 @@ class InstallationScriptExecuter {
 
     private void initScmRepo(File location) {
         if (scmAdapter) {
-            log.severe("Creating repository")
-            scmAdapter.createRepository(location)
-            log.severe("Committing Files")
+            scmAdapter.initializeRepository(location)
             scmAdapter.commitInitialFiles(location, "Initial commit")
         }
     }

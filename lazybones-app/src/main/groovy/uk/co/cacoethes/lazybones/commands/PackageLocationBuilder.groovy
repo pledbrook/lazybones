@@ -9,29 +9,29 @@ import uk.co.cacoethes.lazybones.packagesources.PackageSource
  * Builds a PackageLocation object based on the command info from the
  */
 @Log
-class PackageLocationFactory {
+class PackageLocationBuilder {
     static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
 
-    PackageLocation createPackageLocation(CreateCommandInfo commandInfo, List<PackageSource> packageSources) {
+    PackageLocation buildPackageLocation(CreateCommandInfo commandInfo, List<PackageSource> packageSources) {
         if (packageNameIsAUrl(commandInfo.packageName)) {
-            return createForUrl(commandInfo)
+            return buildForUrl(commandInfo)
         }
 
-        createForBintray(commandInfo, packageSources)
+        buildForBintray(commandInfo, packageSources)
     }
 
     private boolean packageNameIsAUrl(String packageName) {
         packageName.startsWith("http://") || packageName.startsWith("https://")
     }
 
-    private PackageLocation createForUrl(CreateCommandInfo commandInfo) {
-        String cacheLocation = INSTALL_DIR.absolutePath + '/' + commandInfo.packageName.split('/').last() + '.zip'
+    private PackageLocation buildForUrl(CreateCommandInfo commandInfo) {
+        String cacheLocation = cacheLocationPattern(commandInfo.packageName, null)
         return new PackageLocation(remoteLocation: commandInfo.packageName, cacheLocation: cacheLocation)
     }
 
-    private PackageLocation createForBintray(CreateCommandInfo commandInfo, List<PackageSource> packageSources) {
+    private PackageLocation buildForBintray(CreateCommandInfo commandInfo, List<PackageSource> packageSources) {
         if (commandInfo.requestedVersion) {
-            String cacheLocation = INSTALL_DIR.absolutePath + '/' + commandInfo.packageName + '-' + commandInfo.requestedVersion + '.zip'
+            String cacheLocation = cacheLocationPattern(commandInfo.packageName, commandInfo.requestedVersion)
             File cacheFile = new File(cacheLocation)
             if (cacheFile.exists()) {
                 return new PackageLocation(cacheLocation: cacheLocation)
@@ -40,7 +40,7 @@ class PackageLocationFactory {
 
         PackageInfo packageInfo = getPackageInfo(commandInfo.packageName, packageSources)
         String versionToDownload = commandInfo.requestedVersion ?: packageInfo.latestVersion
-        String cacheLocation = INSTALL_DIR.absolutePath + '/' + commandInfo.packageName + '-' + versionToDownload + '.zip'
+        String cacheLocation = cacheLocationPattern(commandInfo.packageName, versionToDownload)
         String remoteLocation = packageInfo.source.getTemplateUrl(packageInfo.name, versionToDownload)
 
         return new PackageLocation(remoteLocation: remoteLocation, cacheLocation: cacheLocation)
@@ -58,5 +58,10 @@ class PackageLocationFactory {
         }
 
         throw new PackageNotFoundException(packageName)
+    }
+
+    private String cacheLocationPattern(String name, String version) {
+        INSTALL_DIR.absolutePath + '/' + name + (version ? '-' + version : '') + '.zip'
+
     }
 }
