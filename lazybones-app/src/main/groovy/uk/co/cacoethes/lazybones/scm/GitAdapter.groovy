@@ -15,7 +15,7 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void createRepository(File location) {
-        ["git", "init"].execute([], location)
+        ["git", "init"].execute([], location).waitFor()
     }
 
     /**
@@ -27,7 +27,7 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
-        ["git", "add", "."].execute([], location)
-        ["git", "commit", "-m", message].execute([], location)
+        ["git", "add", "."].execute([], location).waitFor()
+        ["git", "commit", "-m", message].execute([], location).waitFor()
     }
 }
