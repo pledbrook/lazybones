@@ -1,9 +1,14 @@
 package uk.co.cacoethes.lazybones.scm
 
+import groovy.util.logging.Log
+
 /**
  * An SCM adapter for git.
  */
+@Log
 class GitAdapter implements ScmAdapter {
+    private static final String GIT = "git"
+
     @Override
     String getExclusionsFilename() {
         return ".gitignore"
@@ -14,8 +19,8 @@ class GitAdapter implements ScmAdapter {
      * external {@code git init} command.
      */
     @Override
-    void createRepository(File location) {
-        ["git", "init"].execute([], location).waitFor()
+    void initializeRepository(File location) {
+        [GIT, "init"].execute([], location).waitFor()
     }
 
     /**
@@ -27,7 +32,7 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
-        ["git", "add", "."].execute([], location).waitFor()
-        ["git", "commit", "-m", message].execute([], location).waitFor()
+        [GIT, "add", "."].execute([], location).waitFor()
+        [GIT, "commit", "-m", message].execute([], location).waitFor()
     }
 }

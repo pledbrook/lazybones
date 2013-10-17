@@ -48,6 +48,12 @@ directory I would run
 
     lazybones create ratpack-lite 0.1 my-rat-app
 
+I can create a template from a generic URL as well.
+
+    lazybones create http://dl.bintray.com/kyleboon/lazybones/java-basic-template-0.1.zip my-app
+
+When using the URL option, there is no need to specify a version.
+
 I can also create the project in the current directory by passing in '.' as
 the target directory.
 

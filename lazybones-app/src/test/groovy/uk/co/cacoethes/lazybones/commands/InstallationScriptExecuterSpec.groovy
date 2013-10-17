@@ -9,14 +9,14 @@ import uk.co.cacoethes.lazybones.LazybonesScript
 /**
  * @author Tommy Barker
  */
-class CreateCommandSpec extends Specification {
+class InstallationScriptExecuterSpec extends Specification {
 
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
 
     void "lazybones gets deleted after running"() {
         given: "a create command instance"
-        def cmd = new CreateCommand()
+        def cmd = new InstallationScriptExecuter()
 
         when: "I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
@@ -33,7 +33,7 @@ class CreateCommandSpec extends Specification {
 
     void "lazybones has the targetDir set before running"() {
         given: "a create command instance"
-        def cmd = new CreateCommand()
+        InstallationScriptExecuter cmd = new InstallationScriptExecuter()
 
         when: "when I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
@@ -41,12 +41,12 @@ class CreateCommandSpec extends Specification {
         LazybonesScript script = cmd.runPostInstallScript(testFolder.root, [:])
 
         then: "the targetDir is set"
-        assert script.getTargetDir()
+        script.getTargetDir() == testFolder.root.path
     }
 
     void "if lazybones does not exist, nothing happens"() {
         given: "a create command instance"
-        def cmd = new CreateCommand()
+        def cmd = new InstallationScriptExecuter()
 
         when: "I runLazyBonesIfExists and file does not exist, nothing happens"
         File file = new File("foobar")
