@@ -50,6 +50,43 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
     }
 
     @Betamax(tape="create-tape")
+    def "Create command installs a template from an HTTP URL"() {
+        when: "I run lazybones with the create command using a full URL for the ratpack template"
+        def packageUrl = "http://dl.dropboxusercontent.com/u/29802534/custom-ratpack.zip"
+        def exitCode = runCommand(["--verbose", "create", packageUrl, "ratapp"], baseWorkDir)
+
+        then: "It unpacks the template, retaining file permissions"
+        exitCode == 0
+
+        def appDir = new File(baseWorkDir, "ratapp")
+        appDir.exists()
+        new File(appDir, "gradlew").canExecute()
+        new File(appDir, "src/main/groovy").isDirectory()
+        new File(appDir, "src/ratpack/public/index.html").isFile()
+
+        and: "It says that the latest version of the package is being installed in the target directory"
+        output =~ /Creating project from template http:\/\/dl\.dropboxusercontent\.com.* \(latest\) in 'ratapp'/
+    }
+
+    def "Create command installs a template from a file URL"() {
+        when: "I run lazybones with the create command for the ratpack template"
+        def packageUrl = getClass().classLoader.getResource("dummy-app.zip").toURI().toString()
+        def exitCode = runCommand(["--verbose", "create", packageUrl, "mvnapp"], baseWorkDir)
+
+        then: "It unpacks the template, retaining file permissions"
+        exitCode == 0
+
+        def appDir = new File(baseWorkDir, "mvnapp")
+        appDir.exists()
+        new File(appDir, "pom.xml").isFile()
+        new File(appDir, "src/main/java").isDirectory()
+        new File(appDir, "src/test/resources").isDirectory()
+
+        and: "It says that the latest version of the package is being installed in the target directory"
+        output =~ /Creating project from template file:\/.*\/dummy-app.zip \(latest\) in 'mvnapp'/
+    }
+
+    @Betamax(tape="create-tape")
     def "Create command installs a packaged template into current directory"() {
         given: "An existing application directory"
         def appDir =  new File(baseWorkDir, "ratapp2")
@@ -137,11 +174,11 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         new File(appDir, ".git").exists()
 
         and: "The .gitignore file contains the expected entries"
-//        def text = new File(appDir, ".gitignore").text.trim()
-//        text == """\
-//*.iws
-//build/
-//*.log"""
+        def text = new File(appDir, ".gitignore").text.trim()
+        text == """\
+*.iws
+build/
+*.log"""
 
         and: "There are no untracked files"
         ["git", "status"].execute([], appDir).text.contains("nothing to commit")

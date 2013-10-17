@@ -36,16 +36,16 @@ class LazybonesScript extends Script {
      */
     Reader reader = new InputStreamReader(System.in)
 
-    File scmExclusionFile
+    File scmExclusionsFile
 
     /**
      * Declares the list of file patterns that should be excluded from SCM.
      */
     void scmExclusions(String... exclusions) {
-        if (!scmExclusionFile) return
+        if (!scmExclusionsFile) return
 
         log.fine "Writing SCM exclusions file with: ${exclusions}"
-        scmExclusionFile.withPrintWriter(fileEncoding) { writer ->
+        scmExclusionsFile.withPrintWriter(fileEncoding) { writer ->
             for (String exclusion in exclusions) {
                 writer.println exclusion
             }

@@ -52,9 +52,12 @@ class InstallationScriptExecuter {
             //       https://jira.codehaus.org/browse/GROOVY-6162
             def shell = new GroovyShell(getClass().classLoader, new Binding(model), compiler)
 
+            // Setter methods must be used here otherwise the physical properties on the
+            // script object won't be set. I can only assume that the properties are added
+            // to the script binding instead.
             LazybonesScript script = shell.parse(file) as LazybonesScript
             script.setTargetDir(targetDir.path)
-            script.scmExclusionFile = scmAdapter ? new File(targetDir, scmAdapter.exclusionsFilename) : null
+            script.setScmExclusionsFile(scmAdapter != null ? new File(targetDir, scmAdapter.exclusionsFilename) : null)
             script.run()
             file.delete()
             return script

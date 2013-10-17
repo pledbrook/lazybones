@@ -1,6 +1,7 @@
 package uk.co.cacoethes.lazybones.commands
 
 import groovy.util.logging.Log
+import org.apache.commons.io.FilenameUtils
 import uk.co.cacoethes.lazybones.PackageInfo
 import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.lazybones.packagesources.PackageSource
@@ -13,7 +14,7 @@ class PackageLocationBuilder {
     static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
 
     PackageLocation buildPackageLocation(String packageName, String version, List<PackageSource> packageSources) {
-        if (packageNameIsAUrl(packageName)) {
+        if (isUrl(packageName)) {
             return buildForUrl(packageName)
         }
 
@@ -24,9 +25,9 @@ class PackageLocationBuilder {
      * Determines whether the given package name is in fact a full blown URI,
      * including scheme.
      */
-    private boolean packageNameIsAUrl(String packageName) {
+    private boolean isUrl(String str) {
         try {
-            def uri = new URI(packageName)
+            def uri = new URI(str)
             return uri.scheme
         }
         catch (URISyntaxException ex) {
@@ -34,9 +35,10 @@ class PackageLocationBuilder {
         }
     }
 
-    private PackageLocation buildForUrl(String packageName) {
-        String cacheLocation = cacheLocationPattern(packageName, null)
-        return new PackageLocation(remoteLocation: packageName, cacheLocation: cacheLocation)
+    private PackageLocation buildForUrl(String url) {
+        def packageName = FilenameUtils.getBaseName(new URI(url).path)
+
+        return new PackageLocation(remoteLocation: url, cacheLocation: cacheLocationPattern(packageName, null))
     }
 
     private PackageLocation buildForBintray(String packageName, String version, List<PackageSource> packageSources) {
