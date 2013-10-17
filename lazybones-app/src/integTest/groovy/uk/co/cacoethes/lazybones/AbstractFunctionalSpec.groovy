@@ -56,6 +56,11 @@ abstract class AbstractFunctionalSpec extends Specification {
             env["PATH"] = System.getenv("PATH")
         }
 
+        if (System.getProperty("lazybones.cacheDir")) {
+            env["JAVA_OPTS"] = (env["JAVA_OPTS"] ?: "") +
+                    " -Dlazybones.cacheDir=${System.getProperty("lazybones.cacheDir")}"
+        }
+
         // The execute() method expects the environment as a list of strings of
         // the form VAR=value.
         def envp = env.collect { key, value -> key + "=" + value }

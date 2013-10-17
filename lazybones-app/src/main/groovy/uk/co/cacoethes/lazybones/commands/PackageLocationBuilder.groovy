@@ -11,7 +11,16 @@ import uk.co.cacoethes.lazybones.packagesources.PackageSource
  */
 @Log
 class PackageLocationBuilder {
-    static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
+    static final String DEFAULT_CACHE_PATH =
+            FilenameUtils.concat(System.getProperty('user.home'), "/.lazybones/templates")
+
+    final File cacheDir = new File(System.getProperty("lazybones.cacheDir") ?: DEFAULT_CACHE_PATH)
+
+    PackageLocationBuilder() { }
+
+    PackageLocationBuilder(File cacheDir) {
+        this.cacheDir = cacheDir
+    }
 
     PackageLocation buildPackageLocation(String packageName, String version, List<PackageSource> packageSources) {
         if (isUrl(packageName)) {
@@ -73,6 +82,6 @@ class PackageLocationBuilder {
     }
 
     private String cacheLocationPattern(String name, String version) {
-        INSTALL_DIR.absolutePath + '/' + name + (version ? '-' + version : '') + '.zip'
+        cacheDir.absolutePath + '/' + name + (version ? '-' + version : '') + '.zip'
     }
 }

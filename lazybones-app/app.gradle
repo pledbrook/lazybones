@@ -25,6 +25,7 @@ targetCompatibility = "1.6"
 ext {
     groovyVersion = "2.1.5"
     installDir = new File(System.getProperty("user.home"), ".lazybones/templates")
+    testCacheDir = new File(project.buildDir, "template-cache")
 }
 
 sourceSets {
@@ -70,16 +71,30 @@ task generateIntegTestResources(type: GenerateProjectProperties) {
 
 //for a single test, you can run "gradle -DintegTests.single=<test name>"
 task integTests(type: Test) {
-    dependsOn ":lazybones-templates:installTemplateTestTmpl", "installApp", "generateIntegTestResources"
+    dependsOn "installApp", "generateIntegTestResources"
 
     systemProperty "lazybones.testWorkDir", file("$buildDir/testWork").path
     systemProperty "lazybones.installDir", installApp.destinationDir.path
+    systemProperty "lazybones.cacheDir", testCacheDir.absolutePath
 
     testClassesDir = sourceSets.integTest.output.classesDir
     classpath = sourceSets.integTest.runtimeClasspath
 
     include "**/*Spec*"
     exclude "**/Abstract*Spec*"
+
+    doFirst {
+        // Remove the cache directory. This ensures that when the tests run,
+        // an existing cache doesn't affect the results.
+        testCacheDir.deleteDir()
+
+        // This template package will be in the cache, but not available from
+        // Bintray or any other remote location.
+        copy {
+            from "$projectDir/src/integTest/resources/test-tmpl-0.2.zip"
+            into testCacheDir
+        }
+    }
 }
 
 codenarc {
@@ -103,6 +118,10 @@ task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
 
 // Lazy initialisation of uploadDist task so that not all build users need to
 // set the repo.* project properties.
+//
+// We also lazily configure the cache directory system property when running
+// the integration tests. This is to ensure that the test-tmpl template gets
+// installed into the cache directory being used by the integration tests.
 gradle.taskGraph.whenReady { graph ->
     if (graph.hasTask(":lazybones-app:uploadDist")) {
         verifyProperty(project, 'repo.url')
