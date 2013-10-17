@@ -8,7 +8,7 @@ class PackageDownloader {
     /** Where the template packages are stored/cached */
     static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
 
-    File downloadPackage(PackageLocation packageLocation, CreateCommandInfo info) {
+    File downloadPackage(PackageLocation packageLocation, String packageName, String version) {
         def packageFile = new File(packageLocation.cacheLocation)
 
         if (!packageFile.exists()) {
@@ -33,7 +33,7 @@ class PackageDownloader {
             }
             catch (FileNotFoundException ex) {
                 packageFile.deleteOnExit()
-                throw new PackageNotFoundException(info.packageName, info.requestedVersion, ex)
+                throw new PackageNotFoundException(packageName, version, ex)
             }
             catch (all) {
                 packageFile.deleteOnExit()

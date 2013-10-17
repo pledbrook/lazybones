@@ -70,13 +70,19 @@ USAGE: create <template> <version>? <dir>
             def createData = evaluateArgs(cmdOptions)
 
             List<PackageSource> packageSources = packageSourceFactory.buildPackageSourceList(configuration)
-            PackageLocation packageLocation = packageLocationFactory.buildPackageLocation(createData, packageSources)
-            File pkg = packageDownloader.downloadPackage(packageLocation, createData)
+            PackageLocation packageLocation = packageLocationFactory.buildPackageLocation(
+                    createData.packageName,
+                    createData.requestedVersion,
+                    packageSources)
+            File pkg = packageDownloader.downloadPackage(
+                    packageLocation,
+                    createData.packageName,
+                    createData.requestedVersion)
 
             createData.targetDir.mkdirs()
             ArchiveMethods.unzip(pkg, createData.targetDir)
 
-            installationScriptExecuter.runPostInstallScriptWithArgs(cmdOptions, createData)
+            installationScriptExecuter.runPostInstallScriptWithArgs(cmdOptions, createData.targetDir)
 
             logReadme(createData)
 
@@ -133,7 +139,6 @@ USAGE: create <template> <version>? <dir>
     protected boolean hasVersionArg(List<String> args) {
         return args.size() == 3
     }
-
 
     private void logStart(String packageName, String version, String targetPath) {
         if (log.isLoggable(Level.INFO)) {

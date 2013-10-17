@@ -12,35 +12,45 @@ import uk.co.cacoethes.lazybones.packagesources.PackageSource
 class PackageLocationBuilder {
     static final File INSTALL_DIR = new File(System.getProperty('user.home'), ".lazybones/templates")
 
-    PackageLocation buildPackageLocation(CreateCommandInfo commandInfo, List<PackageSource> packageSources) {
-        if (packageNameIsAUrl(commandInfo.packageName)) {
-            return buildForUrl(commandInfo)
+    PackageLocation buildPackageLocation(String packageName, String version, List<PackageSource> packageSources) {
+        if (packageNameIsAUrl(packageName)) {
+            return buildForUrl(packageName)
         }
 
-        buildForBintray(commandInfo, packageSources)
+        buildForBintray(packageName, version, packageSources)
     }
 
+    /**
+     * Determines whether the given package name is in fact a full blown URI,
+     * including scheme.
+     */
     private boolean packageNameIsAUrl(String packageName) {
-        packageName.startsWith("http://") || packageName.startsWith("https://")
+        try {
+            def uri = new URI(packageName)
+            return uri.scheme
+        }
+        catch (URISyntaxException ex) {
+            return false
+        }
     }
 
-    private PackageLocation buildForUrl(CreateCommandInfo commandInfo) {
-        String cacheLocation = cacheLocationPattern(commandInfo.packageName, null)
-        return new PackageLocation(remoteLocation: commandInfo.packageName, cacheLocation: cacheLocation)
+    private PackageLocation buildForUrl(String packageName) {
+        String cacheLocation = cacheLocationPattern(packageName, null)
+        return new PackageLocation(remoteLocation: packageName, cacheLocation: cacheLocation)
     }
 
-    private PackageLocation buildForBintray(CreateCommandInfo commandInfo, List<PackageSource> packageSources) {
-        if (commandInfo.requestedVersion) {
-            String cacheLocation = cacheLocationPattern(commandInfo.packageName, commandInfo.requestedVersion)
+    private PackageLocation buildForBintray(String packageName, String version, List<PackageSource> packageSources) {
+        if (version) {
+            String cacheLocation = cacheLocationPattern(packageName, version)
             File cacheFile = new File(cacheLocation)
             if (cacheFile.exists()) {
                 return new PackageLocation(cacheLocation: cacheLocation)
             }
         }
 
-        PackageInfo packageInfo = getPackageInfo(commandInfo.packageName, packageSources)
-        String versionToDownload = commandInfo.requestedVersion ?: packageInfo.latestVersion
-        String cacheLocation = cacheLocationPattern(commandInfo.packageName, versionToDownload)
+        PackageInfo packageInfo = getPackageInfo(packageName, packageSources)
+        String versionToDownload = version ?: packageInfo.latestVersion
+        String cacheLocation = cacheLocationPattern(packageName, versionToDownload)
         String remoteLocation = packageInfo.source.getTemplateUrl(packageInfo.name, versionToDownload)
 
         return new PackageLocation(remoteLocation: remoteLocation, cacheLocation: cacheLocation)

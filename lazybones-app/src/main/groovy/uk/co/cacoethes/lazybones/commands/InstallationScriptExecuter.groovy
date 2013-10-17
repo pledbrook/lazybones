@@ -9,12 +9,11 @@ import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.scm.GitAdapter
 import uk.co.cacoethes.lazybones.scm.ScmAdapter
 
-
 @Log
 class InstallationScriptExecuter {
     private ScmAdapter scmAdapter
 
-    void runPostInstallScriptWithArgs(OptionSet cmdOptions, CreateCommandInfo createData) {
+    void runPostInstallScriptWithArgs(OptionSet cmdOptions, File targetDir) {
 
         if (cmdOptions.has(CreateCommand.GIT_OPT)) scmAdapter = new GitAdapter()
 
@@ -27,8 +26,8 @@ class InstallationScriptExecuter {
                     collectEntries { String it -> it.split('=') as List }
 
             scriptVariables << evaluateVersionScriptVariables()
-            runPostInstallScript(createData.targetDir, scriptVariables)
-            initScmRepo(createData.targetDir.absoluteFile)
+            runPostInstallScript(targetDir, scriptVariables)
+            initScmRepo(targetDir.absoluteFile)
         }
         catch (all) {
             throw new LazybonesScriptException(all)
