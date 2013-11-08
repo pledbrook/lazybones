@@ -27,3 +27,7 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion = "1.6"
 }
+
+applicationDistribution.from("src/ratpack") {
+    into "bin"
+}
