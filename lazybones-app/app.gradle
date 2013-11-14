@@ -97,6 +97,14 @@ task integTests(type: Test) {
     }
 }
 
+task packageReports(type: Zip) {
+    from "build/reports"
+    archiveName = "reports.zip"
+    destinationDir = buildDir
+}
+
+integTests.finalizedBy packageReports
+
 codenarc {
     configFile = rootProject.file("codenarc.groovy")
 }
