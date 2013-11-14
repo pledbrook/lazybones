@@ -77,6 +77,12 @@ task integTests(type: Test) {
     systemProperty "lazybones.installDir", installApp.destinationDir.path
     systemProperty "lazybones.cacheDir", testCacheDir.absolutePath
 
+    // Allows us to disable tests that don't work on Drone.io, such as the
+    // CreateFunctionalSpec feature test for --with-git.
+    if (System.getProperty("drone.io")) {
+        systemProperty "drone.io", "true"
+    }
+
     testClassesDir = sourceSets.integTest.output.classesDir
     classpath = sourceSets.integTest.runtimeClasspath
 
