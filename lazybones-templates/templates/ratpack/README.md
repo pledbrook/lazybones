@@ -21,7 +21,7 @@ In this project you get:
           +- ratpack
           |     |
           |     +- ratpack.groovy
-          |     +- config.groovy
+          |     +- ratpack.properties
           |     +- public          // Static assets in here
           |          |
           |          +- images
