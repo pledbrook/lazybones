@@ -1,4 +1,4 @@
-import static org.ratpackframework.groovy.RatpackScript.ratpack
+import static ratpack.groovy.Groovy.ratpack
 
 ratpack {
 	handlers {
