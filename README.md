@@ -26,6 +26,7 @@ Contributors
 
 * [Luke Daley](https://github.com/alkemist)
 * [Tomas Lin](https://github.com/tomaslin)
+* [Russell Hart](https://github.com/rhart)
 
 
 Running it
