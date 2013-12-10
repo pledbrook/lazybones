@@ -4,8 +4,10 @@ buildscript {
         maven { url "http://dl.bintray.com/pledbrook/plugins" }
     }
 
-    dependencies { classpath "uk.co.cacoethes:lazybones-gradle:1.0" }
-    dependencies { classpath "net.saliman:gradle-cobertura-plugin:1.1.2" }
+    dependencies {
+        classpath "uk.co.cacoethes:lazybones-gradle:1.0",
+                  "net.saliman:gradle-cobertura-plugin:1.1.2"
+    }
 }
 
 import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
