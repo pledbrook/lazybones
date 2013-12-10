@@ -12,7 +12,7 @@ import uk.co.cacoethes.lazybones.packagesources.PackageSource
 @Log
 class PackageLocationBuilder {
     static final String DEFAULT_CACHE_PATH =
-            FilenameUtils.concat(System.getProperty('user.home'), "/.lazybones/templates")
+            FilenameUtils.concat(System.getProperty('user.home'), ".lazybones/templates")
 
     final File cacheDir = new File(System.getProperty("lazybones.cacheDir") ?: DEFAULT_CACHE_PATH)
 
