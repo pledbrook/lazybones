@@ -130,6 +130,7 @@ cobertura {
 }
 
 distZip.dependsOn("test", "integTests")
+check.dependsOn("test", "integTests")
 
 task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
     artifactFile = distZip.archivePath
