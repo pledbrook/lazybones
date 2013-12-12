@@ -1,10 +1,14 @@
 package uk.co.cacoethes.lazybones.scm
 
+import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 
 /**
- * An SCM adapter for git.
+ * An SCM adapter for git. Make sure that when executing the external processes
+ * you use the {@code text} property to ensure that the process output is fully
+ * read.
  */
+@CompileStatic
 @Log
 class GitAdapter implements ScmAdapter {
     private static final String GIT = "git"
@@ -20,7 +24,8 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void initializeRepository(File location) {
-        [GIT, "init"].execute([], location).waitFor()
+        def output = [GIT, "init"].execute([], location).text
+        log.finest output
     }
 
     /**
@@ -32,7 +37,10 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
-        [GIT, "add", "."].execute([], location).waitFor()
-        [GIT, "commit", "-m", message].execute([], location).waitFor()
+        def output = [GIT, "add", "."].execute([], location).text
+        log.finest output
+
+        output = [GIT, "commit", "-m", message].execute([], location).text
+        log.finest output
     }
 }
