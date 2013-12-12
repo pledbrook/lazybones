@@ -3,6 +3,8 @@ package uk.co.cacoethes.lazybones
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 
+import java.util.jar.Attributes
+import java.util.jar.Manifest
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.LogManager
@@ -83,10 +85,19 @@ class LazybonesMain {
     }
 
     static String readVersion() {
-        def stream = LazybonesMain.getResourceAsStream("lazybones.properties")
-        def props = new Properties()
-        props.load(stream)
-        return props.getProperty("lazybones.version")
+        // First find the MANIFEST.MF for the JAR containing this class
+        //
+        // Can't use this.getResource() since that looks for a static method
+        def cls = this
+        def classPath = cls.getResource(cls.simpleName + ".class").toString()
+        if (!classPath.startsWith("jar")) return "unknown"
+
+        def manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF"
+
+        // Now read the manifest and extract Implementation-Version to get the
+        // Lazybones version.
+        def manifest = new Manifest(new URL(manifestPath).openStream())
+        return manifest.getMainAttributes().getValue("Implementation-Version")
     }
 
     private static void initConfiguration() {

@@ -61,22 +61,19 @@ dependencies {
                      "co.freeside:betamax:1.1.2"
 }
 
-task generateAppResources(type: GenerateProjectProperties) {
-    target = file("${sourceSets.main.output.classesDir}/uk/co/cacoethes/lazybones/lazybones.properties")
-}
-
-tasks.processResources.dependsOn generateAppResources
-
-task generateIntegTestResources(type: GenerateProjectProperties) {
-    target = file("${sourceSets.integTest.output.classesDir}/uk/co/cacoethes/lazybones/lazybones.properties")
+jar {
+    manifest {
+        attributes("Implementation-Title": "Lazybones", "Implementation-Version": version)
+    }
 }
 
 //for a single test, you can run "gradle -DintegTests.single=<test name>"
 task integTests(type: Test) {
-    dependsOn "installApp", "generateIntegTestResources"
+    dependsOn "installApp"
 
     systemProperty "lazybones.testWorkDir", file("$buildDir/testWork").path
     systemProperty "lazybones.installDir", installApp.destinationDir.path
+    systemProperty "lzbtest.expected.version", version
 
     // Allows us to disable tests that don't work on Drone.io, such as the
     // CreateFunctionalSpec feature test for --with-git.
@@ -158,24 +155,5 @@ gradle.taskGraph.whenReady { graph ->
 void verifyProperty(Project proj, String name) {
     if (!project.hasProperty(name)) {
         throw new GradleException("You must define the project property '$name'")
-    }
-}
-
-/**
- * Simple task that writes a selection of the project's build properties into
- * a file. At the moment, only the Lazybones version gets written.
- */
-class GenerateProjectProperties extends DefaultTask {
-    @OutputFile
-    File target
-
-    @TaskAction
-    void generate() {
-        def props = new Properties()
-        props.setProperty("lazybones.version", project.version)
-
-        target.withWriter { w ->
-            props.store(w, "Lazybones project properties")
-        }
     }
 }

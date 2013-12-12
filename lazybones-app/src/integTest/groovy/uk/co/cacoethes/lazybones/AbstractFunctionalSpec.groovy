@@ -120,10 +120,7 @@ abstract class AbstractFunctionalSpec extends Specification {
      * returns it as a string.
      */
     protected String readLazybonesVersion() {
-        def stream = getClass().getResourceAsStream("lazybones.properties")
-        def props = new Properties()
-        props.load(stream)
-        return props.getProperty("lazybones.version")
+        return System.getProperty("lzbtest.expected.version")
     }
 
     protected final boolean isWindows() { return System.getProperty("os.name")?.startsWith("Windows") }
