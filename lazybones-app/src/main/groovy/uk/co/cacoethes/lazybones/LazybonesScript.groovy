@@ -2,6 +2,7 @@ package uk.co.cacoethes.lazybones
 
 import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
+import groovy.text.TemplateEngine
 import groovy.util.logging.Log
 import org.apache.commons.io.FilenameUtils
 import uk.co.cacoethes.util.AntPathMatcher
@@ -37,6 +38,8 @@ class LazybonesScript extends Script {
     Reader reader = new InputStreamReader(System.in)
 
     File scmExclusionsFile
+
+    TemplateEngine templateEngine = new SimpleTemplateEngine()
 
     /**
      * Declares the list of file patterns that should be excluded from SCM.
@@ -157,9 +160,8 @@ class LazybonesScript extends Script {
         }
         log.info "Filtering file $file"
 
-        def engine = new SimpleTemplateEngine()
         def reader = file.newReader(fileEncoding)
-        def template = engine.createTemplate(reader).make(properties)
+        def template = templateEngine.createTemplate(reader).make(properties)
         def out = new FileOutputStream(file)
         Writer writer = new OutputStreamWriter(out, fileEncoding)
         template.writeTo(writer)

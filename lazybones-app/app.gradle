@@ -52,7 +52,8 @@ dependencies {
             "org.codehaus.groovy:groovy-templates:${groovyVersion}",
             "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:0.7.2",
-            "net.sf.jopt-simple:jopt-simple:4.4"
+            "net.sf.jopt-simple:jopt-simple:4.4",
+            "com.github.jknack:handlebars:1.2.1"
 
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 

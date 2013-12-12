@@ -288,3 +288,8 @@ The `${}` expressions are executed as Groovy expressions and they have access
 to any variables in the parameter map passed to `processTemplates()`. Scriptlets,
 i.e. code inside `<% %>` delimiters, allow for more complex logic.
 
+Alternatively templates can be written using [Mustache templates](http://mustache.github.io/mustache.5.html).
+This requires switching the template engine in `lazybones.groovy`:
+
+    import uk.co.cacoethes.lazybones.handlebars.HandlebarsTemplateEngine
+    setTemplateEngine(new HandlebarsTemplateEngine())
