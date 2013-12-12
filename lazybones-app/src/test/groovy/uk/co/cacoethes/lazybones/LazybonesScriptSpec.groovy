@@ -1,9 +1,12 @@
 package uk.co.cacoethes.lazybones
 
+import groovy.text.SimpleTemplateEngine
+import groovy.text.TemplateEngine
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import uk.co.cacoethes.lazybones.handlebars.HandlebarsTemplateEngine
 
 import static uk.co.cacoethes.lazybones.LazybonesScript.DEFAULT_ENCODING
 
@@ -134,6 +137,29 @@ class LazybonesScriptSpec extends Specification {
 
         then:
         "bar" == response
+    }
+
+    void "default template engine is SimpleTemplateEngine"() {
+        expect:
+        SimpleTemplateEngine == new LazybonesScript().templateEngine.class
+    }
+
+    void "can use mustache templates"() {
+        given:
+        def mustacheFile = testFolder.newFile('mustache')
+        mustacheFile.write('hello {{foo}} and {{bar}}')
+        def script = createScript('''
+import uk.co.cacoethes.lazybones.handlebars.HandlebarsTemplateEngine
+setTemplateEngine(new HandlebarsTemplateEngine())
+processTemplates('mustache', [foo: "bar", bar: "bam"])
+''')
+        script.setTargetDir(testFolder.root.path)
+
+        when:
+        script.run()
+
+        then:
+        "hello bar and bam" == mustacheFile.text
     }
 
     LazybonesScript createScript(String text) {
