@@ -17,6 +17,12 @@ USAGE: help <cmd>?
                the command displays the generic Lazybones help.
 """
 
+    private ConfigObject config
+
+    HelpCommand(ConfigObject config) {
+        this.config = config
+    }
+
     @Override
     String getName() { return "help" }
 
@@ -37,7 +43,7 @@ USAGE: help <cmd>?
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject config) {
         def cmdArgs = cmdOptions.nonOptionArguments()
         if (cmdArgs) {
-            def cmd = Commands.ALL.find { Command it -> it.name == cmdArgs[0] }
+            def cmd = Commands.getAll(config).find { Command it -> it.name == cmdArgs[0] }
             if (cmd) {
                 println cmd.getHelp(cmd.description)
             }
@@ -58,7 +64,7 @@ USAGE: help <cmd>?
         println ""
         println "Available commands:"
         println ""
-        for (Command cmd in Commands.ALL) {
+        for (Command cmd in Commands.getAll(config)) {
             println "    " + cmd.name.padRight(15) + cmd.description
         }
         println ""

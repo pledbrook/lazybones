@@ -1,5 +1,6 @@
 package uk.co.cacoethes.lazybones
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 
@@ -22,15 +23,12 @@ import static uk.co.cacoethes.lazybones.OptionParserBuilder.makeOptionParser
 @Log
 class LazybonesMain {
 
-    static final File CONFIG_FILE = new File(System.getProperty('user.home'), '.lazybones/config.groovy')
-    static final String DEFAULT_REPOSITORY = 'pledbrook/lazybones-templates'
+    static final String ENCODING = "UTF-8"
 
     static final String USAGE = "USAGE: lazybones [OPTIONS] [COMMAND]\n"
 
-    static ConfigObject configuration
-
     static void main(String[] args) {
-        initConfiguration()
+        def config = initConfiguration()
 
         OptionParser parser = makeOptionParser()
         OptionSet optionSet
@@ -46,7 +44,7 @@ class LazybonesMain {
         // Create a map of options from the "options.*" key in the user's
         // configuration and then add any command line options to that map,
         // overriding existing values.
-        def globalOptions = configuration.options ? new HashMap(configuration.options as Map) : [:]
+        def globalOptions = config.options ? new HashMap(config.options as Map) : [:]
         for (OptionSpec spec in optionSet.specs()) {
             def valueList = spec.values(optionSet)
             globalOptions[spec.options()[0]] = valueList ? valueList[0] : true
@@ -74,13 +72,13 @@ class LazybonesMain {
         }
 
         // Execute the corresponding command
-        def cmdInstance = Commands.ALL.find { Command it -> it.name == cmd }
+        def cmdInstance = Commands.getAll(config).find { Command it -> it.name == cmd }
         if (!cmdInstance) {
             log.severe "There is no command '" + cmd + "'"
             System.exit 1
         }
 
-        int retval = cmdInstance.execute(argsList, globalOptions, configuration)
+        int retval = cmdInstance.execute(argsList, globalOptions, config)
         System.exit retval
     }
 
@@ -100,16 +98,60 @@ class LazybonesMain {
         return manifest.getMainAttributes().getValue("Implementation-Version")
     }
 
-    private static void initConfiguration() {
-        if (CONFIG_FILE.exists()) {
-            configuration = new ConfigSlurper().parse(CONFIG_FILE.toURI().toURL())
-        }
-        else {
-            configuration = new ConfigObject()
+    static ConfigObject loadDefaultConfig() {
+        def cls = this
+        return new ConfigSlurper().parse(cls.getResource("defaultConfig.groovy").text)
+    }
+
+    /**
+     * <ol>
+     *   <li>Loads the default configuration file from the classpath</li>
+     *   <li>Works out the location of the user config file (either the default
+     * or from a system property)</li>
+     *   <li>Loads the user config file and merges with the default</li>
+     *   <li>Overrides any config options with values provided as system properties</li>
+     * </ol>
+     * <p>The system properties take the form of 'lazybones.&lt;config.option&gt;'.</p>
+     */
+    @CompileDynamic
+    protected static ConfigObject initConfiguration() {
+        def currentConfig = loadDefaultConfig()
+        def userConfigFile = (System.getProperty("lazybones.config.file") ?: currentConfig.config.file) as File
+        if (userConfigFile.exists()) {
+            // User config options override the defaults with this merge()
+            currentConfig.merge(new ConfigSlurper().parse(userConfigFile.toURI().toURL()))
         }
 
-        // Set up defaults
-        if (!configuration.bintrayRepositories) configuration.bintrayRepositories = [DEFAULT_REPOSITORY]
+        System.properties.findAll { it.key.startsWith("lazybones.") }.each { String key, String value ->
+            setConfigOption(currentConfig, key.substring("lazybones.".size()), value)
+        }
+
+        // TODO Pretty print the configuration
+        log.fine "Current configuration: " + currentConfig
+        return currentConfig
+    }
+
+    /**
+     * <p>Takes a dot-separated string, such as "test.report.dir", and sets the corresponding
+     * config object property, {@code root.test.report.dir}, to the given value.</p>
+     * <p><em>Note</em> the {@code @CompileDynamic} annotation is currently required due to
+     * issue {@link GROOVY-6480 https://jira.codehaus.org/browse/GROOVY-6480}.</p>
+     * @param root The config object to set the value on.
+     * @param dottedString The dot-separated string representing a configuration option.
+     * @param value The new value for this option.
+     * @return The ConfigObject containing the final part of the dot-separated string as a
+     * key. In other words, {@code retval.dir == value} for the dotted string example above.
+     */
+    @CompileDynamic
+    protected static ConfigObject setConfigOption(ConfigObject root, String dottedString, value) {
+        def parts = dottedString.split('\\.')
+        def firstParts = parts[0..<(parts.size() - 1)]
+        def configEntry = (ConfigObject) firstParts.inject(root) { ConfigObject config, String keyPart ->
+            config.getProperty(keyPart)
+        }
+
+        configEntry.setProperty(parts[-1], value)
+        return configEntry
     }
 
     private static void initLogging(Map options) {

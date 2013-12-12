@@ -17,7 +17,7 @@ abstract class AbstractFunctionalSpec extends Specification {
     protected processOutput = new StringBuilder()
 
     protected final baseWorkDir = new File(System.getProperty("lazybones.testWorkDir") ?:
-        System.getProperty("user.dir") + "/build/testWork")
+        System.getProperty("user.dir") + "/build/testWork", "cmdWork")
 
     protected final env = [:]
 
@@ -56,9 +56,14 @@ abstract class AbstractFunctionalSpec extends Specification {
             env["PATH"] = System.getenv("PATH")
         }
 
-        if (System.getProperty("lazybones.cacheDir")) {
-            env["JAVA_OPTS"] = (env["JAVA_OPTS"] ?: "") +
-                    " -Dlazybones.cacheDir=${System.getProperty("lazybones.cacheDir")}"
+        def systemProps = System.properties.findAll {
+            it.key.startsWith("lazybones.") && !(it.key in ["installDir", "testWorkDir"])
+        }.collect {
+            "-D" + it.key + "=" + it.value
+        }
+
+        if (systemProps) {
+            env["JAVA_OPTS"] = (env["JAVA_OPTS"] ?: "") + " " + systemProps.join(' ')
         }
 
         // The execute() method expects the environment as a list of strings of

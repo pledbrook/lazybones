@@ -1,5 +1,6 @@
 package uk.co.cacoethes.lazybones.commands
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionParser
@@ -21,10 +22,10 @@ import java.util.logging.Level
 @CompileStatic
 @Log
 class CreateCommand extends AbstractCommand {
-    final PackageSourceBuilder packageSourceFactory = new PackageSourceBuilder()
-    final PackageLocationBuilder packageLocationFactory = new PackageLocationBuilder()
-    final PackageDownloader packageDownloader = new PackageDownloader()
-    final InstallationScriptExecuter installationScriptExecuter = new InstallationScriptExecuter()
+    final PackageSourceBuilder packageSourceFactory
+    final PackageLocationBuilder packageLocationFactory
+    final PackageDownloader packageDownloader
+    final InstallationScriptExecuter installationScriptExecuter
 
     static final String USAGE = """\
 USAGE: create <template> <version>? <dir>
@@ -40,6 +41,19 @@ USAGE: create <template> <version>? <dir>
     private static final String SPACES_OPT = "spaces"
     protected static final String VAR_OPT = "P"
     protected static final String GIT_OPT = "with-git"
+
+    @CompileDynamic
+    public CreateCommand(ConfigObject config) {
+        this(config.cache.dir as File)
+        assert config.cache.dir
+    }
+
+    public CreateCommand(File cacheDir) {
+        packageSourceFactory = new PackageSourceBuilder()
+        packageLocationFactory = new PackageLocationBuilder(cacheDir)
+        packageDownloader = new PackageDownloader()
+        installationScriptExecuter = new InstallationScriptExecuter()
+    }
 
     @Override
     String getName() { return "create" }

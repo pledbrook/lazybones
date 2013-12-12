@@ -27,7 +27,8 @@ targetCompatibility = "1.6"
 ext {
     groovyVersion = "2.1.5"
     installDir = new File(System.getProperty("user.home"), ".lazybones/templates")
-    testCacheDir = new File(project.buildDir, "template-cache")
+    isCiBuild = System.getProperty("drone.io") as boolean
+    testWorkDir = file("$buildDir/testWork").path
 }
 
 sourceSets {
@@ -71,19 +72,28 @@ jar {
 task integTests(type: Test) {
     dependsOn "installApp"
 
-    systemProperty "lazybones.testWorkDir", file("$buildDir/testWork").path
+    systemProperty "lazybones.testWorkDir", testWorkDir
     systemProperty "lazybones.installDir", installApp.destinationDir.path
     systemProperty "lzbtest.expected.version", version
 
     // Allows us to disable tests that don't work on Drone.io, such as the
     // CreateFunctionalSpec feature test for --with-git.
-    if (System.getProperty("drone.io")) {
+    systemProperty "lazybones.config.file", "${sourceSets.integTest.output.resourcesDir}/test-config.groovy"
+
+    def cachePath
+    if (isCiBuild) {
+        // Load the default cache directory location from the default config file
+        def defaultConfigFile = file("${sourceSets.integTest.output.resourcesDir}/uk/co/cacoethes/defaultConfig.groovy")
+        def defaultConfig = new ConfigSlurper().parse(defaultConfigFile)
+        cachePath = defaultConfig.cache.dir
+
         systemProperty "drone.io", "true"
     }
     else {
         // Use the default cache location on the CI server, but a custom one
         // on local machines to avoid polluting the developer's own cache.
-        systemProperty "lazybones.cacheDir", testCacheDir.absolutePath
+        cachePath = testWorkDir + "/template-cache"
+        systemProperty "lazybones.cache.dir", cachePath
     }
 
     testClassesDir = sourceSets.integTest.output.classesDir
@@ -95,13 +105,14 @@ task integTests(type: Test) {
     doFirst {
         // Remove the cache directory. This ensures that when the tests run,
         // an existing cache doesn't affect the results.
-        testCacheDir.deleteDir()
+        def cacheDir = file(cachePath)
+        cacheDir.deleteDir()
 
         // This template package will be in the cache, but not available from
         // Bintray or any other remote location.
         copy {
-            from "$projectDir/src/integTest/resources/test-tmpl-0.2.zip"
-            into testCacheDir
+            from "${sourceSets.integTest.output.resourcesDir}/test-tmpl-0.2.zip"
+            into cacheDir
         }
     }
 }

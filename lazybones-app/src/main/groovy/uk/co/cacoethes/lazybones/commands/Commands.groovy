@@ -4,11 +4,13 @@ package uk.co.cacoethes.lazybones.commands
  *
  */
 final class Commands {
-    final static List<Command> ALL = Collections.unmodifiableList([
-            new CreateCommand(),
+    final static List<Command> getAll(ConfigObject config) {
+        return Collections.unmodifiableList([
+            new CreateCommand(config),
             new ListCommand(),
             new InfoCommand(),
-            new HelpCommand() ])
+            new HelpCommand(config) ])
+    }
 
     private Commands() { }
 }
