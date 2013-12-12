@@ -11,14 +11,9 @@ buildscript {
     }
 }
 
-import uk.co.cacoethes.gradle.lazybones.LazybonesConventions
 import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
 
 apply plugin: "lazybones-templates"
-
-// The test-tmpl template should *not* be published, so we exclude that particular
-// task from the build.
-gradle.taskGraph.useFilter({ task -> task.name != "publishTemplateTestTmpl" } as Spec)
 
 // Lazy initialisation of Bintray upload tasks so that not all build users need
 // to set the repo.* project properties. The properties are only required when

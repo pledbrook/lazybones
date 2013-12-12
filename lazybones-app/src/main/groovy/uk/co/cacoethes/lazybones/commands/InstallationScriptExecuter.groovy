@@ -1,5 +1,6 @@
 package uk.co.cacoethes.lazybones.commands
 
+import groovy.text.SimpleTemplateEngine
 import groovy.util.logging.Log
 import joptsimple.OptionSet
 import org.codehaus.groovy.control.CompilerConfiguration
@@ -56,6 +57,9 @@ class InstallationScriptExecuter {
             // script object won't be set. I can only assume that the properties are added
             // to the script binding instead.
             LazybonesScript script = shell.parse(file) as LazybonesScript
+            def groovyEngine = new SimpleTemplateEngine()
+            script.registerDefaultEngine(groovyEngine)
+            script.registerEngine("gtpl", groovyEngine)
             script.setTargetDir(targetDir.path)
             script.setScmExclusionsFile(scmAdapter != null ? new File(targetDir, scmAdapter.exclusionsFilename) : null)
             script.run()

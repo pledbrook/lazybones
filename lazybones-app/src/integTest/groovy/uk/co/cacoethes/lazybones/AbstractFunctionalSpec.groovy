@@ -21,6 +21,8 @@ abstract class AbstractFunctionalSpec extends Specification {
 
     protected final env = [:]
 
+    protected long commandTimeout = 10000
+
     /**
      * Runs a lazybones command. For example:
      *
@@ -89,7 +91,7 @@ abstract class AbstractFunctionalSpec extends Specification {
 
         def stdoutThread = consumeProcessStream(process.inputStream)
         def stderrThread = consumeProcessStream(process.errorStream)
-        process.waitForOrKill(10000)
+        process.waitForOrKill(commandTimeout)
         int exitCode = process.exitValue()
 
         // The process may finish before the consuming threads have finished, so

@@ -3,13 +3,16 @@ package uk.co.cacoethes.lazybones
 import co.freeside.betamax.Betamax
 import co.freeside.betamax.Recorder
 import org.junit.Rule
+import spock.lang.Stepwise
 
+@Stepwise
 class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
     @Rule Recorder recorder = new Recorder()
 
     void setup() {
         def proxyAddress = recorder.proxy.address()
-        env["JAVA_OPTS"] = "-Dhttps.proxyHost=" + proxyAddress.hostName + " -Dhttps.proxyPort=" + proxyAddress.port
+        env["JAVA_OPTS"] = "-Dhttps.proxyHost=" + proxyAddress.hostName + " -Dhttps.proxyPort=" + proxyAddress.port +
+                " -Dhttp.proxyHost=" + proxyAddress.hostName + " -Dhttp.proxyPort=" + proxyAddress.port
     }
 
     @Betamax(tape="create-tape")
@@ -99,5 +102,92 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         testText.contains("TestString")
         testText.contains("A Long Name")
         testText.contains("Missing 'to' argument for transformText()")
+    }
+
+    @Betamax(tape="create-tape")
+    def "Handlebars templates are processed with Groovy ones"() {
+        given: "A directory to create a new project in"
+        def appDir = new File(baseWorkDir, "dummy-app")
+
+        and: "A higher command timeout to allow @Grab to finish fetching the JAR"
+        commandTimeout = 30000
+
+        when: "I run lazybones with the create command for the handlebars project template"
+        def exitCode = runCommand(["create", "test-handlebars", "0.1", appDir.name], baseWorkDir)
+
+        then: "the post-install script creates the correct file from a .gtpl source"
+        def testText = new File(appDir, "GroovyHello.groovy").text
+        testText.contains('println "hello test"')
+        testText.contains('println "${bar} was unfiltered"')
+        testText.contains('println 100')
+
+        and: "it creates the correct file from a .hbs source"
+        def hbsText = new File(appDir, "PrintHello.groovy").text
+        hbsText.contains('println "hello test"')
+        hbsText.contains('println "${bar} was unfiltered"')
+        hbsText.contains('println 100')
+
+        and: "it creates the correct file from a normal source without a template suffix"
+        def nmlText = new File(appDir, "NoSuffixGroovyHello.groovy").text
+        nmlText.contains('println "hello test"')
+        nmlText.contains('println "${bar} was unfiltered"')
+        nmlText.contains('println 100')
+    }
+
+    @Betamax(tape="create-tape")
+    def "Non-suffixed templates are processed with Handlebars engine"() {
+        given: "A directory to create a new project in"
+        def appDir = new File(baseWorkDir, "dummy-app2")
+
+        and: "A reset command timeout"
+        commandTimeout = 10000
+
+        when: "I run lazybones with the create command for the handlebars project template"
+        def exitCode = runCommand(["create", "test-handlebars-default", "0.1", appDir.name], baseWorkDir)
+
+        then: "the post-install script creates the correct file from a .gtpl source"
+        def testText = new File(appDir, "GroovyHello.groovy").text
+        testText.contains('println "hello test"')
+        testText.contains('println "${bar} was unfiltered"')
+        testText.contains('println 100')
+
+        and: "it creates the correct file from a .hbs source"
+        def hbsText = new File(appDir, "PrintHello.groovy").text
+        hbsText.contains('println "hello test"')
+        hbsText.contains('println "${bar} was unfiltered"')
+        hbsText.contains('println 100')
+
+        and: "it creates the correct file from a normal source without a template suffix"
+        def nmlText = new File(appDir, "NoSuffixGroovyHello.groovy").text
+        nmlText.contains('println "hello test"')
+        nmlText.contains('println "${bar} was unfiltered"')
+        nmlText.contains('println 100')
+    }
+
+    @Betamax(tape="create-tape")
+    def "Disabling default template engine removes processing of non-suffixed files"() {
+        given: "A directory to create a new project in"
+        def appDir = new File(baseWorkDir, "dummy-app3")
+
+        when: "I run lazybones with the create command for the handlebars project template"
+        def exitCode = runCommand(["create", "test-no-default-engine", "0.1", appDir.name], baseWorkDir)
+
+        then: "the post-install script creates the correct file from a .gtpl source"
+        def testText = new File(appDir, "GroovyHello.groovy").text
+        testText.contains('println "hello test"')
+        testText.contains('println "${bar} was unfiltered"')
+        testText.contains('println 100')
+
+        and: "it creates the correct file from a .hbs source"
+        def hbsText = new File(appDir, "PrintHello.groovy").text
+        hbsText.contains('println "hello test"')
+        hbsText.contains('println "${bar} was unfiltered"')
+        hbsText.contains('println 100')
+
+        and: "it copies a normal source without a template suffix, rather than processing it"
+        def nmlText = new File(appDir, "NoSuffixGroovyHello.groovy").text
+        nmlText.contains('println "hello ${foo}"')
+        nmlText.contains('println "\\${bar} was unfiltered"')
+        nmlText.contains('println ${bar}')
     }
 }

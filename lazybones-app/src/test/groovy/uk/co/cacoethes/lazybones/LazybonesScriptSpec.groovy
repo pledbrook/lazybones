@@ -1,5 +1,7 @@
 package uk.co.cacoethes.lazybones
 
+import groovy.text.SimpleTemplateEngine
+import groovy.text.TemplateEngine
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -57,7 +59,7 @@ class LazybonesScriptSpec extends Specification {
 
     void "basic tests for filtering an individual file"() {
         when:
-        script.processTemplatesHelper(fileToFilter, [foo: "bar", bar: "bam"])
+        script.processTemplateWithEngine(fileToFilter, [foo: "bar", bar: "bam"], new SimpleTemplateEngine(), true)
 
         then:
         "hello bar and bam" == fileToFilter.text
@@ -65,7 +67,7 @@ class LazybonesScriptSpec extends Specification {
 
     void "illegal argument exception is thrown if the file does not exist"() {
         when:
-        script.processTemplatesHelper(new File("bar"), [foo: "bar"])
+        script.processTemplateWithEngine(new File("bar"), [foo: "bar"], new SimpleTemplateEngine(), true)
 
         then:
         thrown(IllegalArgumentException)
@@ -73,8 +75,8 @@ class LazybonesScriptSpec extends Specification {
 
     void "if value is returned by user return that"() {
         given:
-        def reader = createReader("baz")
-        script.setReader(reader)
+        script = new LazybonesScript()
+        script.setReader(createReader("baz"))
 
         when:
         def response = script.ask("give me foo")
@@ -134,6 +136,11 @@ class LazybonesScriptSpec extends Specification {
 
         then:
         "bar" == response
+    }
+
+    void "default template engine is SimpleTemplateEngine"() {
+        expect:
+        SimpleTemplateEngine == new LazybonesScript().templateEngine.class
     }
 
     LazybonesScript createScript(String text) {

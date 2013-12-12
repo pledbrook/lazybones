@@ -57,6 +57,8 @@ dependencies {
             "net.sf.jopt-simple:jopt-simple:4.4",
             "org.ini4j:ini4j:0.5.2"
 
+    runtime "org.apache.ivy:ivy:2.3.0"
+
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 
     integTestCompile "commons-io:commons-io:2.4",
