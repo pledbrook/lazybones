@@ -185,9 +185,7 @@ build/
         // when it's passing locally.
         //
         and: "There are no untracked files"
-        if (!System.getProperty("drone.io")) {
-            assert ["git", "status"].execute([], appDir).text.contains("nothing to commit")
-        }
+        assert ["git", "status"].execute([], appDir).text.contains("nothing to commit")
     }
 
     def "Create can install from cache without template being in repository"() {

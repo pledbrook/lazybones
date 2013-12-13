@@ -1,17 +1,34 @@
 package uk.co.cacoethes.lazybones.scm
 
-import groovy.transform.CompileStatic
 import groovy.util.logging.Log
+import org.ini4j.Wini
 
 /**
  * An SCM adapter for git. Make sure that when executing the external processes
  * you use the {@code text} property to ensure that the process output is fully
  * read.
  */
-@CompileStatic
 @Log
 class GitAdapter implements ScmAdapter {
     private static final String GIT = "git"
+
+    private final String userName
+    private final String userEmail
+
+    GitAdapter(ConfigObject config) {
+        // Load the current user's git config if it exists.
+        def configFile = new File(System.getProperty("user.home"), ".gitconfig")
+        if (configFile.exists()) {
+            def ini = new Wini(configFile)
+            userName = ini.get("user", "name")
+            userEmail = ini.get("user", "email")
+        }
+        else {
+            // Use Lazybones config entries if they exist.
+            userName = config.git.name ?: "Unknown"
+            userEmail = config.git.email ?: "unknown@nowhere.net"
+        }
+    }
 
     @Override
     String getExclusionsFilename() {
@@ -24,8 +41,7 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void initializeRepository(File location) {
-        def output = [GIT, "init"].execute([], location).text
-        log.finest output
+        execGit(["init"], location)
     }
 
     /**
@@ -37,10 +53,24 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
-        def output = [GIT, "add", "."].execute([], location).text
-        log.finest output
+        execGit(["add", "."], location)
+        execGit(["config", "user.name", userName], location)
+        execGit(["config", "user.email", userEmail], location)
+        execGit(["commit", "-m", message], location)
+    }
 
-        output = [GIT, "commit", "-m", message].execute([], location).text
-        log.finest output
+    /**
+     * Executes a git command using an external process. The executable must be
+     * on the path! It also logs the output of each command at FINEST level.
+     * @param args The git sub-command (e.g. 'status') + its arguments
+     * @param location The working directory for the command.
+     * @return The return code from the process.
+     */
+    private int execGit(List args, File location) {
+        def process = ((List) [GIT] + args).execute([], location)
+        def out = new StringWriter()
+        process.consumeProcessOutput out, out
+        log.finest out.toString()
+        return process.waitFor()
     }
 }

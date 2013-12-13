@@ -6,17 +6,17 @@ import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.LazybonesMain
 import uk.co.cacoethes.lazybones.LazybonesScript
 import uk.co.cacoethes.lazybones.LazybonesScriptException
-import uk.co.cacoethes.lazybones.scm.GitAdapter
 import uk.co.cacoethes.lazybones.scm.ScmAdapter
 
 @Log
 class InstallationScriptExecuter {
     private ScmAdapter scmAdapter
 
+    InstallationScriptExecuter(ScmAdapter adapter) {
+        this.scmAdapter = adapter
+    }
+
     void runPostInstallScriptWithArgs(OptionSet cmdOptions, File targetDir) {
-
-        if (cmdOptions.has(CreateCommand.GIT_OPT)) scmAdapter = new GitAdapter()
-
         // Run the post-install script if it exists. The user can pass variables
         // to the script via -P command line arguments. This also places
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion

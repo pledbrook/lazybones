@@ -11,6 +11,7 @@ import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.lazybones.packagesources.PackageSource
 import uk.co.cacoethes.lazybones.packagesources.PackageSourceBuilder
+import uk.co.cacoethes.lazybones.scm.GitAdapter
 import uk.co.cacoethes.util.ArchiveMethods
 
 import java.util.logging.Level
@@ -19,13 +20,11 @@ import java.util.logging.Level
  * Implements Lazybone's create command, which creates a new project based on
  * a specified template.
  */
-@CompileStatic
 @Log
 class CreateCommand extends AbstractCommand {
     final PackageSourceBuilder packageSourceFactory
     final PackageLocationBuilder packageLocationFactory
     final PackageDownloader packageDownloader
-    final InstallationScriptExecuter installationScriptExecuter
 
     static final String USAGE = """\
 USAGE: create <template> <version>? <dir>
@@ -52,7 +51,6 @@ USAGE: create <template> <version>? <dir>
         packageSourceFactory = new PackageSourceBuilder()
         packageLocationFactory = new PackageLocationBuilder(cacheDir)
         packageDownloader = new PackageDownloader()
-        installationScriptExecuter = new InstallationScriptExecuter()
     }
 
     @Override
@@ -96,7 +94,11 @@ USAGE: create <template> <version>? <dir>
             createData.targetDir.mkdirs()
             ArchiveMethods.unzip(pkg, createData.targetDir)
 
-            installationScriptExecuter.runPostInstallScriptWithArgs(cmdOptions, createData.targetDir)
+            def scmAdapter = null
+            if (cmdOptions.has(GIT_OPT)) scmAdapter = new GitAdapter(configuration)
+
+            def executor = new InstallationScriptExecuter(scmAdapter)
+            executor.runPostInstallScriptWithArgs(cmdOptions, createData.targetDir)
 
             logReadme(createData)
 

@@ -53,7 +53,8 @@ dependencies {
             "org.codehaus.groovy:groovy-templates:${groovyVersion}",
             "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:0.7.2",
-            "net.sf.jopt-simple:jopt-simple:4.4"
+            "net.sf.jopt-simple:jopt-simple:4.4",
+            "org.ini4j:ini4j:0.5.2"
 
     testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
 
@@ -82,11 +83,6 @@ task integTests(type: Test) {
 
     def cachePath
     if (isCiBuild) {
-        // Load the default cache directory location from the default config file
-        def defaultConfigFile = file("${sourceSets.integTest.output.resourcesDir}/uk/co/cacoethes/defaultConfig.groovy")
-        def defaultConfig = new ConfigSlurper().parse(defaultConfigFile.text)
-        cachePath = defaultConfig.cache.dir
-
         systemProperty "drone.io", "true"
     }
     else {
@@ -103,6 +99,15 @@ task integTests(type: Test) {
     exclude "**/Abstract*Spec*"
 
     doFirst {
+        if (isCiBuild) {
+            // Load the default cache directory location from the default config file.
+            // We have to defer the evaluation until after the test resources have been
+            // copied onto the classpath.
+            def defaultConfigFile = file("${sourceSets.integTest.output.resourcesDir}/uk/co/cacoethes/defaultConfig.groovy")
+            def defaultConfig = new ConfigSlurper().parse(defaultConfigFile.text)
+            cachePath = defaultConfig.cache.dir
+        }
+
         // Remove the cache directory. This ensures that when the tests run,
         // an existing cache doesn't affect the results.
         def cacheDir = file(cachePath)
