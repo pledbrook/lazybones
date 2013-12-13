@@ -1,7 +1,5 @@
-import org.apache.commons.io.FilenameUtils
-
-config.file = FilenameUtils.concat(System.getProperty('user.home'), '.lazybones/config.groovy')
-cache.dir = FilenameUtils.concat(System.getProperty('user.home'), ".lazybones/templates")
+config.file = new File(System.getProperty('user.home'), '.lazybones/config.groovy').path
+cache.dir = new File(System.getProperty('user.home'), ".lazybones/templates").path
 bintray.default.repository = "pledbrook/lazybones-templates"
 
 bintrayRepositories = [bintray.default.repository]

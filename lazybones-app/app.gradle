@@ -103,7 +103,8 @@ task integTests(type: Test) {
             // Load the default cache directory location from the default config file.
             // We have to defer the evaluation until after the test resources have been
             // copied onto the classpath.
-            def defaultConfigFile = file("${sourceSets.integTest.output.resourcesDir}/uk/co/cacoethes/defaultConfig.groovy")
+            def defaultConfigFile = file(sourceSets.main.output.resourcesDir.path +
+                    "/uk/co/cacoethes/lazybones/defaultConfig.groovy")
             def defaultConfig = new ConfigSlurper().parse(defaultConfigFile.text)
             cachePath = defaultConfig.cache.dir
         }
