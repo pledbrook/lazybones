@@ -1,7 +1,6 @@
 package uk.co.cacoethes.lazybones.commands
 
 import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet

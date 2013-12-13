@@ -20,8 +20,9 @@ class GitAdapter implements ScmAdapter {
         def configFile = new File(System.getProperty("user.home"), ".gitconfig")
         if (configFile.exists()) {
             def ini = new Wini(configFile)
-            userName = ini.get("user", "name")
-            userEmail = ini.get("user", "email")
+            def userKey = "user"
+            userName = ini.get(userKey, "name")
+            userEmail = ini.get(userKey, "email")
         }
         else {
             // Use Lazybones config entries if they exist.
@@ -53,9 +54,10 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
+        def configCmd = "config"
         execGit(["add", "."], location)
-        execGit(["config", "user.name", userName], location)
-        execGit(["config", "user.email", userEmail], location)
+        execGit([configCmd, "user.name", userName], location)
+        execGit([configCmd, "user.email", userEmail], location)
         execGit(["commit", "-m", message], location)
     }
 
