@@ -17,7 +17,7 @@ USAGE: help <cmd>?
                the command displays the generic Lazybones help.
 """
 
-    private ConfigObject config
+    private final ConfigObject config
 
     HelpCommand(ConfigObject config) {
         this.config = config

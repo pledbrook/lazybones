@@ -4,7 +4,6 @@ import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 
-import java.util.jar.Attributes
 import java.util.jar.Manifest
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -23,6 +22,7 @@ import static uk.co.cacoethes.lazybones.OptionParserBuilder.makeOptionParser
 @Log
 class LazybonesMain {
 
+    static final String SYSPROP_OVERRIDE_PREFIX = "lazybones."
     static final String ENCODING = "UTF-8"
 
     static final String USAGE = "USAGE: lazybones [OPTIONS] [COMMAND]\n"
@@ -90,12 +90,12 @@ class LazybonesMain {
         def classPath = cls.getResource(cls.simpleName + ".class").toString()
         if (!classPath.startsWith("jar")) return "unknown"
 
-        def manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) + "/META-INF/MANIFEST.MF"
+        def manifestPath = classPath[0..classPath.lastIndexOf("!")] + "/META-INF/MANIFEST.MF"
 
         // Now read the manifest and extract Implementation-Version to get the
         // Lazybones version.
         def manifest = new Manifest(new URL(manifestPath).openStream())
-        return manifest.getMainAttributes().getValue("Implementation-Version")
+        return manifest.mainAttributes.getValue("Implementation-Version")
     }
 
     static ConfigObject loadDefaultConfig() {
@@ -122,8 +122,8 @@ class LazybonesMain {
             currentConfig.merge(new ConfigSlurper().parse(userConfigFile.toURI().toURL()))
         }
 
-        System.properties.findAll { it.key.startsWith("lazybones.") }.each { String key, String value ->
-            setConfigOption(currentConfig, key.substring("lazybones.".size()), value)
+        System.properties.findAll { it.key.startsWith(SYSPROP_OVERRIDE_PREFIX) }.each { String key, String value ->
+            setConfigOption(currentConfig, key[SYSPROP_OVERRIDE_PREFIX.size()..-1], value)
         }
 
         // TODO Pretty print the configuration
@@ -157,7 +157,7 @@ class LazybonesMain {
     private static void initLogging(Map options) {
         // Load a basic logging configuration from a string containing Java
         // properties syntax.
-        def inputStream = new ByteArrayInputStream(LOG_CONFIG.getBytes("UTF-8"))
+        def inputStream = new ByteArrayInputStream(LOG_CONFIG.getBytes(ENCODING))
         LogManager.logManager.readConfiguration(inputStream)
 
         // Update logging level based on the global options. We temporarily

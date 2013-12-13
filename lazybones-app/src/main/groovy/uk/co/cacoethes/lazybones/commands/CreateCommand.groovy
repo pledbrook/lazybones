@@ -43,12 +43,12 @@ USAGE: create <template> <version>? <dir>
     protected static final String GIT_OPT = "with-git"
 
     @CompileDynamic
-    public CreateCommand(ConfigObject config) {
+    CreateCommand(ConfigObject config) {
         this(config.cache.dir as File)
         assert config.cache.dir
     }
 
-    public CreateCommand(File cacheDir) {
+    CreateCommand(File cacheDir) {
         packageSourceFactory = new PackageSourceBuilder()
         packageLocationFactory = new PackageLocationBuilder(cacheDir)
         packageDownloader = new PackageDownloader()
