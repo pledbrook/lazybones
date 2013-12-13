@@ -84,7 +84,7 @@ task integTests(type: Test) {
     if (isCiBuild) {
         // Load the default cache directory location from the default config file
         def defaultConfigFile = file("${sourceSets.integTest.output.resourcesDir}/uk/co/cacoethes/defaultConfig.groovy")
-        def defaultConfig = new ConfigSlurper().parse(defaultConfigFile)
+        def defaultConfig = new ConfigSlurper().parse(defaultConfigFile.text)
         cachePath = defaultConfig.cache.dir
 
         systemProperty "drone.io", "true"
