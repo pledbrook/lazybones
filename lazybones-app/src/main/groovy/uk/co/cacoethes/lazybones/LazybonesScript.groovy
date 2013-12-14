@@ -5,6 +5,7 @@ import groovy.text.SimpleTemplateEngine
 import groovy.util.logging.Log
 import org.apache.commons.io.FilenameUtils
 import uk.co.cacoethes.util.AntPathMatcher
+import uk.co.cacoethes.util.Naming
 
 import java.lang.reflect.Method
 
@@ -50,6 +51,19 @@ class LazybonesScript extends Script {
                 writer.println exclusion
             }
         }
+    }
+
+    /**
+     * Converts a name from one convention to another, e.g. from camel case to
+     * natural form ("TestString" to "Test String").
+     * @param args Both {@code from} and {@code to} arguments are required and
+     * must be instances of {@link uk.co.cacoethes.util.NameType}.
+     * @param name The string to convert.
+     * @return The converted string, or {@code null} if the given name is {@code
+     * null}, or an empty string if the given string is empty.
+     */
+    String convertName(Map args, String name) {
+        return Naming.convert(args, name)
     }
 
     /**

@@ -85,4 +85,18 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         text.contains("group = \"bar\"")
         text.contains("version = \"0.2\"")
     }
+
+    @Betamax(tape="create-tape")
+    def "Can use naming utils in post-install script"() {
+        given: "A directory to create a new project in"
+        def appDir = new File(baseWorkDir, "groovyapp")
+
+        when: "I run lazybones with the create command for the groovy-gradle template"
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "0.1"])
+
+        then: "the post-install script creates a text file containing the appropriate converted names"
+        def testText = new File(appDir, "test.txt").text
+        testText.contains("TestString")
+        testText.contains("A Long Name")
+    }
 }

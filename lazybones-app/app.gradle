@@ -72,6 +72,7 @@ jar {
 //for a single test, you can run "gradle -DintegTests.single=<test name>"
 task integTests(type: Test) {
     dependsOn "installApp"
+    mustRunAfter "test"
 
     systemProperty "lazybones.testWorkDir", testWorkDir
     systemProperty "lazybones.installDir", installApp.destinationDir.path

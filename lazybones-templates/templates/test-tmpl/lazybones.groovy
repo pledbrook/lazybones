@@ -1,3 +1,5 @@
+import static uk.co.cacoethes.util.NameType.*
+
 // Specify SCM excludes
 scmExclusions "*.iws", "build/", "*.log"
 
@@ -20,6 +22,9 @@ if (lazybonesMajorVersion == 0 && lazybonesMinorVersion < 4) {
 else {
     testContent << "Your Lazybones version is OK - you're good to go!\n"
 }
+
+testContent << convertName("test-string", from: HYPHENATED, to: CAMEL_CASE) << '\n'
+testContent << convertName("ALongName", from: CAMEL_CASE, to: NATURAL) << '\n'
 
 new File(targetDir, "test.txt").text = testContent.toString()
 
