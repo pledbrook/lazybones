@@ -98,5 +98,6 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         def testText = new File(appDir, "test.txt").text
         testText.contains("TestString")
         testText.contains("A Long Name")
+        testText.contains("Missing 'to' argument for transformText()")
     }
 }

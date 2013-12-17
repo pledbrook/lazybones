@@ -161,12 +161,7 @@ class Naming {
          */
         @SuppressWarnings('UnnecessaryElseStatement')
         NameWithType from(NameType type) {
-            if (type == NameType.CAMEL_CASE || type == NameType.HYPHENATED) {
-                return new NameWithType(type, content)
-            }
-            else {
-                return new NameWithType(type.intermediateType, type.toIntermediate(content))
-            }
+            return new NameWithType(type.intermediateType, type.toIntermediate(content))
         }
 
         /**

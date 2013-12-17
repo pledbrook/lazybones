@@ -23,8 +23,15 @@ else {
     testContent << "Your Lazybones version is OK - you're good to go!\n"
 }
 
-testContent << convertName("test-string", from: HYPHENATED, to: CAMEL_CASE) << '\n'
-testContent << convertName("ALongName", from: CAMEL_CASE, to: NATURAL) << '\n'
+testContent << transformText("test-string", from: HYPHENATED, to: CAMEL_CASE) << '\n'
+testContent << transformText("ALongName", from: CAMEL_CASE, to: NATURAL) << '\n'
+
+try {
+    transformText("test-string", from: HYPHENATED)
+}
+catch (IllegalArgumentException ex) {
+    testContent << "Missing 'to' argument for transformText()"
+}
 
 new File(targetDir, "test.txt").text = testContent.toString()
 

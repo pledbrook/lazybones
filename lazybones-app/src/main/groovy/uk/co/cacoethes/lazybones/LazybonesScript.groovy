@@ -62,7 +62,7 @@ class LazybonesScript extends Script {
      * @return The converted string, or {@code null} if the given name is {@code
      * null}, or an empty string if the given string is empty.
      */
-    String convertName(Map args, String name) {
+    String transformText(Map args, String name) {
         return Naming.convert(args, name)
     }
 
