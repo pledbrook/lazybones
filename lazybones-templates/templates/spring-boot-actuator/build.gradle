@@ -1,0 +1,43 @@
+apply plugin: "groovy"
+apply plugin: "spring-boot"
+
+sourceCompatibility = "1.6"
+targetCompatibility = "1.6"
+
+version = "${version}"
+group = "${group}"
+
+buildscript {
+    repositories {
+    	mavenLocal()
+        maven { url "http://repo.springsource.org/libs-snapshot" }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:0.5.0.BUILD-SNAPSHOT")
+    }
+}
+
+ext {
+	springBootVersion = '0.5.0.BUILD-SNAPSHOT'
+}
+
+jar {
+    baseName = 'spring-boot-sample-actuator'
+    version =  '0.5.0'
+}
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.springsource.org/libs-snapshot" }
+}
+
+dependencies {
+    compile "org.codehaus.groovy:groovy:2.1.6"
+    compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
+    compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
+    testCompile("junit:junit:4.11")
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.6'
+}
