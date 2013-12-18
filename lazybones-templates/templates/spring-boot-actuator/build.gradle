@@ -1,11 +1,13 @@
 apply plugin: "groovy"
 apply plugin: "spring-boot"
+apply plugin: "application"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 version = "${version}"
 group = "${group}"
+mainClassName = "sample.SampleApplication"
 
 buildscript {
     repositories {

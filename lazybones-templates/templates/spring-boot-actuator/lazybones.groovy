@@ -1,0 +1,23 @@
+if (hasFeature("scmExclusions")) {
+    scmExclusions ".gradle",
+        "*.sw?",
+        ".#*",
+        "*#",
+        "*~",
+        "/build",
+        "/code",
+        ".classpath",
+        ".project",
+        ".settings",
+        "bin",
+        "build",
+        "target",
+        ".springBeans",
+        "build.log",
+        "_site/",
+        "manifest.yml",
+        "MANIFEST.MF",
+        "settings.xml",
+        "*.iml",
+        ".idea"
+}
