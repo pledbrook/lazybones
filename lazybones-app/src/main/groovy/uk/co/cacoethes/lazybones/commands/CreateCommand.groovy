@@ -12,6 +12,7 @@ import uk.co.cacoethes.lazybones.packagesources.PackageSource
 import uk.co.cacoethes.lazybones.packagesources.PackageSourceBuilder
 import uk.co.cacoethes.lazybones.scm.GitAdapter
 import uk.co.cacoethes.util.ArchiveMethods
+import uk.co.cacoethes.util.UrlUtils
 
 import java.util.logging.Level
 
@@ -24,6 +25,7 @@ class CreateCommand extends AbstractCommand {
     final PackageSourceBuilder packageSourceFactory
     final PackageLocationBuilder packageLocationFactory
     final PackageDownloader packageDownloader
+    final ConfigObject mappings
 
     static final String USAGE = """\
 USAGE: create <template> <version>? <dir>
@@ -44,6 +46,8 @@ USAGE: create <template> <version>? <dir>
     CreateCommand(ConfigObject config) {
         this(config.cache.dir as File)
         assert config.cache.dir
+        mappings = config.templates.mappings
+        validateMappings(mappings)
     }
 
     CreateCommand(File cacheDir) {
@@ -58,6 +62,14 @@ USAGE: create <template> <version>? <dir>
     @Override
     String getDescription() {
         return "Creates a new project from a template."
+    }
+
+    protected static void validateMappings(ConfigObject configObject) {
+        configObject.each {key, value ->
+            if(!UrlUtils.isUrl(value as String)) {
+                throw new IllegalArgumentException("the value [$value] for mapping [$key] is not a url")
+            }
+        }
     }
 
     @Override
@@ -144,11 +156,17 @@ USAGE: create <template> <version>? <dir>
     }
 
     private CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
-        if (hasVersionArg(mainArgs)) {
-            return new CreateCommandInfo(mainArgs[0], mainArgs[1], mainArgs[2] as File)
+
+        def packageName = mainArgs[0]
+        if(mappings && mappings.containsKey(packageName)) {
+            packageName = mappings[packageName]
         }
 
-        return new CreateCommandInfo(mainArgs[0], '', mainArgs[1] as File)
+        if (hasVersionArg(mainArgs)) {
+            return new CreateCommandInfo(packageName, mainArgs[1], mainArgs[2] as File)
+        }
+
+        return new CreateCommandInfo(packageName, '', mainArgs[1] as File)
     }
 
     protected boolean hasVersionArg(List<String> args) {
