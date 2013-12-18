@@ -9,7 +9,13 @@ class UrlUtilsSpec extends Specification {
 
     void "test url validation"() {
         expect:
-        UrlUtils.isUrl("http://foo.com")
-        !UrlUtils.isUrl("foo.com")
+        a == UrlUtils.isUrl(b)
+
+        where:
+        a     | b
+        true  | "http://foo.com"
+        false | "foo.com"
+        false | null
+        false | ""
     }
 }

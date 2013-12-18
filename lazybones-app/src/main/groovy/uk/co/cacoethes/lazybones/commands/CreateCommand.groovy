@@ -25,7 +25,7 @@ class CreateCommand extends AbstractCommand {
     final PackageSourceBuilder packageSourceFactory
     final PackageLocationBuilder packageLocationFactory
     final PackageDownloader packageDownloader
-    final ConfigObject mappings
+    final Map mappings
 
     static final String USAGE = """\
 USAGE: create <template> <version>? <dir>
@@ -65,8 +65,8 @@ USAGE: create <template> <version>? <dir>
     }
 
     protected static void validateMappings(ConfigObject configObject) {
-        configObject.each {key, value ->
-            if(!UrlUtils.isUrl(value as String)) {
+        configObject.each { key, value ->
+            if (!UrlUtils.isUrl(value as String)) {
                 throw new IllegalArgumentException("the value [$value] for mapping [$key] is not a url")
             }
         }
@@ -88,7 +88,7 @@ USAGE: create <template> <version>? <dir>
     @Override
     protected String getUsage() { return USAGE }
 
-    protected int doExecute(OptionSet cmdOptions,  Map globalOptions, ConfigObject configuration) {
+    protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject configuration) {
         try {
             def createData = evaluateArgs(cmdOptions)
 
@@ -157,10 +157,7 @@ USAGE: create <template> <version>? <dir>
 
     private CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
 
-        def packageName = mainArgs[0]
-        if(mappings && mappings.containsKey(packageName)) {
-            packageName = mappings[packageName]
-        }
+        def packageName = mappings?."${mainArgs[0]}" ?: mainArgs[0]
 
         if (hasVersionArg(mainArgs)) {
             return new CreateCommandInfo(packageName, mainArgs[1], mainArgs[2] as File)
@@ -184,12 +181,12 @@ USAGE: create <template> <version>? <dir>
     private void logSuccess(CreateCommandInfo createData) {
         log.info ""
         log.info "Project created in " + (isPathCurrentDirectory(createData.targetDir.path) ?
-                'current directory' : createData.targetDir.path) + '!'
+            'current directory' : createData.targetDir.path) + '!'
     }
 
     private void logReadme(CreateCommandInfo createData) {
         // Find a suitable README and display that if it exists.
-        def readmeFiles = createData.targetDir.listFiles( { File dir, String name ->
+        def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
             name == README_BASENAME || name.startsWith(README_BASENAME)
         } as FilenameFilter)
 

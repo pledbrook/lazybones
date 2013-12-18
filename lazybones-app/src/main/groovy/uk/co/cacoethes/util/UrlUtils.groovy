@@ -13,6 +13,7 @@ class UrlUtils {
      * including scheme.
      */
     static boolean isUrl(String str) {
+        if (!str) return false
         try {
             def uri = new URI(str)
             return uri.scheme
