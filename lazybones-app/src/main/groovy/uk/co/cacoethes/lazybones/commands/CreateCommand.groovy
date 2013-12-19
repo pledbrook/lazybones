@@ -1,6 +1,7 @@
 package uk.co.cacoethes.lazybones.commands
 
 import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
@@ -24,6 +25,7 @@ class CreateCommand extends AbstractCommand {
     final PackageSourceBuilder packageSourceFactory
     final PackageLocationBuilder packageLocationFactory
     final PackageDownloader packageDownloader
+    final Map mappings
 
     static final String USAGE = """\
 USAGE: create <template> <version>? <dir>
@@ -40,10 +42,10 @@ USAGE: create <template> <version>? <dir>
     protected static final String VAR_OPT = "P"
     protected static final String GIT_OPT = "with-git"
 
-    @CompileDynamic
     CreateCommand(ConfigObject config) {
         this(config.cache.dir as File)
         assert config.cache.dir
+        mappings = config.templates.mappings
     }
 
     CreateCommand(File cacheDir) {
@@ -76,7 +78,7 @@ USAGE: create <template> <version>? <dir>
     @Override
     protected String getUsage() { return USAGE }
 
-    protected int doExecute(OptionSet cmdOptions,  Map globalOptions, ConfigObject configuration) {
+    protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject configuration) {
         try {
             def createData = evaluateArgs(cmdOptions)
 
@@ -144,11 +146,14 @@ USAGE: create <template> <version>? <dir>
     }
 
     private CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
+
+        def packageName = mappings?."${mainArgs[0]}" ?: mainArgs[0]
+
         if (hasVersionArg(mainArgs)) {
-            return new CreateCommandInfo(mainArgs[0], mainArgs[1], mainArgs[2] as File)
+            return new CreateCommandInfo(packageName, mainArgs[1], mainArgs[2] as File)
         }
 
-        return new CreateCommandInfo(mainArgs[0], '', mainArgs[1] as File)
+        return new CreateCommandInfo(packageName, '', mainArgs[1] as File)
     }
 
     protected boolean hasVersionArg(List<String> args) {
@@ -166,12 +171,12 @@ USAGE: create <template> <version>? <dir>
     private void logSuccess(CreateCommandInfo createData) {
         log.info ""
         log.info "Project created in " + (isPathCurrentDirectory(createData.targetDir.path) ?
-                'current directory' : createData.targetDir.path) + '!'
+            'current directory' : createData.targetDir.path) + '!'
     }
 
     private void logReadme(CreateCommandInfo createData) {
         // Find a suitable README and display that if it exists.
-        def readmeFiles = createData.targetDir.listFiles( { File dir, String name ->
+        def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
             name == README_BASENAME || name.startsWith(README_BASENAME)
         } as FilenameFilter)
 

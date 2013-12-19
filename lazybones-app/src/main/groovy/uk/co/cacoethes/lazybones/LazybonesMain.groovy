@@ -3,6 +3,7 @@ package uk.co.cacoethes.lazybones
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
+import uk.co.cacoethes.util.UrlUtils
 
 import java.util.jar.Manifest
 import java.util.logging.Level
@@ -71,6 +72,8 @@ class LazybonesMain {
             argsList = argsList.tail()
         }
 
+        validateConfig(config)
+
         // Execute the corresponding command
         def cmdInstance = Commands.getAll(config).find { Command it -> it.name == cmd }
         if (!cmdInstance) {
@@ -101,6 +104,15 @@ class LazybonesMain {
     static ConfigObject loadDefaultConfig() {
         def cls = this
         return new ConfigSlurper().parse(cls.getResource("defaultConfig.groovy").text)
+    }
+
+    @CompileDynamic
+    protected static void validateConfig(ConfigObject configObject) {
+        configObject.templates.mappings.each { key, value ->
+            if (!UrlUtils.isUrl(value as String)) {
+                throw new IllegalArgumentException("the value [$value] for mapping [$key] is not a url")
+            }
+        }
     }
 
     /**

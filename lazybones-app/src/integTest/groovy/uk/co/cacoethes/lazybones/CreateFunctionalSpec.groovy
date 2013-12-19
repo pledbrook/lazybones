@@ -66,6 +66,21 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
 
         and: "It says that the latest version of the package is being installed in the target directory"
         output =~ /Creating project from template http:\/\/dl\.dropboxusercontent\.com.* \(latest\) in 'ratapp'/
+
+        when: "I run lazybones with a mapping to a full url for the ratpack template"
+        assert appDir.deleteDir()
+        exitCode = runCommand(["--verbose", "create", "customRatpack", "ratapp"], baseWorkDir)
+
+        then: "It unpacks the template, retaining file permissions"
+        exitCode == 0
+
+        appDir.exists()
+        new File(appDir, "gradlew").canExecute()
+        new File(appDir, "src/main/groovy").isDirectory()
+        new File(appDir, "src/ratpack/public/index.html").isFile()
+
+        and: "It says that the latest version of the package is being installed in the target directory"
+        output =~ /Creating project from template http:\/\/dl\.dropboxusercontent\.com.* \(latest\) in 'ratapp'/
     }
 
     def "Create command installs a template from a file URL"() {
@@ -115,6 +130,17 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         then: "It returns a non-zero exit code and reports the package as missing"
         exitCode != 0
         output =~ /Cannot find a template named 'unknown'./
+
+        !new File(baseWorkDir, "myapp").exists()
+    }
+
+    def "Create command reports errors if a mapped url does not exist"() {
+        when: "I run lazybones with the create command for an unknown package using a mapping and no version"
+        def exitCode = runCommand(["create", "doesNotExist", "myapp"], baseWorkDir)
+
+        then: "It returns a non-zero exit code and reports the package as missing"
+        exitCode != 0
+        output =~ /Cannot find a template named 'file:\/\/\/does\/not\/exist'./
 
         !new File(baseWorkDir, "myapp").exists()
     }

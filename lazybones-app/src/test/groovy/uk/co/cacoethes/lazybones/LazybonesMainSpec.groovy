@@ -28,4 +28,24 @@ class LazybonesMainSpec extends Specification {
         "config.file"            |  "/path/to"   |       "file"
         "lazybones.cache.dir"    |    "Test"     |       "dir"
     }
+
+    void "check mappings validation"() {
+        given:
+        def config = new ConfigObject()
+        config.templates.mappings.foo = "http://bar.com"
+
+        when:
+        LazybonesMain.validateConfig(config)
+
+        then:
+        noExceptionThrown()
+
+        when:
+        config.templates.mappings.bar = "notAUrl"
+        LazybonesMain.validateConfig(config)
+
+        then:
+        def exception = thrown(IllegalArgumentException)
+        exception.message == "the value [notAUrl] for mapping [bar] is not a url"
+    }
 }
