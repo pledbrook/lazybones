@@ -1,5 +1,6 @@
 package uk.co.cacoethes.lazybones.commands
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionSet
@@ -14,6 +15,12 @@ class ListCommand extends AbstractCommand {
     static final String USAGE = """\
 USAGE: list
 """
+    final Map mappings
+
+    @CompileDynamic
+    ListCommand(ConfigObject config) {
+        mappings = config.templates.mappings
+    }
 
     @Override
     String getName() { return "list" }
@@ -33,6 +40,24 @@ USAGE: list
 
     @Override
     protected int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config) {
+
+        if (mappings) {
+            println "Available mappings"
+            println ""
+            int maxSizeOfKey = 0
+
+            mappings.keySet().each {String key ->
+                maxSizeOfKey = maxSizeOfKey < key.size() ? key.size() : maxSizeOfKey
+            }
+
+            mappings.each {String key, value ->
+                String keyPart = "    " + key + ' ' * (maxSizeOfKey + 1 - key.size()) + '-> '
+                println keyPart + value
+            }
+
+            println ""
+        }
+
         for (String bintrayRepoName in config.bintrayRepositories) {
             println "Available templates in ${bintrayRepoName}:"
             println ""

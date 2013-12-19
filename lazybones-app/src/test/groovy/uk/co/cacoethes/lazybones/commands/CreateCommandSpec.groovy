@@ -8,26 +8,6 @@ import spock.lang.Specification
  */
 class CreateCommandSpec extends Specification {
 
-    void "check mappings validation"() {
-        given:
-        def config = new ConfigObject()
-        config.foo = "http://bar.com"
-
-        when:
-        CreateCommand.validateMappings(config)
-
-        then:
-        noExceptionThrown()
-
-        when:
-        config.bar = "notAUrl"
-        CreateCommand.validateMappings(config)
-
-        then:
-        def exception = thrown(IllegalArgumentException)
-        exception.message == "the value [notAUrl] for mapping [bar] is not a url"
-    }
-
     void "package name is replaced with url"() {
         given:
         def config = new ConfigObject()

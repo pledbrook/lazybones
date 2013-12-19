@@ -19,7 +19,9 @@ class ListFunctionalSpec extends AbstractFunctionalSpec {
 
         then: "It displays the available packages as a list"
         exitCode == 0
-        output.startsWith("Available templates in")
+        output.startsWith("Available mappings")
+        output =~ /\s+customRatpack -> http:\/\/dl.dropboxusercontent.com\/u\/29802534\/custom-ratpack.zip\s+/
+        output =~ /\s+doesNotExist  -> file:\/\/\/does\/not\/exist\s+/
         output =~ /\s+groovy-app\s+/
         output =~ /\s+ratpack\s+/
         output =~ /\s+ratpack-lite\s+/

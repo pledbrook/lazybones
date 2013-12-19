@@ -1,6 +1,7 @@
 package uk.co.cacoethes.lazybones.commands
 
 import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
@@ -12,7 +13,6 @@ import uk.co.cacoethes.lazybones.packagesources.PackageSource
 import uk.co.cacoethes.lazybones.packagesources.PackageSourceBuilder
 import uk.co.cacoethes.lazybones.scm.GitAdapter
 import uk.co.cacoethes.util.ArchiveMethods
-import uk.co.cacoethes.util.UrlUtils
 
 import java.util.logging.Level
 
@@ -21,6 +21,7 @@ import java.util.logging.Level
  * a specified template.
  */
 @Log
+@CompileStatic
 class CreateCommand extends AbstractCommand {
     final PackageSourceBuilder packageSourceFactory
     final PackageLocationBuilder packageLocationFactory
@@ -47,7 +48,6 @@ USAGE: create <template> <version>? <dir>
         this(config.cache.dir as File)
         assert config.cache.dir
         mappings = config.templates.mappings
-        validateMappings(mappings)
     }
 
     CreateCommand(File cacheDir) {
@@ -62,14 +62,6 @@ USAGE: create <template> <version>? <dir>
     @Override
     String getDescription() {
         return "Creates a new project from a template."
-    }
-
-    protected static void validateMappings(ConfigObject configObject) {
-        configObject.each { key, value ->
-            if (!UrlUtils.isUrl(value as String)) {
-                throw new IllegalArgumentException("the value [$value] for mapping [$key] is not a url")
-            }
-        }
     }
 
     @Override
@@ -155,6 +147,7 @@ USAGE: create <template> <version>? <dir>
         return createCmdInfo
     }
 
+    @CompileDynamic
     private CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
 
         def packageName = mappings?."${mainArgs[0]}" ?: mainArgs[0]
