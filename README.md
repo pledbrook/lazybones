@@ -72,6 +72,10 @@ In other words, you could now run
 
 Note that when using the URL option, there is no need to specify a version.
 
+If a mapped template has the same name as a remote template, the mapped
+template will be used by `create`; essentially creating a simple override 
+mechanism.
+
 There is just one more thing to say about the `create` command: by default it
 creates the specified directory and puts the initial project in there. If you
 want to unpack a template in the current directory instead, for example if you
