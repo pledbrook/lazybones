@@ -27,6 +27,7 @@ Contributors
 * [Luke Daley](https://github.com/alkemist)
 * [Tomas Lin](https://github.com/tomaslin)
 * [Russell Hart](https://github.com/rhart)
+* [Dave Syer](https://github.com/dsyer)
 
 
 Running it
@@ -44,19 +45,39 @@ To create a new project, run
 
     lazybones create <template name> <version> <target directory>
 
-So if I wanted to create a skeleton Ratpack project in a new 'my-rat-app'
-directory I would run
+So if you wanted to create a skeleton Ratpack project in a new 'my-rat-app'
+directory you would run
 
     lazybones create ratpack-lite 0.1 my-rat-app
 
-I can create a template from a generic URL as well.
+Named templates are all stored on Bintray, but you can install them directly
+from a URL too:
 
     lazybones create http://dl.bintray.com/kyleboon/lazybones/java-basic-template-0.1.zip my-app
 
-When using the URL option, there is no need to specify a version.
+Of course it can be pretty laborious copying and pasting URLs around, so Lazybones
+allows you to configure aliases for URLs. By adding the following configuration to
+your Lazybones settings file, `~/.lazybones/config.groovy` (see below for more details
+on this), you can install the template by name:
 
-I can also create the project in the current directory by passing in '.' as
-the target directory.
+    templates {
+        mappings {
+            myTmpl = ""
+        }
+    }
+
+In other words, you could now run
+
+    lazybones create myTmpl my-app
+
+Note that when using the URL option, there is no need to specify a version.
+
+There is just one more thing to say about the `create` command: by default it
+creates the specified directory and puts the initial project in there. If you
+want to unpack a template in the current directory instead, for example if you
+have already created the project directory, then just pass '.' as the directory:
+
+    lazybones create ratpack .
 
 To see what templates you can install, run
 
