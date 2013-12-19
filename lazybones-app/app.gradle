@@ -19,13 +19,13 @@ apply plugin: "codenarc"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.5-SNAPSHOT"
+version = "0.5"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 ext {
-    groovyVersion = "2.1.5"
+    groovyVersion = "2.1.9"
     installDir = new File(System.getProperty("user.home"), ".lazybones/templates")
     isCiBuild = System.getProperty("drone.io") as boolean
     testWorkDir = file("$buildDir/testWork").path
