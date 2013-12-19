@@ -1,7 +1,5 @@
 package uk.co.cacoethes.lazybones.commands
 
-import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
@@ -145,6 +143,7 @@ USAGE: create <template> <version>? <dir>
         return createCmdInfo
     }
 
+    @SuppressWarnings('SpaceAroundOperator')
     private CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
 
         def packageName = mappings?."${mainArgs[0]}" ?: mainArgs[0]
@@ -174,6 +173,7 @@ USAGE: create <template> <version>? <dir>
             'current directory' : createData.targetDir.path) + '!'
     }
 
+    @SuppressWarnings('SpaceBeforeOpeningBrace')
     private void logReadme(CreateCommandInfo createData) {
         // Find a suitable README and display that if it exists.
         def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->

@@ -1,20 +1,21 @@
 package uk.co.cacoethes.lazybones.commands
 
-import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
 
 /**
- *
+ * A Lazybones command that prints out all the available templates by name,
+ * including any aliases that the user has configured in his or her settings.
  */
-@CompileStatic
 @Log
 class ListCommand extends AbstractCommand {
     static final String USAGE = """\
 USAGE: list
 """
+
+    private static final String INDENT = "    "
+
     @Override
     String getName() { return "list" }
 
@@ -31,7 +32,6 @@ USAGE: list
     @Override
     protected String getUsage() { return USAGE }
 
-    @CompileDynamic
     @Override
     protected int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config) {
 
@@ -43,7 +43,7 @@ USAGE: list
 
             def pkgSource = new BintrayPackageSource(bintrayRepoName)
             for (name in pkgSource.listPackageNames()) {
-                println "    " + name
+                println INDENT + name
             }
 
             println ""
@@ -56,15 +56,11 @@ USAGE: list
         if (mappings) {
             println "Available mappings"
             println ""
-            int maxSizeOfKey = 0
 
-            mappings.keySet().each { String key ->
-                maxSizeOfKey = maxSizeOfKey < key.size() ? key.size() : maxSizeOfKey
-            }
+            int maxKeySize = mappings.keySet().inject(0) { int max, String key -> Math.max(key.size(), max) }
 
             mappings.each { String key, value ->
-                String keyPart = "    " + key + ' ' * (maxSizeOfKey + 1 - key.size()) + '-> '
-                println keyPart + value
+                println INDENT + key.padRight(maxKeySize + 2) + "-> " + value
             }
 
             println ""

@@ -30,8 +30,8 @@ class ListCommandSpec extends Specification {
         then:
         def output = stream.toString()
         output.startsWith("Available mappings")
-        output =~ /\s+customRatpack -> http:\/\/dl.dropboxusercontent.com\/u\/29802534\/custom-ratpack.zip\s+/
-        output =~ /\s+doesNotExist  -> file:\/\/\/does\/not\/exist\s+/
+        output =~ /\s+customRatpack  -> http:\/\/dl.dropboxusercontent.com\/u\/29802534\/custom-ratpack.zip\s+/
+        output =~ /\s+doesNotExist   -> file:\/\/\/does\/not\/exist\s+/
 
         cleanup:
         System.out = originalOut
