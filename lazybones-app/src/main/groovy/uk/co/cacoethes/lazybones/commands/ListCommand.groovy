@@ -15,13 +15,6 @@ class ListCommand extends AbstractCommand {
     static final String USAGE = """\
 USAGE: list
 """
-    final Map mappings
-
-    @CompileDynamic
-    ListCommand(ConfigObject config) {
-        mappings = config.templates.mappings
-    }
-
     @Override
     String getName() { return "list" }
 
@@ -38,25 +31,11 @@ USAGE: list
     @Override
     protected String getUsage() { return USAGE }
 
+    @CompileDynamic
     @Override
     protected int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config) {
 
-        if (mappings) {
-            println "Available mappings"
-            println ""
-            int maxSizeOfKey = 0
-
-            mappings.keySet().each {String key ->
-                maxSizeOfKey = maxSizeOfKey < key.size() ? key.size() : maxSizeOfKey
-            }
-
-            mappings.each {String key, value ->
-                String keyPart = "    " + key + ' ' * (maxSizeOfKey + 1 - key.size()) + '-> '
-                println keyPart + value
-            }
-
-            println ""
-        }
+        handleMappings(config.templates.mappings)
 
         for (String bintrayRepoName in config.bintrayRepositories) {
             println "Available templates in ${bintrayRepoName}:"
@@ -71,5 +50,24 @@ USAGE: list
         }
 
         return 0
+    }
+
+    protected static void handleMappings(Map mappings) {
+        if (mappings) {
+            println "Available mappings"
+            println ""
+            int maxSizeOfKey = 0
+
+            mappings.keySet().each { String key ->
+                maxSizeOfKey = maxSizeOfKey < key.size() ? key.size() : maxSizeOfKey
+            }
+
+            mappings.each { String key, value ->
+                String keyPart = "    " + key + ' ' * (maxSizeOfKey + 1 - key.size()) + '-> '
+                println keyPart + value
+            }
+
+            println ""
+        }
     }
 }

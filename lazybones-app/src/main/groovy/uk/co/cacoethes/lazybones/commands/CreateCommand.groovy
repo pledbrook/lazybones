@@ -21,7 +21,6 @@ import java.util.logging.Level
  * a specified template.
  */
 @Log
-@CompileStatic
 class CreateCommand extends AbstractCommand {
     final PackageSourceBuilder packageSourceFactory
     final PackageLocationBuilder packageLocationFactory
@@ -43,7 +42,6 @@ USAGE: create <template> <version>? <dir>
     protected static final String VAR_OPT = "P"
     protected static final String GIT_OPT = "with-git"
 
-    @CompileDynamic
     CreateCommand(ConfigObject config) {
         this(config.cache.dir as File)
         assert config.cache.dir
@@ -147,7 +145,6 @@ USAGE: create <template> <version>? <dir>
         return createCmdInfo
     }
 
-    @CompileDynamic
     private CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
 
         def packageName = mappings?."${mainArgs[0]}" ?: mainArgs[0]
