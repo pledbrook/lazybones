@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.0",
+        classpath "uk.co.cacoethes:lazybones-gradle:1.0.2",
                   "net.saliman:gradle-cobertura-plugin:1.1.2"
     }
 }
@@ -16,17 +16,18 @@ apply plugin: "groovy"
 apply plugin: "application"
 apply plugin: "cobertura"
 apply plugin: "codenarc"
+apply plugin: "lazybones-templates"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.5"
+version = "0.6-SNAPSHOT"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 ext {
     groovyVersion = "2.1.9"
-    installDir = new File(System.getProperty("user.home"), ".lazybones/templates")
+    cachePath = new File(System.getProperty("user.home"), ".lazybones/templates").absolutePath
     isCiBuild = System.getProperty("drone.io") as boolean
     testWorkDir = file("$buildDir/testWork").path
 }
@@ -69,9 +70,29 @@ jar {
     }
 }
 
+lazybones {
+    templateDirs = files(file("${projectDir}/src/integTest/templates").listFiles())
+}
+
+task configureCachePath {
+    if (isCiBuild) {
+        // Load the default cache directory location from the default config file.
+        // We have to defer the evaluation until after the test resources have been
+        // copied onto the classpath.
+        def defaultConfigFile = sourceSets.main.resources.filter { it.name == "defaultConfig.groovy" }.singleFile
+        def defaultConfig = new ConfigSlurper().parse(defaultConfigFile.text)
+        project.cachePath = defaultConfig.cache.dir
+    }
+    else {
+        project.cachePath = testWorkDir + "/template-cache"
+    }
+
+    project.extensions.lazybones.installDir = new File(project.cachePath)
+}
+
 //for a single test, you can run "gradle -DintegTests.single=<test name>"
 task integTests(type: Test) {
-    dependsOn "installApp"
+    dependsOn "installApp", "configureCachePath", "installAllTemplates"
     mustRunAfter "test"
 
     systemProperty "lazybones.testWorkDir", testWorkDir
@@ -80,7 +101,8 @@ task integTests(type: Test) {
 
     // Allows us to disable tests that don't work on Drone.io, such as the
     // CreateFunctionalSpec feature test for --with-git.
-    systemProperty "lazybones.config.file", "${sourceSets.integTest.output.resourcesDir}/test-config.groovy"
+    systemProperty "lazybones.config.file",
+                   sourceSets.integTest.resources.filter { it.name == "test-config.groovy" }.singleFile.absolutePath
 
     def cachePath
     if (isCiBuild) {
@@ -89,8 +111,7 @@ task integTests(type: Test) {
     else {
         // Use the default cache location on the CI server, but a custom one
         // on local machines to avoid polluting the developer's own cache.
-        cachePath = testWorkDir + "/template-cache"
-        systemProperty "lazybones.cache.dir", cachePath
+        systemProperty "lazybones.cache.dir", project.cachePath
     }
 
     testClassesDir = sourceSets.integTest.output.classesDir
@@ -98,30 +119,6 @@ task integTests(type: Test) {
 
     include "**/*Spec*"
     exclude "**/Abstract*Spec*"
-
-    doFirst {
-        if (isCiBuild) {
-            // Load the default cache directory location from the default config file.
-            // We have to defer the evaluation until after the test resources have been
-            // copied onto the classpath.
-            def defaultConfigFile = file(sourceSets.main.output.resourcesDir.path +
-                    "/uk/co/cacoethes/lazybones/defaultConfig.groovy")
-            def defaultConfig = new ConfigSlurper().parse(defaultConfigFile.text)
-            cachePath = defaultConfig.cache.dir
-        }
-
-        // Remove the cache directory. This ensures that when the tests run,
-        // an existing cache doesn't affect the results.
-        def cacheDir = file(cachePath)
-        cacheDir.deleteDir()
-
-        // This template package will be in the cache, but not available from
-        // Bintray or any other remote location.
-        copy {
-            from "${sourceSets.integTest.output.resourcesDir}/test-tmpl-0.2.zip"
-            into cacheDir
-        }
-    }
 }
 
 task packageReports(type: Zip) {
