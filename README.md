@@ -28,6 +28,7 @@ Contributors
 * [Tomas Lin](https://github.com/tomaslin)
 * [Russell Hart](https://github.com/rhart)
 * [Dave Syer](https://github.com/dsyer)
+* [Andy Duncan](https://github.com/andyjduncan)
 
 
 Running it
