@@ -20,7 +20,7 @@ apply plugin: "lazybones-templates"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.6-SNAPSHOT"
+version = "0.6"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
