@@ -49,6 +49,7 @@ class LazybonesScript extends Script {
 
     /**
      * Declares the list of file patterns that should be excluded from SCM.
+     * @since 0.5
      */
     void scmExclusions(String... exclusions) {
         if (!scmExclusionsFile) return
@@ -69,6 +70,7 @@ class LazybonesScript extends Script {
      * @param name The string to convert.
      * @return The converted string, or {@code null} if the given name is {@code
      * null}, or an empty string if the given string is empty.
+     * @since 0.5
      */
     String transformText(Map args, String name) {
         return Naming.convert(args, name)
@@ -120,6 +122,7 @@ class LazybonesScript extends Script {
      * @param message
      * @param defaultValue
      * @return the response
+     * @since 0.4
      */
     def ask(String message, defaultValue = null) {
         System.out.print message
@@ -139,6 +142,7 @@ class LazybonesScript extends Script {
      * be used instead of prompting the user for input if that property exists.
      * @return The required value based on whether the message was displayed and
      * whether the user entered a value.
+     * @since 0.4
      */
     def ask(String message, defaultValue, String propertyName) {
         if (propertyName && binding.hasVariable(propertyName)) {
@@ -155,6 +159,7 @@ class LazybonesScript extends Script {
      * @deprecated
      * @param filePattern
      * @param substitutionVariables
+     * @since 0.4
      */
     def filterFiles(String filePattern, Map substitutionVariables) {
         String warningMessage = "The template you are using depends on a deprecated part of the API, [filterFiles], " +
@@ -167,6 +172,7 @@ class LazybonesScript extends Script {
      * @param filePattern classic ant pattern matcher
      * @param substitutionVariables model for processing the template
      * @return
+     * @since 0.5
      */
     def processTemplates(String filePattern, Map substitutionVariables) {
         if (!targetDir) {
@@ -282,6 +288,9 @@ class LazybonesScript extends Script {
      * Determines whether the version of Lazybones loading the post-installation
      * script supports a particular feature. Current features include "ask" and
      * processTemplates for example.
+     * @param featureName The name of the feature you want to check for. This should
+     * be the name of a method on `LazybonesScript`.
+     * @since 0.4
      */
     boolean hasFeature(String featureName) {
         return this.getClass().methods.any { Method method -> method.name == featureName }
