@@ -24,6 +24,7 @@ class BintrayGenericUploadSpec extends Specification {
             artifactFile = mockFile
             artifactUrlPath = mockPath
             repositoryUrl = repoUrl
+            publish = autoPublish
         }
 
         when: "I calculate the full URL"
@@ -34,6 +35,7 @@ class BintrayGenericUploadSpec extends Specification {
 
         where:
         repoUrl << [ baseRepoUrl, baseRepoUrl + '/' ]
-        expected << [ baseRepoUrl + '/' + mockPath, baseRepoUrl + '/' + mockPath ]
+        autoPublish << [ true, false ]
+        expected << [ baseRepoUrl + '/' + mockPath + ';publish=1', baseRepoUrl + '/' + mockPath + ';publish=0' ]
     }
 }
