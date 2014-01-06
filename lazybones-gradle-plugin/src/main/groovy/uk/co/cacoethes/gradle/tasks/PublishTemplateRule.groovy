@@ -41,6 +41,7 @@ class PublishTemplateRule implements Rule {
                 username = project.extensions.lazybones.repositoryUsername
                 apiKey = project.extensions.lazybones.repositoryApiKey
                 repositoryUrl = project.lazybones.repositoryUrl
+                publish = project.lazybones.publish
 
                 doFirst {
                     def missingProps = verifyPublishProperties(t)
