@@ -22,6 +22,9 @@ class BintrayGenericUpload extends DefaultTask {
     @Input
     String repositoryUrl
 
+    @Input
+    boolean publish
+
     /**
      * The username of the account to publish as. The account must of course
      * have permission to publish to the target repository.
@@ -68,7 +71,7 @@ Failed to upload to Bintray (status ${status}):
     }
 
     protected String calculateFullUrl() {
-        return repositoryUrl + (!repositoryUrl.endsWith('/') ? '/' : '') + artifactUrlPath
+        return repositoryUrl + (!repositoryUrl.endsWith('/') ? '/' : '') + artifactUrlPath + ';publish=' + (publish ? '1' : '0')
     }
 }
 
