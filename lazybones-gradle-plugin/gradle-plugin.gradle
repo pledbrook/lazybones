@@ -3,7 +3,7 @@ apply plugin: "maven"
 
 archivesBaseName = "lazybones-gradle"
 group = "uk.co.cacoethes"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
