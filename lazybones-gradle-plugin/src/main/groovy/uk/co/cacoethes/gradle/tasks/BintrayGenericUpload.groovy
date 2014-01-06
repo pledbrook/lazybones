@@ -22,6 +22,11 @@ class BintrayGenericUpload extends DefaultTask {
     @Input
     String repositoryUrl
 
+    /**
+     * Determines whether the artifact will be published as soon as it's
+     * uploaded. If this is {@code false}, you will need to publish the
+     * artifact separately so that users can access it.
+     */
     @Input
     boolean publish
 
@@ -71,7 +76,7 @@ Failed to upload to Bintray (status ${status}):
     }
 
     protected String calculateFullUrl() {
-        return repositoryUrl + (!repositoryUrl.endsWith('/') ? '/' : '') + artifactUrlPath + ';publish=' + (publish ? '1' : '0')
+        return repositoryUrl + (!repositoryUrl.endsWith('/') ? '/' : '') +
+                artifactUrlPath + ';publish=' + (publish ? '1' : '0')
     }
 }
-
