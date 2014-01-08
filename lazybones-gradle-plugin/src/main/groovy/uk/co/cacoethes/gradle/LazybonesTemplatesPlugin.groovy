@@ -27,6 +27,7 @@ class LazybonesTemplatesPlugin implements Plugin<Project> {
         extension.packagesDir = project.file("${project.buildDir}/packages")
         extension.installDir = new File(System.getProperty("user.home"), ".lazybones/templates")
         extension.packageNameSuffix = "-template"
+        extension.publish = false
 
         // Shared configuration closure that can easily turn a standard task
         // into an aggregate of others based on the plugin's conventions.
