@@ -145,6 +145,16 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         !new File(baseWorkDir, "myapp").exists()
     }
 
+    def "Create command reports error if no arguments given"() {
+        when: "I run lazybones with the create command for an unknown package using a mapping and no version"
+        def exitCode = runCommand(["create", "ratpack"], baseWorkDir)
+
+        then: "It returns a non-zero exit code and reports the package as missing"
+        exitCode != 0
+        output =~ /Incorrect number of arguments\./
+        !output.contains("Exception")
+    }
+
     @Betamax(tape="create-tape")
     def "Create command reports error if package cannot be found"() {
         when: "I run lazybones with the create command for an unknown package"

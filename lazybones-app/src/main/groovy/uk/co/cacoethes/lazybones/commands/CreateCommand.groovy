@@ -70,7 +70,7 @@ USAGE: create <template> <version>? <dir>
 
     @Override
     protected IntRange getParameterRange() {
-        1..3
+        2..3  // Either a directory or a version + a directory
     }
 
     @Override
