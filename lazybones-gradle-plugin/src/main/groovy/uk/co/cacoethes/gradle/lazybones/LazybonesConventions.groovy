@@ -42,6 +42,13 @@ class LazybonesConventions {
     /** The Bintray API key for the {@link repositoryUsername} account. */
     String repositoryApiKey
 
+    /**
+     * Determines whether the templates will be published as soon as they
+     * are uploaded. If this is {@code false}, you will need to publish the
+     * artifact separately so that users can access it.
+     */
+    boolean publish
+
     LazybonesConventions(Project project) {
         this.project = project
     }
