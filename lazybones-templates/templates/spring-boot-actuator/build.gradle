@@ -10,34 +10,34 @@ group = "${group}"
 mainClassName = "sample.SampleApplication"
 
 buildscript {
+	ext {
+		springBootVersion = '1.0.0.BUILD-SNAPSHOT'
+	}    
     repositories {
     	mavenLocal()
-        maven { url "http://repo.springsource.org/libs-snapshot" }
+        maven { url "http://repo.spring.io/snapshot" }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:0.5.0.BUILD-SNAPSHOT")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
-}
-
-ext {
-	springBootVersion = '0.5.0.BUILD-SNAPSHOT'
 }
 
 jar {
     baseName = 'spring-boot-sample-actuator'
-    version =  '0.5.0'
+    version =  '1.0.0'
 }
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.springsource.org/libs-snapshot" }
+    maven { url "http://repo.spring.io/milestone" }
+    maven { url "http://repo.spring.io/snapshot" }
 }
 
 dependencies {
-    compile "org.codehaus.groovy:groovy:2.1.6"
-    compile("org.springframework.boot:spring-boot-starter-web:${springBootVersion}")
-    compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
-    testCompile("junit:junit:4.11")
+    compile "org.codehaus.groovy:groovy"
+    compile "org.springframework.boot:spring-boot-starter-web"
+    compile "org.springframework.boot:spring-boot-starter-actuator"
+    testCompile "org.springframework.boot:spring-boot-starter-test"
 }
 
 task wrapper(type: Wrapper) {
