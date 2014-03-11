@@ -10,11 +10,11 @@ group = "${group}"
 mainClassName = "sample.SampleApplication"
 
 buildscript {
-	ext {
-		springBootVersion = '1.0.0.BUILD-SNAPSHOT'
-	}    
+    ext {
+        springBootVersion = '1.0.0.BUILD-SNAPSHOT'
+    }    
     repositories {
-    	mavenLocal()
+        mavenCentral()
         maven { url "http://repo.spring.io/snapshot" }
     }
     dependencies {
