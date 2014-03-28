@@ -44,7 +44,7 @@ environment variable.
 
 To create a new project, run
 
-    lazybones create <template name> <version> <target directory>
+    lazybones create <template name> <template version> <target directory>
 
 So if you wanted to create a skeleton Ratpack project in a new 'my-rat-app'
 directory you would run
