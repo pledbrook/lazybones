@@ -38,7 +38,7 @@ class LazybonesScript extends Script {
      * The reader stream from which user input will be pulled. Defaults to a
      * wrapper around stdin using the platform's default encoding/charset.
      */
-    Reader reader = new InputStreamReader(System.in)
+    Reader reader = new BufferedReader(new InputStreamReader(System.in))
 
     private TemplateEngine templateEngine = new SimpleTemplateEngine()
 
