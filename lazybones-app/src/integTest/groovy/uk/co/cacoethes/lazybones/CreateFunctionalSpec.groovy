@@ -50,6 +50,25 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
     }
 
     @Betamax(tape="create-tape")
+    def "Post-install script works with multiple asks (#106)"() {
+        when: "creating a groovyapp with no pre-defined property values"
+        def args = [
+                "create",
+                "test-tmpl",
+                "0.2",
+                "my-app"]
+        def exitCode = runCommand(args, baseWorkDir, ["org.example", "1.0-SNAPSHOT"])
+
+        then: "It successfully completes"
+        exitCode == 0
+
+        and: "The generated build file contains the expected group ID and version"
+        def text = new File(baseWorkDir, "my-app/build.gradle").text.trim()
+        text.contains("group = \"org.example\"")
+        text.contains("version = \"1.0-SNAPSHOT\"")
+    }
+
+    @Betamax(tape="create-tape")
     def "Create command installs a template from an HTTP URL"() {
         when: "I run lazybones with the create command using a full URL for the ratpack template"
         def packageUrl = "http://dl.dropboxusercontent.com/u/29802534/custom-ratpack.zip"
