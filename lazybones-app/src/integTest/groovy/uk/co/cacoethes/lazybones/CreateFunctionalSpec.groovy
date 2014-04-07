@@ -191,6 +191,9 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
 
     @Betamax(tape="create-tape")
     def "lazybones creates git repository on --with-git"() {
+        given: "The platform line separator"
+        def eol = System.getProperty("line.separator")
+
         when: "creating a groovyapp with all options passed in"
         def args = [
                 "create",
@@ -211,10 +214,7 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
 
         and: "The .gitignore file contains the expected entries"
         def text = new File(appDir, ".gitignore").text.trim()
-        text == """\
-*.iws
-build/
-*.log"""
+        text == "*.iws" + eol + "build/" + eol + "*.log"
 
         // Only include this verification if we're not running on Drone.io.
         // For some reason this assertion always fails on the CI server even
