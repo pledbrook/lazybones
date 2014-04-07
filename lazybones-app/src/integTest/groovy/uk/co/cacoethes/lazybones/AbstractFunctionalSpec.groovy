@@ -61,7 +61,7 @@ abstract class AbstractFunctionalSpec extends Specification {
         def systemProps = System.properties.findAll {
             it.key.startsWith("lazybones.") && !(it.key in ["installDir", "testWorkDir"])
         }.collect {
-            "-D" + it.key + "=" + it.value
+            "-D" + it.key + '="' + it.value + '"'
         }
 
         if (systemProps) {
