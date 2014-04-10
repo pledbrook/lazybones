@@ -11,11 +11,10 @@ mainClassName = "sample.SampleApplication"
 
 buildscript {
     ext {
-        springBootVersion = '1.0.0.BUILD-SNAPSHOT'
+        springBootVersion = '1.0.1.RELEASE'
     }    
     repositories {
         mavenCentral()
-        maven { url "http://repo.spring.io/snapshot" }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -29,8 +28,6 @@ jar {
 
 repositories {
     mavenCentral()
-    maven { url "http://repo.spring.io/milestone" }
-    maven { url "http://repo.spring.io/snapshot" }
 }
 
 dependencies {
@@ -41,5 +38,5 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.6'
+    gradleVersion = '1.11'
 }
