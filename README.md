@@ -182,13 +182,14 @@ any .retain files are filtered out (but the containing directories are included)
 
 To package up a template, simply run
 
-    ./gradlew packageTemplate-<templateName>
+    ./gradlew packageTemplate<TemplateName>
 
-The name of the project template comes from the containing directory. So the
-template directory structure in src/templates/ratpack-lite results in a template
-called 'ratpack-lite', which can be packaged with
+The name of the project template comes from the containing directory, which is
+assumed to be lowercase hyphenated. The template name is the equivalent camel
+case form. So the template directory structure in src/templates/ratpack-lite
+results in a template called 'RatpackLite', which can be packaged with
 
-    ./gradlew packageTemplate-ratpack-lite
+    ./gradlew packageTemplateRatpackLite
 
 The project template archive will be created in the build directory with the
 name '<template name>-template-<version>.zip'. See the small section below on
@@ -196,12 +197,12 @@ how the template version is derived.
 
 You can also package all the templates in one fell swoop:
 
-    ./gradlew packageTemplates
+    ./gradlew packageAllTemplates
 
 Once a template is packaged up, you can publish it to a generic (non-Maven)
 Bintray repository by running
 
-    ./gradlew publish-<templateName>
+    ./gradlew publishTemplate<TemplateName>
 
 This will initially fail, because the build does not know where to publish to.
 That's quickly fixed by adding a gradle.properties file in the root of this
@@ -217,12 +218,12 @@ you need to.
 
 Finally, you can publish the whole shebang (unusual) with
 
-    ./gradlew publishAll
+    ./gradlew publishAllTemplates
 
 If you don't want to publish your template you can install it locally using the
-installTemplate task.
+installTemplate rule.
 
-     ./gradlew installTemplate-<templateName>
+     ./gradlew installTemplate<TemplateName>
 
 This will install the template to ~/.lazybones/templates so that you can use it without
 moving it to bintray first.
