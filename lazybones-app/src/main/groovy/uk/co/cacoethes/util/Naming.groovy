@@ -7,6 +7,9 @@ import groovy.transform.Immutable
  * such as camel case, hyphenated lower case, and natural. You can find the
  * rules for the conversion in the {@linkplain uk.co.cacoethes.gradle.util.NameConverterSpec
  * unit specification} for this class.</p>
+ * <p><em>Note</em> Names that don't conform to the expected formats may lead to
+ * unexpected behaviour. Basically the conversions are undefined. Also, sequences
+ * of numbers are treated as words, so Sample245Book becomes sample-245-book.</p>
  * <p>The conversion itself always goes through intermediate forms: either
  * camel case, lower case hyphenated, or both. This reduces the amount of code
  * needed to handle multiple types.</p>
@@ -80,7 +83,7 @@ class Naming {
         if (!name) return name
 
         def out = new StringBuffer()
-        def m = name =~ /-([a-zA-Z])/
+        def m = name =~ /-([a-zA-Z0-9])/
         while (m) {
             m.appendReplacement out, m.group(1).toUpperCase()
         }
