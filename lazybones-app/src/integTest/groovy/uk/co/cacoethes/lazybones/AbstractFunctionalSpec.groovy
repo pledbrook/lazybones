@@ -40,9 +40,11 @@ abstract class AbstractFunctionalSpec extends Specification {
      * larger.
      * @return The exit code of the lazybones process.
      */
-    int runCommand(List cmdList, File workDir, List inputs = []) {
-        // Clear out results of previous executions
-        FileUtils.deleteDirectory(workDir)
+    int runCommand(List cmdList, File workDir, List inputs = [], boolean clearPrevious = true) {
+        if (clearPrevious) {
+            // Clear out results of previous executions
+            FileUtils.deleteDirectory(workDir)
+        }
         resetOutput()
         workDir.mkdirs()
 

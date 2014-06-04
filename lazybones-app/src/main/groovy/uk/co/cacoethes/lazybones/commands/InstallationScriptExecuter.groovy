@@ -13,11 +13,15 @@ import uk.co.cacoethes.lazybones.scm.ScmAdapter
 class InstallationScriptExecuter {
     private ScmAdapter scmAdapter
 
+    InstallationScriptExecuter() {
+        this(null)
+    }
+
     InstallationScriptExecuter(ScmAdapter adapter) {
         this.scmAdapter = adapter
     }
 
-    void runPostInstallScriptWithArgs(OptionSet cmdOptions, File targetDir) {
+    void runPostInstallScriptWithArgs(OptionSet cmdOptions, File targetDir, File templateDir = null) {
         // Run the post-install script if it exists. The user can pass variables
         // to the script via -P command line arguments. This also places
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
@@ -27,7 +31,7 @@ class InstallationScriptExecuter {
                     collectEntries { String it -> it.split('=') as List }
 
             scriptVariables << evaluateVersionScriptVariables()
-            runPostInstallScript(targetDir, scriptVariables)
+            runPostInstallScript(targetDir, templateDir, scriptVariables)
             initScmRepo(targetDir.absoluteFile)
         }
         catch (all) {
@@ -42,8 +46,10 @@ class InstallationScriptExecuter {
      * @param model a map of variables available to the script
      * @return the lazybones script if it exists
      */
-    Script runPostInstallScript(File targetDir, Map<String, String> model) {
-        def file = new File(targetDir, "lazybones.groovy")
+    Script runPostInstallScript(File targetDir, File templateDir, Map<String, String> model) {
+        if (!templateDir) templateDir = targetDir
+
+        def file = new File(templateDir, "lazybones.groovy")
         if (file.exists()) {
             def compiler = new CompilerConfiguration()
             compiler.scriptBaseClass = LazybonesScript.name
@@ -61,6 +67,7 @@ class InstallationScriptExecuter {
             script.registerDefaultEngine(groovyEngine)
             script.registerEngine("gtpl", groovyEngine)
             script.setTargetDir(targetDir.path)
+            script.setTemplateDir(templateDir.path)
             script.setScmExclusionsFile(scmAdapter != null ? new File(targetDir, scmAdapter.exclusionsFilename) : null)
             script.run()
             file.delete()

@@ -21,10 +21,21 @@ class LazybonesScript extends Script {
     protected static final String DEFAULT_ENCODING = "utf-8"
 
     /**
-     * The root directory of the unpacked template. This is the base path used
-     * when searching for files that need filtering.
+     * The target project directory. For project templates, this will be the
+     * same as the directory into which the template was installed, i.e.
+     * {@link #templateDir}. But for sub-templates, this will be the directory
+     * of the project that the <code>generate</code> command is running in.
      */
     String targetDir
+
+    /**
+     * The location of the unpacked template. This will be the same as
+     * {@link #targetDir} for project templates, but will be different for
+     * sub-templates. This is the base path used when searching for files
+     * that need filtering.
+     * @since 0.7
+     */
+    String templateDir
 
     /**
      * The encoding/charset used by the files in the template. This is UTF-8
@@ -175,9 +186,8 @@ class LazybonesScript extends Script {
      * @since 0.5
      */
     def processTemplates(String filePattern, Map substitutionVariables) {
-        if (!targetDir) {
-            throw new IllegalStateException("targetDir has not been set")
-        }
+        if (targetDir == null) throw new IllegalStateException("targetDir has not been set")
+        if (templateDir == null) throw new IllegalStateException("templateDir has not been set")
 
         boolean atLeastOneFileFiltered = false
 
@@ -200,7 +210,7 @@ class LazybonesScript extends Script {
         }
 
         if (!atLeastOneFileFiltered) {
-            log.warning "No files filtered with file pattern [$filePattern] and target directory [$targetDir]"
+            log.warning "No files filtered with file pattern [$filePattern] and template directory [$templateDir]"
         }
 
         return this
@@ -213,9 +223,9 @@ class LazybonesScript extends Script {
      */
     private List<File> findFilesByPattern(String pattern) {
         def filesToFilter = []
-        def filePatternWithUserDir = FilenameUtils.separatorsToSystem(FilenameUtils.concat(targetDir, pattern))
+        def filePatternWithUserDir = FilenameUtils.separatorsToSystem(FilenameUtils.concat(templateDir, pattern))
 
-        new File(targetDir).eachFileRecurse(FileType.FILES) { File file ->
+        new File(templateDir).eachFileRecurse(FileType.FILES) { File file ->
             if (antPathMatcher.match(filePatternWithUserDir, file.path)) {
                 filesToFilter << file
             }

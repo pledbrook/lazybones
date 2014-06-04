@@ -7,6 +7,7 @@ final class Commands {
     final static List<Command> getAll(ConfigObject config) {
         return Collections.unmodifiableList([
             new CreateCommand(config),
+            new GenerateCommand(),
             new ListCommand(),
             new InfoCommand(),
             new HelpCommand(config) ])
