@@ -31,7 +31,7 @@ class InstallTemplateRule implements Rule {
 
             project.tasks.create(taskName, Copy).with {
                 from pkgTask
-                rename { String fileName -> fileName.replace(project.extensions.lazybones.packageNameSuffix, '') }
+                rename(/(.*)${packageNameSuffix}\.zip/, '$1.zip')
                 into project.extensions.lazybones.installDir
             }
         }
