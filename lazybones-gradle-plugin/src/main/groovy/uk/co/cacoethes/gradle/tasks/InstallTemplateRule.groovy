@@ -41,7 +41,7 @@ class InstallTemplateRule implements Rule {
 
     @Override
     String getDescription() {
-        return "installTemplate<tmplName> - Installs the named template package into your local cache"
+        return "installTemplate<TmplName> - Installs the named template package into your local cache"
     }
 
     @Override

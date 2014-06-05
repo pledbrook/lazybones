@@ -83,7 +83,7 @@ For example, in your build file:
 
     @Override
     String getDescription() {
-        return "publishTemplate<tmplName> - Publishes the named template package to the configured Bintray repository"
+        return "publishTemplate<TmplName> - Publishes the named template package to the configured Bintray repository"
     }
 
     @Override

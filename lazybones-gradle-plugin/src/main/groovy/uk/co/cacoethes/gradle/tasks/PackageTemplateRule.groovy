@@ -102,7 +102,7 @@ class PackageTemplateRule implements Rule {
 
     @Override
     String getDescription() {
-        return "packageTemplate<tmplName> - Packages the template in the directory matching the task name"
+        return "packageTemplate<TmplName> - Packages the template in the directory matching the task name"
     }
 
     @Override
