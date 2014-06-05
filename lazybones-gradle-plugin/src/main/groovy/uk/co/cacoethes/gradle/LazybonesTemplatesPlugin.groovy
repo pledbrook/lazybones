@@ -4,6 +4,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import uk.co.cacoethes.gradle.lazybones.LazybonesConventions
+import uk.co.cacoethes.gradle.lazybones.TemplateConvention
 import uk.co.cacoethes.gradle.tasks.InstallTemplateRule
 import uk.co.cacoethes.gradle.tasks.PackageTemplateRule
 import uk.co.cacoethes.gradle.tasks.PublishTemplateRule
@@ -16,12 +17,15 @@ import uk.co.cacoethes.gradle.util.NameConverter
  * Lazybones cache and publish them to a Bintray generic repository.
  */
 class LazybonesTemplatesPlugin implements Plugin<Project> {
+    static final String SUBTEMPLATE_PREFIX = "subtmpl-"
+
     void apply(Project project) {
         project.apply plugin: "base"
 
+        def defaultTemplateDirs = project.file("templates").listFiles({ it.isDirectory() } as FileFilter)
+
         // Create the plugin's conventions as an extension and set up the
         // default values for it.
-        def defaultTemplateDirs = project.file("templates").listFiles({ it.isDirectory() } as FileFilter)
         def extension = project.extensions.create("lazybones", LazybonesConventions, project)
         extension.templateDirs = defaultTemplateDirs ? project.files(defaultTemplateDirs) : project.files()
         extension.packagesDir = project.file("${project.buildDir}/packages")
@@ -33,7 +37,9 @@ class LazybonesTemplatesPlugin implements Plugin<Project> {
         // into an aggregate of others based on the plugin's conventions.
         def addTaskDependencies = { String baseTaskName, Task task ->
             task.dependsOn {
-                project.extensions.lazybones.templateDirs.files.collect { f ->
+                project.extensions.lazybones.templateDirs.filter { File f ->
+                    !f.name.startsWith(SUBTEMPLATE_PREFIX)                    // Exclude sub-templates
+                }.files.collect { File f ->
                     def camelCaseTmplName = NameConverter.hyphenatedToCamelCase(f.name)
                     project.tasks.getByName(baseTaskName + camelCaseTmplName)
                 }
