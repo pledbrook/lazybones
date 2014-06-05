@@ -30,9 +30,11 @@ class InstallTemplateRule implements Rule {
             if (!pkgTask) return
 
             project.tasks.create(taskName, Copy).with {
+                def ext = project.extensions.lazybones
+
                 from pkgTask
-                rename { String fileName -> fileName.replace(project.extensions.lazybones.packageNameSuffix, '') }
-                into project.extensions.lazybones.installDir
+                rename(/(.*)${ext.packageNameSuffix}(\-[0-9].*)\.zip/, '$1$2.zip')
+                into ext.installDir
             }
         }
     }
