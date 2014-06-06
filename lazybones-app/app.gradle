@@ -94,8 +94,8 @@ task configureCachePath {
     project.extensions.lazybones.installDir = new File(project.cachePath)
 }
 
-//for a single test, you can run "gradle -DintegTests.single=<test name>"
-task integTests(type: Test) {
+//for a single test, you can run "gradle -DintegTest.single=<test name>"
+task integTest(type: Test) {
     dependsOn "installApp", "configureCachePath", "installAllTemplates"
     mustRunAfter "test"
     ignoreFailures = true
@@ -132,7 +132,7 @@ task packageReports(type: Zip) {
     destinationDir = buildDir
 }
 
-integTests.finalizedBy packageReports
+integTest.finalizedBy packageReports
 
 codenarc {
     configFile = rootProject.file("codenarc.groovy")
@@ -146,8 +146,8 @@ cobertura {
     coverageSourceDirs = sourceSets.main.allSource.srcDirs
 }
 
-distZip.dependsOn("test", "integTests")
-check.dependsOn("test", "integTests")
+distZip.dependsOn("test", "integTest")
+check.dependsOn("test", "integTest")
 
 task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
     artifactFile = distZip.archivePath
