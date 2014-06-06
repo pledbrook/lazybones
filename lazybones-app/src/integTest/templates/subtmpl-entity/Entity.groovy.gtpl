@@ -2,7 +2,7 @@ package ${pkg}
 
 import grails.persistence.Entity
 
-@Entity
+@Entity(group="${parentGroup}", version="${parentVersion}")
 class ${cls} {
     String name
 }

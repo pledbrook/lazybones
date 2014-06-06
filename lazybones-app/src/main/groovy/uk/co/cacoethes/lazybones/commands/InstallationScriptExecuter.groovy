@@ -11,6 +11,9 @@ import uk.co.cacoethes.lazybones.scm.ScmAdapter
 
 @Log
 class InstallationScriptExecuter {
+    static final String STORED_PROPS_FILENAME = "stored-params.properties"
+    static final String FILE_ENCODING = "UTF-8"
+
     private ScmAdapter scmAdapter
 
     InstallationScriptExecuter() {
@@ -30,6 +33,7 @@ class InstallationScriptExecuter {
             def scriptVariables = cmdOptions.valuesOf(CreateCommand.VAR_OPT).
                     collectEntries { String it -> it.split('=') as List }
 
+            scriptVariables << loadParentParams(templateDir)
             scriptVariables << evaluateVersionScriptVariables()
             runPostInstallScript(targetDir, templateDir, scriptVariables)
             initScmRepo(targetDir.absoluteFile)
@@ -47,34 +51,76 @@ class InstallationScriptExecuter {
      * @return the lazybones script if it exists
      */
     Script runPostInstallScript(File targetDir, File templateDir, Map<String, String> model) {
-        if (!templateDir) templateDir = targetDir
-
-        def file = new File(templateDir, "lazybones.groovy")
-        if (file.exists()) {
-            def compiler = new CompilerConfiguration()
-            compiler.scriptBaseClass = LazybonesScript.name
-
-            // Can't use 'this' here because the static type checker does not
-            // treat it as the class instance:
-            //       https://jira.codehaus.org/browse/GROOVY-6162
-            def shell = new GroovyShell(getClass().classLoader, new Binding(model), compiler)
-
-            // Setter methods must be used here otherwise the physical properties on the
-            // script object won't be set. I can only assume that the properties are added
-            // to the script binding instead.
-            LazybonesScript script = shell.parse(file) as LazybonesScript
-            def groovyEngine = new SimpleTemplateEngine()
-            script.registerDefaultEngine(groovyEngine)
-            script.registerEngine("gtpl", groovyEngine)
-            script.setTargetDir(targetDir.path)
-            script.setTemplateDir(templateDir.path)
-            script.setScmExclusionsFile(scmAdapter != null ? new File(targetDir, scmAdapter.exclusionsFilename) : null)
+        def installScriptFile = new File(templateDir, "lazybones.groovy")
+        if (installScriptFile.exists()) {
+            def script = initializeScript(model, installScriptFile, targetDir, templateDir)
             script.run()
-            file.delete()
+            installScriptFile.delete()
+
+            persistParentParams(templateDir, script)
             return script
         }
 
         return null
+    }
+
+    protected LazybonesScript initializeScript(
+            Map<String, String> model,
+            File scriptFile,
+            File targetDir,
+            File templateDir) {
+        def compiler = new CompilerConfiguration()
+        compiler.scriptBaseClass = LazybonesScript.name
+
+        // Can't use 'this' here because the static type checker does not
+        // treat it as the class instance:
+        //       https://jira.codehaus.org/browse/GROOVY-6162
+        def shell = new GroovyShell(getClass().classLoader, new Binding(model), compiler)
+
+        // Setter methods must be used here otherwise the physical properties on the
+        // script object won't be set. I can only assume that the properties are added
+        // to the script binding instead.
+        LazybonesScript script = shell.parse(scriptFile) as LazybonesScript
+        def groovyEngine = new SimpleTemplateEngine()
+        script.with {
+            registerDefaultEngine(groovyEngine)
+            registerEngine("gtpl", groovyEngine)
+            setTargetDir(targetDir.path)
+            setTemplateDir(templateDir.path)
+            setScmExclusionsFile(scmAdapter != null ? new File(targetDir, scmAdapter.exclusionsFilename) : null)
+        }
+        return script
+    }
+
+    protected void persistParentParams(File dir, LazybonesScript script) {
+        // Save this template's named parameters in a file inside a .lazybones
+        // sub-directory of the unpacked template.
+        def lzbDir = new File(dir, ".lazybones")
+        lzbDir.mkdirs()
+        new File(lzbDir, STORED_PROPS_FILENAME).withWriter(FILE_ENCODING) { Writer w ->
+            (script.parentParams as Properties).store(w, "Lazybones saved template parameters")
+        }
+    }
+
+    protected Map loadParentParams(File templateDir) {
+        // Use the unpacked template's directory as the reference point and
+        // then treat its parent directory as the location for the stored
+        // parameters. If `tempateDir` is CWD, then the parent directory will
+        // actually be null, in which case there is no store parameters file
+        // (for example in the case of an unpacked project template rather
+        // than a sub-template).
+        def lzbDir = templateDir.parentFile
+        if (!lzbDir) return [:]
+
+        def paramsFile = new File(lzbDir, STORED_PROPS_FILENAME)
+        def props = new Properties()
+        if (paramsFile.exists()) {
+            paramsFile.withReader(FILE_ENCODING) { Reader r ->
+                props.load(r)
+            }
+        }
+
+        return [parentParams: props as Map]
     }
 
     /**

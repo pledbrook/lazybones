@@ -4,9 +4,7 @@ import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FilenameUtils
 import uk.co.cacoethes.lazybones.LazybonesScriptException
-import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.util.ArchiveMethods
 
 import java.util.logging.Level
@@ -65,15 +63,6 @@ USAGE: generate <template>
             FileUtils.deleteDirectory(outDir)
 
             return 0
-        }
-        catch (PackageNotFoundException ex) {
-            if (ex.version) {
-                log.severe "Cannot find version ${ex.version} of template '${ex.name}'. Project has not been created."
-            }
-            else {
-                log.severe "Cannot find a template named '${ex.name}'. Project has not been created."
-            }
-            return 1
         }
         catch (LazybonesScriptException ex) {
             log.warning "Post install script caused an exception, project might be corrupt: ${ex.cause.message}"

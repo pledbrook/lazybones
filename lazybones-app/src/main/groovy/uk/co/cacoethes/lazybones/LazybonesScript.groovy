@@ -38,6 +38,13 @@ class LazybonesScript extends Script {
     String templateDir
 
     /**
+     * Stores the values for {@link #ask(java.lang.String, java.lang.Object, java.lang.String)}
+     * calls when a parameter name is specified.
+     * @since 0.7
+     */
+    Map parentParams = [:]
+
+    /**
      * The encoding/charset used by the files in the template. This is UTF-8
      * by default.
      */
@@ -143,9 +150,11 @@ class LazybonesScript extends Script {
     }
 
     /**
-     * Prints a message asking for a property value.  If a value for the property already exists in
-     * the binding of the script, it is used instead of asking the question.  If the user has no resopnse
-     * the default value is returned
+     * <p>Prints a message asking for a property value.  If a value for the property already exists in
+     * the binding of the script, it is used instead of asking the question.  If the user just presses
+     * &lt;return&gt; the default value is returned.</p>
+     * <p>This method also saves the value in the script's {@link #parentParams} map against the
+     * <code>propertyName</code> key.</p>
      *
      * @param message The message to display to the user requesting some information.
      * @param defaultValue If the user doesn't provide a value, return this.
@@ -156,11 +165,12 @@ class LazybonesScript extends Script {
      * @since 0.4
      */
     def ask(String message, defaultValue, String propertyName) {
-        if (propertyName && binding.hasVariable(propertyName)) {
-            return binding.getVariable(propertyName)
-        }
+        def val = propertyName && binding.hasVariable(propertyName) ?
+                binding.getVariable(propertyName) :
+                ask(message, defaultValue)
 
-        return ask(message, defaultValue)
+        parentParams[propertyName] = val
+        return val
     }
 
     /**

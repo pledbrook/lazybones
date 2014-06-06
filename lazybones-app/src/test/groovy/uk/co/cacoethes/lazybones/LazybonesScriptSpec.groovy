@@ -13,6 +13,7 @@ import static uk.co.cacoethes.lazybones.LazybonesScript.DEFAULT_ENCODING
  * @author Tommy Barker
  */
 class LazybonesScriptSpec extends Specification {
+    static final String NEW_LINE = System.getProperty("line.separator")
 
     def script = new LazybonesScript()
     File fileToFilter
@@ -113,8 +114,8 @@ class LazybonesScriptSpec extends Specification {
         given:
         LazybonesScript script = createScript(lazybonesScript.text)
         script.setTargetDir(testFolder.root.path)
-        def newLine = System.getProperty("line.separator")
-        script.setReader(createReader("foobar${newLine}foofam"))
+        script.setTemplateDir(testFolder.root.path)
+        script.setReader(createReader("foobar${NEW_LINE}foofam"))
 
         when:
         script.run()
@@ -136,6 +137,24 @@ class LazybonesScriptSpec extends Specification {
 
         then:
         "bar" == response
+        script.parentParams["foo"] == "bar"
+    }
+
+    void "ask saves the value for named variables"() {
+        given:
+        def scriptText = """
+            ask("give me foo", null, "foo")
+            ask("how old are you?", -1, "age")
+        """
+        LazybonesScript script = createScript(scriptText)
+        script.setReader(createReader("foobar${NEW_LINE}42${NEW_LINE}"))
+
+        when:
+        script.run()
+
+        then:
+        script.parentParams["foo"] == "foobar"
+        script.parentParams["age"] == "42"
     }
 
     void "default template engine is SimpleTemplateEngine"() {
