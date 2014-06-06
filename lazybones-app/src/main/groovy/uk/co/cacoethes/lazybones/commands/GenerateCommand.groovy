@@ -22,10 +22,8 @@ USAGE: generate <template>
 
   where  template = The name of the sub-template to use.
 """
-    private static final String README_BASENAME = "README"
     private static final String SPACES_OPT = "spaces"
-    protected static final String VAR_OPT = "P"
-    protected static final String GIT_OPT = "with-git"
+    private static final String VAR_OPT = "P"
 
     @Override
     String getName() { return "generate" }
@@ -50,6 +48,7 @@ USAGE: generate <template>
     @Override
     protected String getUsage() { return USAGE }
 
+    @Override
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject configuration) {
         try {
             def tmplName = getTemplateName(cmdOptions)
@@ -84,29 +83,11 @@ USAGE: generate <template>
         return commandOptions.nonOptionArguments()[0]
     }
 
+    @SuppressWarnings("SpaceBeforeOpeningBrace")
     protected File templateNameToPackageFile(String name) {
-        return new File(".lazybones", name + "-subtemplate.zip")
-    }
-
-    private void logStart(String packageName) {
-        if (log.isLoggable(Level.INFO)) {
-            log.info "Generating from sub-template " + packageName
-        }
-    }
-
-    @SuppressWarnings('SpaceBeforeOpeningBrace')
-    private void logReadme(CreateCommandInfo createData) {
-        // Find a suitable README and display that if it exists.
-        def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
-            name == README_BASENAME || name.startsWith(README_BASENAME)
-        } as FilenameFilter)
-
-        log.info ""
-        if (!readmeFiles) log.info "This project has no README"
-        else log.info readmeFiles[0].text
-    }
-
-    private boolean isPathCurrentDirectory(String path) {
-        return FilenameUtils.equalsNormalized(path, ".")
+        def matchingFiles = new File(".lazybones").listFiles({ File f ->
+            f.name ==~ /^${name}\-template\-.*\.zip$/
+        } as FileFilter)
+        return matchingFiles[0]
     }
 }

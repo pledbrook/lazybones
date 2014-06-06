@@ -37,8 +37,8 @@ USAGE: create <template> <version>? <dir>
 """
     private static final String README_BASENAME = "README"
     private static final String SPACES_OPT = "spaces"
-    protected static final String VAR_OPT = "P"
-    protected static final String GIT_OPT = "with-git"
+    private static final String VAR_OPT = "P"
+    private static final String GIT_OPT = "with-git"
 
     CreateCommand(ConfigObject config) {
         this(config.cache.dir as File)

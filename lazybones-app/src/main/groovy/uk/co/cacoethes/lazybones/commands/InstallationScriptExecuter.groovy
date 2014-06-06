@@ -24,7 +24,10 @@ class InstallationScriptExecuter {
         this.scmAdapter = adapter
     }
 
+    @SuppressWarnings("ParameterReassignment")
     void runPostInstallScriptWithArgs(OptionSet cmdOptions, File targetDir, File templateDir = null) {
+        if (!templateDir) templateDir = targetDir
+
         // Run the post-install script if it exists. The user can pass variables
         // to the script via -P command line arguments. This also places
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
