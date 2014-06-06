@@ -4,7 +4,7 @@ import co.freeside.betamax.Betamax
 import co.freeside.betamax.Recorder
 import org.junit.Rule
 
-class SubGeneratorsFunctionalSpec extends AbstractFunctionalSpec {
+class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
     @Rule Recorder recorder = new Recorder()
 
     void setup() {
