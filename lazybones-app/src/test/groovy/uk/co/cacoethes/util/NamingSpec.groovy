@@ -36,6 +36,7 @@ class NamingSpec extends Specification {
         HYPHENATED  |  CAMEL_CASE   |  "a-bee-cee-d"      |  "ABeeCeeD"
         HYPHENATED  |  CAMEL_CASE   |  "AA"               |  "AA"
         HYPHENATED  |  CAMEL_CASE   |  "aa-20-bb"         |  "Aa20Bb"
+        HYPHENATED  |  CAMEL_CASE   |  "aa-2.0-bb"        |  "Aa20Bb"
         PROPERTY    |  CAMEL_CASE   |  "abc"              |  "Abc"
         PROPERTY    |  CAMEL_CASE   |  "johnDoe"          |  "JohnDoe"
         PROPERTY    |  CAMEL_CASE   |  "aBeeCeeD"         |  "ABeeCeeD"

@@ -87,7 +87,7 @@ class Naming {
         m.appendTail out
 
         out.replace(0, 1, name[0].toUpperCase())
-        return out.toString()
+        return out.toString().replace('.', '')
     }
 
     /**
