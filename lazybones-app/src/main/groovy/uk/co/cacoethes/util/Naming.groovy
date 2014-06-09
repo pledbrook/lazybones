@@ -80,7 +80,7 @@ class Naming {
         if (!name) return name
 
         def out = new StringBuffer()
-        def m = name =~ /-([a-zA-Z])/
+        def m = name =~ /-([a-zA-Z0-9])/
         while (m) {
             m.appendReplacement out, m.group(1).toUpperCase()
         }
