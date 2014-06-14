@@ -54,13 +54,18 @@ USAGE: generate <template>
     @Override
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject configuration) {
         try {
-            def tmplName = getTemplateName(cmdOptions)
-            def outDir = new File(".lazybones/${tmplName}-unpacked")
+            def arg = new TemplateArg(cmdOptions.nonOptionArguments()[0])
+
+            def outDir = new File(".lazybones/${arg.templateName}-unpacked")
             outDir.mkdirs()
-            ArchiveMethods.unzip(templateNameToPackageFile(tmplName), outDir)
+            ArchiveMethods.unzip(templateNameToPackageFile(arg.templateName), outDir)
 
             def executor = new InstallationScriptExecuter()
-            executor.runPostInstallScriptWithArgs(cmdOptions, new File("."), outDir)
+            executor.runPostInstallScriptWithArgs(
+                    cmdOptions.valuesOf(VAR_OPT).collectEntries { String it -> it.split('=') as List },
+                    arg.qualifiers,
+                    new File("."),
+                    outDir)
 
             FileUtils.deleteDirectory(outDir)
 
@@ -83,10 +88,6 @@ USAGE: generate <template>
             log.log Level.SEVERE, "", all
             return 1
         }
-    }
-
-    protected String getTemplateName(OptionSet commandOptions) {
-        return commandOptions.nonOptionArguments()[0]
     }
 
     @SuppressWarnings("SpaceBeforeOpeningBrace")

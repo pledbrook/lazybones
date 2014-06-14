@@ -56,6 +56,20 @@ class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
         !new File(appDir, ".lazybones/entity-unpacked").exists()
     }
 
+    def "Generate command passes command qualifiers to post-install script"() {
+        given: "A new project created from a Lazybones template"
+        def appDir = createProjectWithSubTemplates()
+
+        when: "I use the generate command within the new project with a set of qualifiers"
+        def exitCode = runCommand(["generate", "controller::one::apple::shoe"], appDir, ["org.example", "Book"], false)
+
+        then: "The command succeeds"
+        exitCode == 0
+
+        and: "The qualifiers are passed to the post-install script as a list"
+        output =~ "Found command qualifiers: \\[one, apple, shoe\\]"
+    }
+
     def "Generate command fails gracefully when sub-template not found"() {
         given: "A new project created from a Lazybones template"
         def appDir = createProjectWithSubTemplates()

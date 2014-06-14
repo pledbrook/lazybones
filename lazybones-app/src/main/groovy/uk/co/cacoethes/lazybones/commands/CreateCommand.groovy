@@ -82,12 +82,12 @@ USAGE: create <template> <version>? <dir>
 
             List<PackageSource> packageSources = packageSourceFactory.buildPackageSourceList(configuration)
             PackageLocation packageLocation = packageLocationFactory.buildPackageLocation(
-                    createData.packageName,
+                    createData.packageArg.templateName,
                     createData.requestedVersion,
                     packageSources)
             File pkg = packageDownloader.downloadPackage(
                     packageLocation,
-                    createData.packageName,
+                    createData.packageArg.templateName,
                     createData.requestedVersion)
 
             createData.targetDir.mkdirs()
@@ -97,7 +97,10 @@ USAGE: create <template> <version>? <dir>
             if (cmdOptions.has(GIT_OPT)) scmAdapter = new GitAdapter(configuration)
 
             def executor = new InstallationScriptExecuter(scmAdapter)
-            executor.runPostInstallScriptWithArgs(cmdOptions, createData.targetDir)
+            executor.runPostInstallScriptWithArgs(
+                    cmdOptions.valuesOf(VAR_OPT).collectEntries { String it -> it.split('=') as List },
+                    createData.packageArg.qualifiers,
+                    createData.targetDir)
 
             logReadme(createData)
 
@@ -138,15 +141,15 @@ USAGE: create <template> <version>? <dir>
         def mainArgs = commandOptions.nonOptionArguments()
         def createCmdInfo = getCreateInfoFromArgs(mainArgs)
 
-        logStart createCmdInfo.packageName, createCmdInfo.requestedVersion, createCmdInfo.targetDir.path
+        logStart createCmdInfo.packageArg.templateName, createCmdInfo.requestedVersion, createCmdInfo.targetDir.path
 
         return createCmdInfo
     }
 
     @SuppressWarnings('SpaceAroundOperator')
-    private CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
+    protected CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
 
-        def packageName = mappings?."${mainArgs[0]}" ?: mainArgs[0]
+        def packageName = new TemplateArg(mappings?."${mainArgs[0]}" ?: mainArgs[0])
 
         if (hasVersionArg(mainArgs)) {
             return new CreateCommandInfo(packageName, mainArgs[1], mainArgs[2] as File)

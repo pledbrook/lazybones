@@ -9,6 +9,10 @@ params.cls = ask("Define value for class name: ", null, "class").capitalize()
 
 processTemplates("Controller.groovy", params)
 
+if (tmplQualifiers) {
+    println "Found command qualifiers: ${tmplQualifiers}"
+}
+
 def pkgPath = params.pkg.replace('.' as char, '/' as char)
 def filename = params.cls.capitalize() + "Controller.groovy"
 def destFile = new File(projectDir, concat(concat("src/main/groovy", pkgPath), filename))

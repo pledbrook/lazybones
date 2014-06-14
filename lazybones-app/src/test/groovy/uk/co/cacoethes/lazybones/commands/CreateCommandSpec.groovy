@@ -18,6 +18,6 @@ class CreateCommandSpec extends Specification {
         def createInfo = new CreateCommand(config).getCreateInfoFromArgs(["foo", "bar"])
 
         then:
-        "http://bar.com" == createInfo.packageName
+        "http://bar.com" == createInfo.packageArg.templateName
     }
 }

@@ -45,6 +45,11 @@ class LazybonesScript extends Script {
     Map parentParams = [:]
 
     /**
+     * @since 0.7
+     */
+    List<String> tmplQualifiers = []
+
+    /**
      * The encoding/charset used by the files in the template. This is UTF-8
      * by default.
      */

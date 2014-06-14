@@ -2,7 +2,6 @@ package uk.co.cacoethes.lazybones.commands
 
 import groovy.text.SimpleTemplateEngine
 import groovy.util.logging.Log
-import joptsimple.OptionSet
 import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.LazybonesMain
 import uk.co.cacoethes.lazybones.LazybonesScript
@@ -25,7 +24,11 @@ class InstallationScriptExecuter {
     }
 
     @SuppressWarnings("ParameterReassignment")
-    void runPostInstallScriptWithArgs(OptionSet cmdOptions, File targetDir, File templateDir = null) {
+    void runPostInstallScriptWithArgs(
+            Map variables,
+            List tmplQualifiers,
+            File targetDir,
+            File templateDir = null) {
         if (!templateDir) templateDir = targetDir
 
         // Run the post-install script if it exists. The user can pass variables
@@ -33,12 +36,10 @@ class InstallationScriptExecuter {
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
         // variables into the script binding.
         try {
-            def scriptVariables = cmdOptions.valuesOf(CreateCommand.VAR_OPT).
-                    collectEntries { String it -> it.split('=') as List }
-
+            def scriptVariables = new HashMap(variables)
             scriptVariables << loadParentParams(templateDir)
             scriptVariables << evaluateVersionScriptVariables()
-            runPostInstallScript(targetDir, templateDir, scriptVariables)
+            runPostInstallScript(tmplQualifiers, targetDir, templateDir, scriptVariables)
             initScmRepo(targetDir.absoluteFile)
         }
         catch (all) {
@@ -53,10 +54,10 @@ class InstallationScriptExecuter {
      * @param model a map of variables available to the script
      * @return the lazybones script if it exists
      */
-    Script runPostInstallScript(File targetDir, File templateDir, Map<String, String> model) {
+    Script runPostInstallScript(List tmplQualifiers, File targetDir, File templateDir, Map<String, String> model) {
         def installScriptFile = new File(templateDir, "lazybones.groovy")
         if (installScriptFile.exists()) {
-            def script = initializeScript(model, installScriptFile, targetDir, templateDir)
+            def script = initializeScript(model, tmplQualifiers, installScriptFile, targetDir, templateDir)
             script.run()
             installScriptFile.delete()
 
@@ -69,6 +70,7 @@ class InstallationScriptExecuter {
 
     protected LazybonesScript initializeScript(
             Map<String, String> model,
+            List<String> tmplQualifiers,
             File scriptFile,
             File targetDir,
             File templateDir) {
@@ -88,6 +90,7 @@ class InstallationScriptExecuter {
         script.with {
             registerDefaultEngine(groovyEngine)
             registerEngine("gtpl", groovyEngine)
+            setTmplQualifiers(tmplQualifiers)
             setProjectDir(targetDir)
             setTemplateDir(templateDir)
             setScmExclusionsFile(scmAdapter != null ? new File(targetDir, scmAdapter.exclusionsFilename) : null)
