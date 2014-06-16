@@ -37,8 +37,8 @@ USAGE: create <template> <version>? <dir>
 """
     private static final String README_BASENAME = "README"
     private static final String SPACES_OPT = "spaces"
-    protected static final String VAR_OPT = "P"
-    protected static final String GIT_OPT = "with-git"
+    private static final String VAR_OPT = "P"
+    private static final String GIT_OPT = "with-git"
 
     CreateCommand(ConfigObject config) {
         this(config.cache.dir as File)
@@ -119,8 +119,8 @@ USAGE: create <template> <version>? <dir>
             return 1
         }
         catch (LazybonesScriptException ex) {
-            log.warning "Post install script caused an exception, project might be corrupt: ${ex.cause.message}"
-            log.warning "The unpacked template will remain in place to help you diagnose the problem"
+            log.severe "Post install script caused an exception, project might be corrupt: ${ex.cause.message}"
+            log.severe "The unpacked template will remain in place to help you diagnose the problem"
 
             if (globalOptions.stacktrace) {
                 log.log Level.SEVERE, "", ex.cause

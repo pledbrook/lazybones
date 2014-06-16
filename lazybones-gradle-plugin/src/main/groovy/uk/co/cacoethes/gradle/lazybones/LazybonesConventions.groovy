@@ -17,6 +17,12 @@ class LazybonesConventions {
      */
     FileCollection templateDirs
 
+    /**
+     * A list of convention objects, which allow further configuration of individual
+     * templates.
+     */
+    List<TemplateConvention> templateConventions = []
+
     /** The location where template packages are created by the build. */
     File packagesDir
 
@@ -59,5 +65,21 @@ class LazybonesConventions {
      */
     def templateDirs(Object... dirs) {
         templateDirs.add(project.files(dirs))
+    }
+
+    /**
+     * Creates a new template convention for the template with the given name.
+     * The convention object is added to {@link #templateConventions}.
+     * @param name The name of the template to configure.
+     * @return The new convention object, allowing for further configuration.
+     */
+    TemplateConvention template(String name) {
+        def convention = templateConventions.find { it.name == name }
+        if (!convention) {
+            convention = new TemplateConvention(name)
+            templateConventions << convention
+        }
+
+        return convention
     }
 }

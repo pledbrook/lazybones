@@ -21,7 +21,7 @@ class InstallationScriptExecuterSpec extends Specification {
         when: "I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
         file.write("System.setProperty('ran','true')")
-        cmd.runPostInstallScript(testFolder.root, [:])
+        cmd.runPostInstallScript(testFolder.root, testFolder.root, [:])
 
         then: "the script is deleted"
         !file.exists()
@@ -31,17 +31,17 @@ class InstallationScriptExecuterSpec extends Specification {
         System.properties.remove("ran")
     }
 
-    void "lazybones has the targetDir set before running"() {
+    void "lazybones has the projectDir set before running"() {
         given: "a create command instance"
         InstallationScriptExecuter cmd = new InstallationScriptExecuter()
 
         when: "when I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
         file.write("//do nothing")
-        LazybonesScript script = cmd.runPostInstallScript(testFolder.root, [:])
+        LazybonesScript script = cmd.runPostInstallScript(testFolder.root, testFolder.root, [:])
 
         then: "the targetDir is set"
-        script.getTargetDir() == testFolder.root.path
+        script.getProjectDir() == testFolder.root
     }
 
     void "if lazybones does not exist, nothing happens"() {
@@ -53,6 +53,6 @@ class InstallationScriptExecuterSpec extends Specification {
 
         then: "nothing happens"
         !file.exists()
-        null == cmd.runPostInstallScript(testFolder.root, [:])
+        null == cmd.runPostInstallScript(testFolder.root, testFolder.root, [:])
     }
 }

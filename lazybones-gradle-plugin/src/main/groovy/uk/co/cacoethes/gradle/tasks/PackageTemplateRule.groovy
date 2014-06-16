@@ -2,8 +2,11 @@ package uk.co.cacoethes.gradle.tasks
 
 import org.gradle.api.Project
 import org.gradle.api.Rule
+import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.bundling.Zip
+import uk.co.cacoethes.gradle.lazybones.TemplateConvention
 import uk.co.cacoethes.gradle.util.NameConverter
 
 /**
@@ -43,17 +46,57 @@ class PackageTemplateRule implements Rule {
                 return
             }
 
-            project.tasks.create(taskName, Zip).with {
-                conventionMapping.map("baseName") { tmplName + project.extensions.lazybones.packageNameSuffix }
-                conventionMapping.map("destinationDir") { project.extensions.lazybones.packagesDir }
+            addSubTemplatesToPackageTask(
+                    findTemplateConvention(tmplName),
+                    createTask(taskName, tmplName, tmplDir))
+        }
+    }
 
-                excludes = ["**/.retain"]
-                includeEmptyDirs = true
-                version = project.file("$tmplDir/VERSION").text.trim()
+    /**
+     * Takes a template convention and uses it to configure the given package
+     * task so that it both depends on all the necessary sub-template packaging
+     * tasks and also copies the sub-template packages into the main template
+     * package.
+     */
+    protected void addSubTemplatesToPackageTask(TemplateConvention tmplConvention, Task task) {
+        if (!tmplConvention) return
 
-                from tmplDir
-                exclude "**/.retain", "VERSION", ".gradle"
-            }
+        def subPackageTaskNames = tmplConvention.includes.collect { String subpkgName ->
+            "packageTemplateSubtmpl${NameConverter.hyphenatedToCamelCase(subpkgName)}".toString()
+        }
+
+        task.dependsOn(subPackageTaskNames)
+        task.into(".lazybones") {
+            from subPackageTaskNames.collect { project.tasks.getByName(it) }*.archivePath
+            rename(/^subtmpl-(.*\.zip)/, '$1')
+        }
+    }
+
+    /**
+     * Finds the template convention for the given main template, if it exists.
+     * @param tmplName The name of the main template whose convention you want.
+     * @return The convention object, or <code>null</code> if no template
+     * convention was defined for the given template.
+     */
+    protected TemplateConvention findTemplateConvention(String tmplName) {
+        return project.extensions.lazybones.templateConventions.find { it.name == tmplName }
+    }
+
+    /**
+     * Creates the basic task for packaging a template as a zip file. In fact
+     * the task itself is of type org.gradle.api.tasks.bundling.Zip.
+     */
+    protected Task createTask(String taskName, String tmplName, File tmplDir) {
+        return project.tasks.create(taskName, Zip).with {
+            conventionMapping.map("baseName") { tmplName + project.extensions.lazybones.packageNameSuffix }
+            conventionMapping.map("destinationDir") { project.extensions.lazybones.packagesDir }
+
+            excludes = ["**/.retain"]
+            includeEmptyDirs = true
+            version = project.file("$tmplDir/VERSION").text.trim()
+
+            from tmplDir
+            exclude "**/.retain", "VERSION", ".gradle"
         }
     }
 

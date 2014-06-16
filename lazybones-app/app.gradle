@@ -2,10 +2,11 @@ buildscript {
     repositories {
         mavenCentral()
         maven { url "http://dl.bintray.com/pledbrook/plugins" }
+        mavenLocal()
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.0.2",
+        classpath "uk.co.cacoethes:lazybones-gradle:1.1-SNAPSHOT",
                   "net.saliman:gradle-cobertura-plugin:1.1.2"
     }
 }
@@ -20,7 +21,7 @@ apply plugin: "lazybones-templates"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.6"
+version = "0.7-SNAPSHOT"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
@@ -74,6 +75,7 @@ jar {
 
 lazybones {
     templateDirs = files(file("${projectDir}/src/integTest/templates").listFiles())
+    template "subtemplates-tmpl" includes "controller", "entity", "bad"
 }
 
 task configureCachePath {

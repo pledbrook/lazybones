@@ -21,10 +21,28 @@ class LazybonesScript extends Script {
     protected static final String DEFAULT_ENCODING = "utf-8"
 
     /**
-     * The root directory of the unpacked template. This is the base path used
-     * when searching for files that need filtering.
+     * The target project directory. For project templates, this will be the
+     * same as the directory into which the template was installed, i.e.
+     * {@link #templateDir}. But for sub-templates, this will be the directory
+     * of the project that the <code>generate</code> command is running in.
      */
-    String targetDir
+    File projectDir
+
+    /**
+     * The location of the unpacked template. This will be the same as
+     * {@link #projectDir} for project templates, but will be different for
+     * sub-templates. This is the base path used when searching for files
+     * that need filtering.
+     * @since 0.7
+     */
+    File templateDir
+
+    /**
+     * Stores the values for {@link #ask(java.lang.String, java.lang.Object, java.lang.String)}
+     * calls when a parameter name is specified.
+     * @since 0.7
+     */
+    Map parentParams = [:]
 
     /**
      * The encoding/charset used by the files in the template. This is UTF-8
@@ -132,9 +150,11 @@ class LazybonesScript extends Script {
     }
 
     /**
-     * Prints a message asking for a property value.  If a value for the property already exists in
-     * the binding of the script, it is used instead of asking the question.  If the user has no resopnse
-     * the default value is returned
+     * <p>Prints a message asking for a property value.  If a value for the property already exists in
+     * the binding of the script, it is used instead of asking the question.  If the user just presses
+     * &lt;return&gt; the default value is returned.</p>
+     * <p>This method also saves the value in the script's {@link #parentParams} map against the
+     * <code>propertyName</code> key.</p>
      *
      * @param message The message to display to the user requesting some information.
      * @param defaultValue If the user doesn't provide a value, return this.
@@ -145,11 +165,12 @@ class LazybonesScript extends Script {
      * @since 0.4
      */
     def ask(String message, defaultValue, String propertyName) {
-        if (propertyName && binding.hasVariable(propertyName)) {
-            return binding.getVariable(propertyName)
-        }
+        def val = propertyName && binding.hasVariable(propertyName) ?
+                binding.getVariable(propertyName) :
+                ask(message, defaultValue)
 
-        return ask(message, defaultValue)
+        parentParams[propertyName] = val
+        return val
     }
 
     /**
@@ -175,9 +196,8 @@ class LazybonesScript extends Script {
      * @since 0.5
      */
     def processTemplates(String filePattern, Map substitutionVariables) {
-        if (!targetDir) {
-            throw new IllegalStateException("targetDir has not been set")
-        }
+        if (projectDir == null) throw new IllegalStateException("projectDir has not been set")
+        if (templateDir == null) throw new IllegalStateException("templateDir has not been set")
 
         boolean atLeastOneFileFiltered = false
 
@@ -200,7 +220,8 @@ class LazybonesScript extends Script {
         }
 
         if (!atLeastOneFileFiltered) {
-            log.warning "No files filtered with file pattern [$filePattern] and target directory [$targetDir]"
+            log.warning "No files filtered with file pattern [$filePattern] " +
+                    "and template directory [${templateDir.path}]"
         }
 
         return this
@@ -213,9 +234,9 @@ class LazybonesScript extends Script {
      */
     private List<File> findFilesByPattern(String pattern) {
         def filesToFilter = []
-        def filePatternWithUserDir = FilenameUtils.separatorsToSystem(FilenameUtils.concat(targetDir, pattern))
+        def filePatternWithUserDir = FilenameUtils.separatorsToSystem(FilenameUtils.concat(templateDir.path, pattern))
 
-        new File(targetDir).eachFileRecurse(FileType.FILES) { File file ->
+        templateDir.eachFileRecurse(FileType.FILES) { File file ->
             if (antPathMatcher.match(filePatternWithUserDir, file.path)) {
                 filesToFilter << file
             }
@@ -294,6 +315,17 @@ class LazybonesScript extends Script {
      */
     boolean hasFeature(String featureName) {
         return this.getClass().methods.any { Method method -> method.name == featureName }
+    }
+
+    /**
+     * Returns the target project directory as a string. Only kept for backwards
+     * compatibility and post-install scripts should switch to using {@link #projectDir}
+     * as soon as possible.
+     * @deprecated Will be removed before Lazybones 1.0
+     */
+    String getTargetDir() {
+        log.warning "The targetDir property is deprecated and should no longer be used by post-install scripts"
+        return projectDir.path
     }
 
     /**

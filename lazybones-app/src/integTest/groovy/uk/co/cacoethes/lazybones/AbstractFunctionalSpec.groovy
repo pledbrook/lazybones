@@ -40,9 +40,11 @@ abstract class AbstractFunctionalSpec extends Specification {
      * larger.
      * @return The exit code of the lazybones process.
      */
-    int runCommand(List cmdList, File workDir, List inputs = []) {
-        // Clear out results of previous executions
-        FileUtils.deleteDirectory(workDir)
+    int runCommand(List cmdList, File workDir, List inputs = [], boolean clearPrevious = true) {
+        if (clearPrevious) {
+            // Clear out results of previous executions
+            FileUtils.deleteDirectory(workDir)
+        }
         resetOutput()
         workDir.mkdirs()
 
@@ -72,7 +74,7 @@ abstract class AbstractFunctionalSpec extends Specification {
         // the form VAR=value.
         def envp = env.collect { key, value -> key + "=" + value }
 
-        Process process = ([lzbExecutable, "--stacktrace"] + cmdList).execute(envp, workDir)
+        Process process = ([lzbExecutable] + cmdList).execute(envp, workDir)
 
         if (inputs) {
             def newLine = System.getProperty("line.separator")
