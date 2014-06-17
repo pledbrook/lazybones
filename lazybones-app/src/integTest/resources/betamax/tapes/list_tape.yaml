@@ -1,7 +1,7 @@
 !tape
 name: list-tape
 interactions:
-- recorded: 2013-05-06T20:10:25.472Z
+- recorded: 2014-06-17T10:13:52.387Z
   request:
     method: GET
     uri: https://bintray.com/api/v1/repos/pledbrook/lazybones-templates/packages
@@ -12,37 +12,13 @@ interactions:
       Connection: Close
       Host: bintray.com
       Pragma: no-cache
-      User-Agent: Java/1.7.0_05
-  response:
-    status: 200
-    headers:
-      Content-Encoding: gzip
-      Content-Type: application/json;charset=utf-8
-      Date: Mon, 06 May 2013 20:10:23 GMT
-      Server: nginx/1.2.7
-      WWW-Authenticate: Basic realm="Bintray API Realm"
-      X-Betamax: PLAY
-    body: !!binary |-
-      H4sIAAAAAAAAA3XMMQ6AIAwAwL90xg/wFeNQtRpCgQaqCRr/7mYYZL/ceEPEQGBhzymddUCRQSkIoxIYYBc9rWA1H/SYDzNedU6RSkM25NKajCq4+L+tR9kp9f30AvWIXlutAAAA
-- recorded: 2013-08-02T08:44:28.058Z
-  request:
-    method: GET
-    uri: https://bintray.com/api/v1/repos/kyleboon/lazybones/packages
-    headers:
-      Accept: text/html, image/gif, image/jpeg, *; q=.2, */*; q=.2
-      Accept-Encoding: gzip
-      Cache-Control: no-cache
-      Connection: Close
-      Host: bintray.com
-      Pragma: no-cache
-      User-Agent: Java/1.8.0-ea
+      User-Agent: Java/1.7.0_45
   response:
     status: 200
     headers:
       Content-Encoding: gzip
       Content-Type: application/json
-      Date: Fri, 02 Aug 2013 08:44:27 GMT
-      Server: nginx/1.2.7
-      Set-Cookie: rememberMe=deleteMe; Path=/; Max-Age=0; Expires=Thu, 01-Aug-2013 08:44:27 GMT; Secure
+      Date: Tue, 17 Jun 2014 10:13:52 GMT
+      Server: nginx/1.4.4
     body: !!binary |-
-      H4sIAAAAAAAAA4uuVspLzE1VslJKL8rPL6vUTSwo0C1JzS3ISSxJVdJRysnMy05NUbJKS8wpTq3VgavOSixL1E1KLM5MJkZ1SlF+QXlmVWJRCm7VsQAzxP1tiwAAAA==
+      H4sIAAAAAAAAA5XQMQ7CMBAEwL+4xh/gK4hi7Vwik8M253MgQfydAokK0NHPrlZ7uLuMM7m9mwQDk6/cp5S90rkylNzOccozDW6v0umxe/tMoTPsfgLxOlvga8ilpzg3haghI9CKaGsvZVk9p/BHLSclAz9hgQ9oKRrwIKVe0wYZ7KtRqwFjVJLQJZOMN4NnbGsomZqvUk4UPx4+gtvH0A/TqqQ8+VCKekTt0CLfu49P3Nrk54wCAAA=

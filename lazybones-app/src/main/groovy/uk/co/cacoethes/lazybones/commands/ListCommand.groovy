@@ -42,7 +42,7 @@ USAGE: list
             println ""
 
             def pkgSource = new BintrayPackageSource(bintrayRepoName)
-            for (name in pkgSource.listPackageNames()) {
+            for (name in pkgSource.listPackageNames().sort()) {
                 println INDENT + name
             }
 

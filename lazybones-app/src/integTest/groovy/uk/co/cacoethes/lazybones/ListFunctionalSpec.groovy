@@ -14,6 +14,9 @@ class ListFunctionalSpec extends AbstractFunctionalSpec {
 
     @Betamax(tape='list-tape')
     def "list command prints all available packages"() {
+        given: "An expected list of packages"
+        def expected = ["afterburnerfx", "dropwizard", "gaelyk", "gradle-plugin", "gradle-quickstart"]
+
         when: "I run lazybones with the list command"
         def exitCode = runCommand(["list"], baseWorkDir)
 
@@ -22,9 +25,7 @@ class ListFunctionalSpec extends AbstractFunctionalSpec {
         output.startsWith("Available mappings")
         output =~ /\s+customRatpack  -> http:\/\/dl.dropboxusercontent.com\/u\/29802534\/custom-ratpack.zip\s+/
         output =~ /\s+doesNotExist   -> file:\/\/\/does\/not\/exist\s+/
-        output =~ /\s+groovy-app\s+/
-        output =~ /\s+ratpack\s+/
-        output =~ /\s+ratpack-lite\s+/
+        output =~ /\s+${expected.join('\\s+')}\s+/
         !(output =~ /Exception/)
     }
 }
