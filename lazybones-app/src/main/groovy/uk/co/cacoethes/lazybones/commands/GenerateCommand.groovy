@@ -18,6 +18,8 @@ import java.util.logging.Level
  */
 @Log
 class GenerateCommand extends AbstractCommand {
+    static final File LAZYBONES_DIR = new File(".lazybones")
+
     final Map mappings
 
     static final String USAGE = """\
@@ -53,10 +55,17 @@ USAGE: generate <template>
 
     @Override
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject configuration) {
+        // Make sure this is a Lazybones-created project, otherwise there are
+        // no sub-templates to use.
+        if (!LAZYBONES_DIR.exists()) {
+            log.severe "You cannot use `generate` here: this is not a Lazybones-created project"
+            return 1
+        }
+
         try {
             def arg = new TemplateArg(cmdOptions.nonOptionArguments()[0])
 
-            def outDir = new File(".lazybones/${arg.templateName}-unpacked")
+            def outDir = new File(LAZYBONES_DIR, "${arg.templateName}-unpacked")
             outDir.mkdirs()
             ArchiveMethods.unzip(templateNameToPackageFile(arg.templateName), outDir)
 
@@ -92,7 +101,7 @@ USAGE: generate <template>
 
     @SuppressWarnings("SpaceBeforeOpeningBrace")
     protected File templateNameToPackageFile(String name) {
-        def matchingFiles = new File(".lazybones").listFiles({ File f ->
+        def matchingFiles = LAZYBONES_DIR.listFiles({ File f ->
             f.name ==~ /^${name}\-template\-.*\.zip$/
         } as FileFilter)
 

@@ -115,6 +115,22 @@ class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
         output =~ "FileNotFoundException: Just a test error"
     }
 
+    def "Generate command fails gracefully when invoked inside a non-Lazybones project directory"() {
+        given: "A new directory that is not a project created by Lazybones"
+        def appDir = new File(baseWorkDir, "otherapp")
+        appDir.mkdirs()
+
+        when: "I run the generate command with a bad template"
+        def exitCode = runCommand(["generate", "bad"], appDir, [], false)
+
+        then: "The command exits with an error code"
+        exitCode == 1
+
+        and: "It prints a warning, but no exception"
+        output =~ "You cannot use `generate` here: this is not a Lazybones-created project"
+        !(output =~ "Exception")
+    }
+
     protected File createProjectWithSubTemplates() {
         def appDir = new File(baseWorkDir, "maa")
         assert runCommand(
