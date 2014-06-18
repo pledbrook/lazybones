@@ -208,7 +208,6 @@ This will initially fail, because the build does not know where to publish to.
 That's quickly fixed by adding a gradle.properties file in the root of this
 project that contains at least these properties:
 
-    repo.url=https://api.bintray.com/content/your_bintray_username/lazybones-templates
     repo.username=your_bintray_username
     repo.apiKey=your_bintray_apikey
 
