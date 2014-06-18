@@ -38,7 +38,6 @@ uploadArchives { task ->
     }
 }
 
-
 void verifyProperty(Project proj, String name) {
     if (!project.hasProperty(name)) {
         throw new GradleException("You must define the project property '$name'")

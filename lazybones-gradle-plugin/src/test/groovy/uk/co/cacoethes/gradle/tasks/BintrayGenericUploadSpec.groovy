@@ -28,7 +28,7 @@ class BintrayGenericUploadSpec extends Specification {
         }
 
         when: "I calculate the full URL"
-        def targetUrl = task.calculateFullUrl()
+        def targetUrl = task.calculateUploadUrl()
 
         then: "It includes the path separators in the right place"
         targetUrl == expected

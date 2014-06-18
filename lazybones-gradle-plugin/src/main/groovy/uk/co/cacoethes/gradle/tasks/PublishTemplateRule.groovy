@@ -33,18 +33,28 @@ class PublishTemplateRule implements Rule {
             def pkgTask = (Zip) project.tasks.getByName("packageTemplate${camelCaseTmplName}")
             if (!pkgTask) return
 
+            def lzbExtension = project.extensions.lazybones
+
             project.tasks.create(taskName, BintrayGenericUpload).with { t ->
                 dependsOn pkgTask
                 artifactFile = pkgTask.archivePath
-                artifactUrlPath = "${pkgTask.baseName}/${pkgTask.version}/${pkgTask.archiveName}"
 
-                username = project.extensions.lazybones.repositoryUsername
-                apiKey = project.extensions.lazybones.repositoryApiKey
-                repositoryUrl = project.lazybones.repositoryUrl
-                publish = project.lazybones.publish
+                username = lzbExtension.repositoryUsername
+                apiKey = lzbExtension.repositoryApiKey
+                publish = lzbExtension.publish
+
+                // Old style properties...
+                artifactUrlPath = "${pkgTask.baseName}/${pkgTask.version}/${pkgTask.archiveName}"
+                repositoryUrl = lzbExtension.repositoryUrl
+
+                // ...superseded by these
+                repositoryName = lzbExtension.repositoryName
+                packageName = pkgTask.baseName
+                licenses = lzbExtension.licenses
 
                 doFirst {
                     def missingProps = verifyPublishProperties(t)
+                    if (!repositoryUrl && !repositoryName) missingProps << "repositoryName"
                     if (missingProps) {
                         throw new GradleException(
                                 """\
@@ -55,7 +65,7 @@ You must provide values for these settings:
 For example, in your build file:
 
     lazybones {
-        repositoryUrl = "https://api.bintray.com/content/pledbrook/lazybones-templates"
+        repositoryName = "pledbrook/lazybones-templates"
         repositoryUsername = "pledbrook"
         repositoryApiKey = "KJFHEWJFJFJFHKSGHKH"
     }
@@ -76,9 +86,7 @@ For example, in your build file:
      * to Bintray but don't have values set by the user.
      */
     protected List verifyPublishProperties(task) {
-        ["username",
-         "apiKey",
-         "repositoryUrl"].findAll { !task.getProperty(it) }
+        ["username", "apiKey"].findAll { !task.getProperty(it) }
     }
 
     @Override

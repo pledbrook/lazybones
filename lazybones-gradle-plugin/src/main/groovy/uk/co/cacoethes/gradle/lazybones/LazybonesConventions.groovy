@@ -42,10 +42,22 @@ class LazybonesConventions {
      */
     String repositoryUrl
 
+    /**
+     * Bintray repository name, in the form [user]/[repo]. Preferred over
+     * {@link #repositoryUrl} as the base Bintray URL is already known.
+     */
+    String repositoryName
+
+    /**
+     * The licenses that the packages will be available under, such as Apache
+     * 2.0 and GPL 3.
+     */
+    List<String> licenses
+
     /** The Bintray account to use when publishing the templates */
     String repositoryUsername
 
-    /** The Bintray API key for the {@link repositoryUsername} account. */
+    /** The Bintray API key for the {@link #repositoryUsername} account. */
     String repositoryApiKey
 
     /**
