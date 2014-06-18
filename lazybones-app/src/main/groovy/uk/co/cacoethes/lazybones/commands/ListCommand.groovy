@@ -3,6 +3,9 @@ package uk.co.cacoethes.lazybones.commands
 import groovy.util.logging.Log
 import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
+import wslite.http.HTTPClientException
+
+import java.util.logging.Level
 
 /**
  * A Lazybones command that prints out all the available templates by name,
@@ -35,21 +38,66 @@ USAGE: list
     @Override
     protected int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config) {
 
+        def remoteTemplates = fetchRemoteTemplates(config.bintrayRepositories)
+
+        handleRemoteTemplates(remoteTemplates, globalOptions.stacktrace as boolean)
         handleMappings(config.templates.mappings)
 
-        for (String bintrayRepoName in config.bintrayRepositories) {
-            println "Available templates in ${bintrayRepoName}:"
-            println ""
+        return 0
+    }
 
-            def pkgSource = new BintrayPackageSource(bintrayRepoName)
-            for (name in pkgSource.listPackageNames().sort()) {
-                println INDENT + name
-            }
+    protected static void handleRemoteTemplates(Map<String, Object> remoteTemplates, boolean stacktrace) {
+        boolean offline = remoteTemplates.every { k, v -> OfflineMode.isOffline(v) }
 
-            println ""
+        if (offline) {
+            OfflineMode.printlnOfflineMessage(remoteTemplates.findResult { k, v -> v }, log, stacktrace)
+        }
+        else {
+            printDetailsForRemoteTemplates(remoteTemplates, stacktrace)
+        }
+    }
+
+    protected static void printDetailsForRemoteTemplates(Map<String, Object> remoteTemplates, boolean stacktrace) {
+        for (repoEntry in remoteTemplates) {
+            printDetailsForRemoteRepository(repoEntry.key, repoEntry.value, stacktrace)
+        }
+    }
+
+    protected static void printDetailsForRemoteRepository(String repoName, Exception ex, boolean stacktrace) {
+        println "Can't connect to ${repoName}: ${ex.message}"
+        if (stacktrace) log.log Level.WARNING, "", ex
+        println()
+    }
+
+    @SuppressWarnings("UnusedMethodParameter")
+    protected static void printDetailsForRemoteRepository(
+            String repoName,
+            Collection<String> templateNames,
+            boolean stacktrace) {
+        println "Available templates in ${repoName}:"
+        println()
+
+        for (name in templateNames.sort()) {
+            println INDENT + name
         }
 
-        return 0
+        println()
+    }
+
+    protected Map<String, Object> fetchRemoteTemplates(Collection<String> bintrayRepositories) {
+        bintrayRepositories.collectEntries { String repoName ->
+            [repoName, fetchPackageNames(repoName)]
+        }
+    }
+
+    protected fetchPackageNames(String repoName) {
+        try {
+            def pkgSource = new BintrayPackageSource(repoName)
+            return pkgSource.listPackageNames().sort()
+        }
+        catch (HTTPClientException ex) {
+            return ex.cause
+        }
     }
 
     protected static void handleMappings(Map mappings) {

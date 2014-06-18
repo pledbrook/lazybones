@@ -6,6 +6,9 @@ import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageInfo
+import wslite.http.HTTPClientException
+
+import java.util.logging.Level
 
 /**
  *
@@ -50,6 +53,23 @@ USAGE: info <template>
         catch (NoVersionsFoundException ex) {
             log.severe "No version of '${packageName}' has been published"
             return 1
+        }
+        catch (HTTPClientException ex) {
+            if (OfflineMode.isOffline(ex)) {
+                OfflineMode.printlnOfflineMessage(ex, log, globalOptions.stacktrace as boolean)
+            }
+            else {
+                log.severe "Unexpected failure: ${ex.message}"
+                if (globalOptions.stacktrace) log.log Level.SEVERE, "", ex
+            }
+
+            println()
+            println "Cannot fetch package info"
+            return 1
+        }
+        catch (all) {
+            log.severe "Unexpected failure: ${all.message}"
+            if (globalOptions.stacktrace) log.log Level.SEVERE, "", all
         }
 
         if (!pkgInfo) {
