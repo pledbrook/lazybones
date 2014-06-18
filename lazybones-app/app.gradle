@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.1-SNAPSHOT",
+        classpath "uk.co.cacoethes:lazybones-gradle:1.1",
                   "net.saliman:gradle-cobertura-plugin:1.1.2"
     }
 }
