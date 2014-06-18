@@ -49,7 +49,7 @@ abstract class AbstractFunctionalSpec extends Specification {
         workDir.mkdirs()
 
         def lazybonesInstallDir = System.getProperty("lazybones.installDir") ?:
-                System.getProperty("user.dir") + "/build/install"
+                System.getProperty("user.dir") + "/build/install/lazybones"
         def lzbExecutable = FilenameUtils.concat(lazybonesInstallDir, "bin/lazybones")
         if (windows) {
             lzbExecutable = FilenameUtils.separatorsToWindows(lzbExecutable + ".bat")
@@ -70,11 +70,9 @@ abstract class AbstractFunctionalSpec extends Specification {
             env["JAVA_OPTS"] = (env["JAVA_OPTS"] ?: "") + " " + systemProps.join(' ')
         }
 
-        // The execute() method expects the environment as a list of strings of
-        // the form VAR=value.
-        def envp = env.collect { key, value -> key + "=" + value }
-
-        Process process = ([lzbExecutable] + cmdList).execute(envp, workDir)
+        def processBuilder = new ProcessBuilder([lzbExecutable] + cmdList).redirectErrorStream(true).directory(workDir)
+        processBuilder.environment().putAll(env)
+        def process = processBuilder.start()
 
         if (inputs) {
             def newLine = System.getProperty("line.separator")
@@ -92,7 +90,6 @@ abstract class AbstractFunctionalSpec extends Specification {
         }
 
         def stdoutThread = consumeProcessStream(process.inputStream)
-        def stderrThread = consumeProcessStream(process.errorStream)
         process.waitForOrKill(commandTimeout)
         int exitCode = process.exitValue()
 
@@ -100,7 +97,6 @@ abstract class AbstractFunctionalSpec extends Specification {
         // give them a chance to complete so that we have the command output in
         // the buffer.
         stdoutThread.join 1000
-        stderrThread.join 1000
         println "Output from executing ${cmdList.join(' ')} (exit code: $exitCode)"
         println "---------------------"
         println output
