@@ -27,7 +27,7 @@ sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 ext {
-    groovyVersion = "2.1.9"
+    groovyVersion = "2.3.3"
     cachePath = new File(System.getProperty("user.home"), ".lazybones/templates").absolutePath
     isCiBuild = System.getProperty("drone.io") as boolean
     testWorkDir = file("$buildDir/testWork").path
