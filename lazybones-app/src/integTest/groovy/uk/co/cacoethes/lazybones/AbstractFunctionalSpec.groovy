@@ -20,8 +20,15 @@ abstract class AbstractFunctionalSpec extends Specification {
         System.getProperty("user.dir") + "/build/testWork", "cmdWork")
 
     protected final env = [:]
+    protected final filesToDelete = []
 
     protected long commandTimeout = 10000
+
+    void cleanup() {
+        for (File f in filesToDelete) {
+            f.delete()
+        }
+    }
 
     /**
      * Runs a lazybones command. For example:
@@ -126,6 +133,11 @@ abstract class AbstractFunctionalSpec extends Specification {
      */
     protected String readLazybonesVersion() {
         return System.getProperty("lzbtest.expected.version")
+    }
+
+    protected final String getCacheDirPath() {
+        return System.getProperty("lazybones.cache.dir") ?:
+                FilenameUtils.concat(System.getProperty('user.home'), "/.lazybones/templates")
     }
 
     protected final boolean isWindows() { return System.getProperty("os.name")?.startsWith("Windows") }

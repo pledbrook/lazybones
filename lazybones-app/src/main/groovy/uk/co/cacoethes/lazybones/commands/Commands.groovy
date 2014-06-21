@@ -8,7 +8,7 @@ final class Commands {
         return Collections.unmodifiableList([
             new CreateCommand(config),
             new GenerateCommand(),
-            new ListCommand(),
+            new ListCommand(config),
             new InfoCommand(),
             new HelpCommand(config) ])
     }

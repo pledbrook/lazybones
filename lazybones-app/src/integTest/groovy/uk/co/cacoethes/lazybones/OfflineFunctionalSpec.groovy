@@ -1,5 +1,7 @@
 package uk.co.cacoethes.lazybones
 
+import co.freeside.betamax.Betamax
+import org.apache.commons.io.FileUtils
 import spock.lang.Unroll
 
 class OfflineFunctionalSpec extends AbstractFunctionalSpec {
@@ -9,16 +11,29 @@ class OfflineFunctionalSpec extends AbstractFunctionalSpec {
                 "-Dhttp.proxyHost=localhost -Dhttp.proxyPort=61431"
     }
 
+    @Betamax(tape="create-tape")
     @Unroll
     def "list command prints local packages and mappings when offline #showsExceptionLabel#extraOutputLabel"() {
+        given: "A template in the cache matching a remote one"
+        def ratpackPackage = new File(cacheDirPath, "ratpack-0.1.zip")
+        if (!ratpackPackage.exists()) {
+            FileUtils.touch(ratpackPackage)
+            filesToDelete << ratpackPackage
+        }
+
         when: "I run lazybones with the list command"
         def exitCode = runCommand(otherOptions + ["list"], baseWorkDir)
 
-        then: "It displays only the template mappings"
+        then: "It displays only the template mappings and cached packages"
         exitCode == 0
         output =~ /(?m)^Available mappings\s+/ +
                 /customRatpack  -> http:\/\/dl.dropboxusercontent.com\/u\/29802534\/custom-ratpack.zip\s+/ +
                 /doesNotExist   -> file:\/\/\/does\/not\/exist/
+        output =~ /(?m)^Cached templates\s+/ +
+                /ratpack                       0.1\s+/ +
+                /subtemplates-tmpl             0.1\s+/ +
+                /test-handlebars               0.1\s+/ +
+                /test-handlebars-default       0.1/
 
         and: "It displays an offline message, with optional explanation and stacktrace"
         output =~ /(?m)\(Offline mode - run with -v or --stacktrace to find out why\)\s+/ +

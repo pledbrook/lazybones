@@ -1,6 +1,7 @@
 package uk.co.cacoethes.lazybones.commands
 
 import groovy.util.logging.Log
+import joptsimple.OptionParser
 import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
 import wslite.http.HTTPClientException
@@ -18,6 +19,13 @@ USAGE: list
 """
 
     private static final String INDENT = "    "
+    private static final String CACHED_OPTION = "cached"
+
+    File cacheDir
+
+    ListCommand(ConfigObject config) {
+        this.cacheDir = config.cache.dir as File
+    }
 
     @Override
     String getName() { return "list" }
@@ -40,13 +48,24 @@ USAGE: list
 
         def remoteTemplates = fetchRemoteTemplates(config.bintrayRepositories)
 
-        handleRemoteTemplates(remoteTemplates, globalOptions.stacktrace as boolean)
+        boolean offline = false
+        if (!optionSet.has(CACHED_OPTION)) {
+            offline = handleRemoteTemplates(remoteTemplates, globalOptions.stacktrace as boolean)
+        }
+        if (optionSet.has(CACHED_OPTION) || offline) {
+            handleCachedTemplates(cacheDir)
+        }
         handleMappings(config.templates.mappings)
 
         return 0
     }
 
-    protected static void handleRemoteTemplates(Map<String, Object> remoteTemplates, boolean stacktrace) {
+    protected OptionParser doAddToParser(OptionParser parser) {
+        parser.accepts(CACHED_OPTION, "Lists the cached templates instead of the remote ones.")
+        return parser
+    }
+
+    protected static boolean handleRemoteTemplates(Map<String, Object> remoteTemplates, boolean stacktrace) {
         boolean offline = remoteTemplates.every { k, v -> OfflineMode.isOffline(v) }
 
         if (offline) {
@@ -55,6 +74,26 @@ USAGE: list
         else {
             printDetailsForRemoteTemplates(remoteTemplates, stacktrace)
         }
+        return offline
+    }
+
+    @SuppressWarnings("SpaceBeforeOpeningBrace")
+    protected static void handleCachedTemplates(File cacheDir) {
+        println "Cached templates"
+        println()
+
+        def templateNamePattern = ~/^(.*)-(\d[^-]*(?:-SNAPSHOT)?)\.zip$/
+
+        def templates = cacheDir.listFiles({ File f ->
+            templateNamePattern.matcher(f.name).matches()
+        } as FileFilter).sort()
+
+        for (f in templates.sort { it.name }) {
+            def matcher = templateNamePattern.matcher(f.name)
+            println INDENT + matcher[0][1].padRight(30) + matcher[0][2]
+        }
+
+        println()
     }
 
     protected static void printDetailsForRemoteTemplates(Map<String, Object> remoteTemplates, boolean stacktrace) {
@@ -74,7 +113,7 @@ USAGE: list
             String repoName,
             Collection<String> templateNames,
             boolean stacktrace) {
-        println "Available templates in ${repoName}:"
+        println "Available templates in ${repoName}"
         println()
 
         for (name in templateNames.sort()) {
@@ -100,6 +139,7 @@ USAGE: list
         }
     }
 
+    @SuppressWarnings("DuplicateNumberLiteral")
     protected static void handleMappings(Map mappings) {
         if (mappings) {
             println "Available mappings"
