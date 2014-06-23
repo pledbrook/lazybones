@@ -14,15 +14,13 @@ the packages to the relevant [Bintray repository](https://bintray.com/repo/brows
 
 [![Build Status](https://drone.io/github.com/pledbrook/lazybones/status.png)](https://drone.io/github.com/pledbrook/lazybones/latest)
 
-Developers
-----------
+## Developers
 
 * [Peter Ledbrook](https://github.com/pledbrook)
 * [Kyle Boon](https://github.com/kyleboon)
 * [Tommy Barker](https://github.com/tbarker9)
 
-Contributors
-------------
+## Contributors
 
 * [Luke Daley](https://github.com/alkemist)
 * [Tomas Lin](https://github.com/tomaslin)
@@ -31,8 +29,7 @@ Contributors
 * [Andy Duncan](https://github.com/andyjduncan)
 
 
-Running it
-----------
+## Running it
 
 Grab lazybones from [gvm](http://gvmtool.net):
 
@@ -42,6 +39,8 @@ or alternatively, grab the distribution [from Bintray](https://bintray.com/pkg/s
 unpack it to a local directory, and then add its 'bin' directory to your `PATH`
 environment variable.
 
+### Creating projects
+
 To create a new project, run
 
     lazybones create <template name> <template version> <target directory>
@@ -50,20 +49,28 @@ So if you wanted to create a skeleton Ratpack project in a new 'my-rat-app'
 directory you would run
 
     lazybones create ratpack-lite 0.1 my-rat-app
+    
+The version is optional and if you leave it out, Lazybones will install the
+latest version of the template it can find. 
 
-Named templates are all stored on Bintray, but you can install them directly
-from a URL too:
+Named templates are all stored on Bintray. By default, Lazybones searches for
+templates in the pledbrook/lazybones-templates repository, but you can use
+other Bintray repositories by adding some configuration - set the Custom
+Repositories section under Configuration later in this document.
+
+You're not limited to only Bintray as you can install templates directly from 
+a URL too:
 
     lazybones create http://dl.bintray.com/kyleboon/lazybones/java-basic-template-0.1.zip my-app
 
 Of course it can be pretty laborious copying and pasting URLs around, so Lazybones
-allows you to configure aliases for URLs. By adding the following configuration to
-your Lazybones settings file, `~/.lazybones/config.groovy` (see below for more details
-on this), you can install the template by name:
+allows you to configure aliases for URLs that you use frequently. By adding the
+following configuration to your Lazybones settings file, `~/.lazybones/config.groovy`
+(see below for more details on this), you can install the template by name:
 
     templates {
         mappings {
-            myTmpl = ""
+            myTmpl = "http://dl.bintray.com/..."
         }
     }
 
@@ -71,11 +78,10 @@ In other words, you could now run
 
     lazybones create myTmpl my-app
 
-Note that when using the URL option, there is no need to specify a version.
-
-If a mapped template has the same name as a remote template, the mapped
-template will be used by `create`; essentially creating a simple override 
-mechanism.
+Note that when using the URL option, there is no need to specify a version. You
+should also be aware that mappings take precedence, i.e. if a mapping has the
+same name as an existing template, the mapping is used. This essentially creates
+a simple override mechanism.
 
 There is just one more thing to say about the `create` command: by default it
 creates the specified directory and puts the initial project in there. If you
@@ -84,19 +90,83 @@ have already created the project directory, then just pass '.' as the directory:
 
     lazybones create ratpack .
 
+Once you have created a new project from a template, you may notice that the
+project directory contains a .lazybones sub directory. You may delete this, but
+then you won't be able to use the `generate` command (see next section) if the
+project template has support for it.
+
+Many project templates request information from you, such as a project name, a
+group ID, a default package, etc. If this is the umpteenth time you have created
+a project from a given template, then answering the questions can become tedious.
+There is also the problem of scripting and automation when you want to create
+a project without user intervention. The solution to both these issues is to
+pass the values on the command line:
+
+    lazybones create ratpack 0.2 ratapp -Pgroup=org.example -Ppackage=org.example.myapp
+
+The `-P` option allows you to pass property values into the project templates
+without user intervention. The key is to know what the property names are, and
+that comes down to the project template. At the moment, the best way to find out
+what those properties are is to look at the post-install script itself.
+
+The last option to mention is `--with-git` which will automatically create a
+new git repository in the project directory. The only requirement is that you
+have the `git` command on your path.
+
+### Sub-templates
+
+As of Lazybones version 0.7, project templates can incorporate sub-templates.
+Imagine that you have just created a new web application project from a template
+and that template documents that you can create new controllers using a sub-
+template named `controller`. To use it, just `cd` into the project directory
+and run
+
+    lazybones generate controller
+    
+This will probably ask you for the name of the controller and its package before
+generating the corresponding controller file in your project. You can reuse the
+command to create as many controllers as you need.
+
+As with the `create` command, you can also pass in property values on the command
+line if the sub-template is parameterised:
+
+    lazybones generate controller -Ppackage=org.example.myapp -Pclass=Book
+    
+The last option available to you as a user is template qualifiers. These only
+work if the sub-template supports them, but they allow you to pass additional
+information in a concise way:
+
+    lazybones generate artifact::controller
+    
+In this case, the template name is `artifact`, but we have qualified it with
+an extra `controller`. You can pass in as many qualifiers as you want, you just
+separate them with `::`.
+
+Note that you do not specify a version with the `generate` command. This is
+because the sub-templates are embedded directly in the project template, and
+so there can only be one version available to you.
+
+### Finding out what templates are available
+
 To see what templates you can install, run
 
-     lazybones list
+    lazybones list
+ 
+This will list all aliases and remote templates. If you want to see what
+templates you have cached locally, run
+
+    lazybones list --cached
+
+In fact, `--cached` is implied if Lazybones can't connect to the internet.
 
 You can also find out more about a template through the `info` command:
 
-     lazybones info <template name>
+    lazybones info <template name>
 
 This will print a description of the template and what versions are available
-for it.
+for it. If you're offline, this will simply display an error message.
 
-Configuration
--------------
+## Configuration
 
 Lazybones will run out of the box without any extra configuration, but you can
 control certain aspects of the tool through the configuration file
@@ -145,8 +215,7 @@ The logging level can be one of:
 * FINEST
 * ALL
 
-Building it
------------
+## Building it
 
 This project is split into two parts:
 
