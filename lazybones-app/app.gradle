@@ -38,6 +38,7 @@ sourceSets {
     integTest {
         groovy {
             srcDir "src/integ/groovy"
+            compileClasspath += sourceSets.main.output
         }
         resources {
             srcDir "src/integ/resources"
