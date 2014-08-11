@@ -3,6 +3,7 @@ package uk.co.cacoethes.lazybones.commands
 import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
+import uk.co.cacoethes.lazybones.config.Configuration
 import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
 import wslite.http.HTTPClientException
 
@@ -23,8 +24,8 @@ USAGE: list
 
     File cacheDir
 
-    ListCommand(ConfigObject config) {
-        this.cacheDir = config.cache.dir as File
+    ListCommand(Configuration config) {
+        this.cacheDir = config.getSetting("cache.dir") as File
     }
 
     @Override
@@ -44,9 +45,9 @@ USAGE: list
     protected String getUsage() { return USAGE }
 
     @Override
-    protected int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config) {
+    protected int doExecute(OptionSet optionSet, Map globalOptions, Configuration config) {
 
-        def remoteTemplates = fetchRemoteTemplates(config.bintrayRepositories)
+        def remoteTemplates = fetchRemoteTemplates(config.getSetting("bintrayRepositories"))
 
         boolean offline = false
         if (!optionSet.has(CACHED_OPTION)) {
@@ -55,7 +56,7 @@ USAGE: list
         if (optionSet.has(CACHED_OPTION) || offline) {
             handleCachedTemplates(cacheDir)
         }
-        handleMappings(config.templates.mappings)
+        handleMappings(config.getSubSettings("templates.mappings"))
 
         return 0
     }

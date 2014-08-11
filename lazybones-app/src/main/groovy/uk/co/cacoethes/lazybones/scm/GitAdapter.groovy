@@ -2,6 +2,7 @@ package uk.co.cacoethes.lazybones.scm
 
 import groovy.util.logging.Log
 import org.ini4j.Wini
+import uk.co.cacoethes.lazybones.config.Configuration
 
 /**
  * An SCM adapter for git. Make sure that when executing the external processes
@@ -15,7 +16,7 @@ class GitAdapter implements ScmAdapter {
     private final String userName
     private final String userEmail
 
-    GitAdapter(ConfigObject config) {
+    GitAdapter(Configuration config) {
         // Load the current user's git config if it exists.
         def configFile = new File(System.getProperty("user.home"), ".gitconfig")
         if (configFile.exists()) {
@@ -26,8 +27,8 @@ class GitAdapter implements ScmAdapter {
         }
         else {
             // Use Lazybones config entries if they exist.
-            userName = config.git.name ?: "Unknown"
-            userEmail = config.git.email ?: "unknown@nowhere.net"
+            userName = config.getSetting("git.name") ?: "Unknown"
+            userEmail = config.getSetting("git.email") ?: "unknown@nowhere.net"
         }
     }
 

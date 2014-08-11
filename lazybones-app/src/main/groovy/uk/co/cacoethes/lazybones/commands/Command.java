@@ -1,6 +1,6 @@
 package uk.co.cacoethes.lazybones.commands;
 
-import groovy.util.ConfigObject;
+import uk.co.cacoethes.lazybones.config.Configuration;
 
 import java.util.List;
 import java.util.Map;
@@ -34,5 +34,5 @@ public interface Command {
      * @param config A reference to the Lazybones configuration (from config.groovy).
      * @return An exit code. A non-zero value indicates an error.
      */
-    int execute(List<String> args, Map globalOptions, ConfigObject config);
+    int execute(List<String> args, Map globalOptions, Configuration config);
 }

@@ -1,5 +1,4 @@
-bintray.default.repository = "pledbrook/lazybones-templates"
-bintrayRepositories = [bintray.default.repository]
+bintrayRepositories = ["pledbrook/lazybones-templates"]
 
 templates {
     mappings {
@@ -7,3 +6,5 @@ templates {
         doesNotExist = "file:///does/not/exist"
     }
 }
+
+test.option.override = "Just an option"

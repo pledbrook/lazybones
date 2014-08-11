@@ -68,7 +68,7 @@ abstract class AbstractFunctionalSpec extends Specification {
         }
 
         def systemProps = System.properties.findAll {
-            it.key.startsWith("lazybones.") && !(it.key in ["installDir", "testWorkDir"])
+            it.key.startsWith("lazybones.") && !(it.key in ["lazybones.installDir", "lazybones.testWorkDir"])
         }.collect {
             "-D" + it.key + '="' + it.value + '"'
         }
@@ -137,7 +137,16 @@ abstract class AbstractFunctionalSpec extends Specification {
 
     protected final String getCacheDirPath() {
         return System.getProperty("lazybones.cache.dir") ?:
-                FilenameUtils.concat(System.getProperty('user.home'), "/.lazybones/templates")
+                FilenameUtils.concat(System.getProperty('user.home'), ".lazybones/templates")
+    }
+
+    protected final String getConfigFilePath() {
+        return System.getProperty("lazybones.config.file") ?:
+                FilenameUtils.concat(System.getProperty('user.home'), ".lazybones/config.groovy")
+    }
+
+    protected final String getJsonConfigFilePath() {
+        return new File(new File(configFilePath).parentFile, "managed-config.json")
     }
 
     protected final boolean isWindows() { return System.getProperty("os.name")?.startsWith("Windows") }

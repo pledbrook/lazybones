@@ -3,6 +3,7 @@ package uk.co.cacoethes.lazybones.commands
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionSet
+import uk.co.cacoethes.lazybones.config.Configuration
 
 /**
  *
@@ -16,12 +17,6 @@ USAGE: help <cmd>?
   where  cmd = The name of the command to show help for. If not specified,
                the command displays the generic Lazybones help.
 """
-
-    private final ConfigObject config
-
-    HelpCommand(ConfigObject config) {
-        this.config = config
-    }
 
     @Override
     String getName() { return "help" }
@@ -40,7 +35,7 @@ USAGE: help <cmd>?
     protected String getUsage() { return USAGE }
 
     @Override
-    protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject config) {
+    protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration config) {
         def cmdArgs = cmdOptions.nonOptionArguments()
         if (cmdArgs) {
             def cmd = Commands.getAll(config).find { Command it -> it.name == cmdArgs[0] }
@@ -53,13 +48,13 @@ USAGE: help <cmd>?
             }
         }
         else {
-            showGenericHelp()
+            showGenericHelp(config)
         }
 
         return 0
     }
 
-    protected void showGenericHelp() {
+    protected void showGenericHelp(Configuration config) {
         println "Lazybones is a command-line based tool for creating basic software projects from templates."
         println ""
         println "Available commands:"

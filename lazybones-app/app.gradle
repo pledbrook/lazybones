@@ -54,6 +54,7 @@ dependencies {
     compile "org.codehaus.groovy:groovy:${groovyVersion}"
 
     compile "commons-io:commons-io:2.4",
+            "org.codehaus.groovy:groovy-json:${groovyVersion}",
             "org.codehaus.groovy:groovy-templates:${groovyVersion}",
             "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:0.7.2",
@@ -94,7 +95,7 @@ task configureCachePath {
         // Load the default cache directory location from the default config file.
         // We have to defer the evaluation until after the test resources have been
         // copied onto the classpath.
-        def defaultConfigFile = sourceSets.main.resources.filter { it.name == "defaultConfig.groovy" }.singleFile
+        def defaultConfigFile = sourceSets.main.resources.filter { it.name == "uk.co.cacoethes.lazybones.config.defaultConfig.groovy" }.singleFile
         def defaultConfig = new ConfigSlurper().parse(defaultConfigFile.text)
         project.cachePath = defaultConfig.cache.dir
     }
@@ -121,7 +122,7 @@ task integTest(type: Test) {
     // Allows us to disable tests that don't work on Drone.io, such as the
     // CreateFunctionalSpec feature test for --with-git.
     systemProperty "lazybones.config.file",
-                   sourceSets.integTest.resources.filter { it.name == "test-config.groovy" }.singleFile.absolutePath
+                   new File(sourceSets.integTest.output.resourcesDir, "test-config.groovy").absolutePath
 
     def cachePath
     if (isCiBuild) {
@@ -179,11 +180,9 @@ task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
 // installed into the cache directory being used by the integration tests.
 gradle.taskGraph.whenReady { graph ->
     if (graph.hasTask(":lazybones-app:uploadDist")) {
-        verifyProperty(project, 'repo.url')
         verifyProperty(project, 'repo.username')
         verifyProperty(project, 'repo.apiKey')
 
-        uploadDist.repositoryUrl = project.'repo.url'
         uploadDist.username = project.'repo.username'
         uploadDist.apiKey = project.'repo.apiKey'
     }

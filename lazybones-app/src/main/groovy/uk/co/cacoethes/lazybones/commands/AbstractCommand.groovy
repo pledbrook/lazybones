@@ -5,6 +5,7 @@ import groovy.util.logging.Log
 import joptsimple.OptionException
 import joptsimple.OptionParser
 import joptsimple.OptionSet
+import uk.co.cacoethes.lazybones.config.Configuration
 import uk.co.cacoethes.lazybones.Options
 
 /**
@@ -17,7 +18,7 @@ import uk.co.cacoethes.lazybones.Options
 abstract class AbstractCommand implements Command {
     @Override
     @SuppressWarnings('UnnecessaryGetter')
-    int execute(List<String> args, Map globalOptions, ConfigObject config) {
+    int execute(List<String> args, Map globalOptions, Configuration config) {
         OptionSet cmdOptions = parseArguments(args, parameterRange)
         if (!cmdOptions) return 1
 
@@ -29,7 +30,7 @@ abstract class AbstractCommand implements Command {
         return doExecute(cmdOptions, globalOptions, config)
     }
 
-    protected abstract int doExecute(OptionSet optionSet, Map globalOptions, ConfigObject config)
+    protected abstract int doExecute(OptionSet optionSet, Map globalOptions, Configuration config)
 
     /**
      * Returns the number of arguments this command can accept, on top of the

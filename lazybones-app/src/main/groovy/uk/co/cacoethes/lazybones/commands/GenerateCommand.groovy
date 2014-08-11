@@ -4,6 +4,7 @@ import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
 import org.apache.commons.io.FileUtils
+import uk.co.cacoethes.lazybones.config.Configuration
 import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.util.ArchiveMethods
@@ -54,7 +55,7 @@ USAGE: generate <template>
     protected String getUsage() { return USAGE }
 
     @Override
-    protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject configuration) {
+    protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration configuration) {
         // Make sure this is a Lazybones-created project, otherwise there are
         // no sub-templates to use.
         if (!LAZYBONES_DIR.exists()) {

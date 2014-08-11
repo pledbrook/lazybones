@@ -3,6 +3,7 @@ package uk.co.cacoethes.lazybones.commands
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import joptsimple.OptionSet
+import uk.co.cacoethes.lazybones.config.Configuration
 import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageInfo
@@ -40,7 +41,7 @@ USAGE: info <template>
     }
 
     @Override
-    int doExecute(OptionSet cmdOptions,  Map globalOptions, ConfigObject config) {
+    int doExecute(OptionSet cmdOptions,  Map globalOptions, Configuration config) {
         String packageName = cmdOptions.nonOptionArguments()[0]
 
         log.info "Fetching package information for '${packageName}' from Bintray"
@@ -48,7 +49,9 @@ USAGE: info <template>
         // grab the package from the first repository that has it
         PackageInfo pkgInfo
         try {
-            pkgInfo = findPackageInBintrayRepositories(packageName, config.bintrayRepositories as List<String>)
+            pkgInfo = findPackageInBintrayRepositories(
+                    packageName,
+                    config.getSetting("bintrayRepositories") as List<String>)
         }
         catch (NoVersionsFoundException ex) {
             log.severe "No version of '${packageName}' has been published"

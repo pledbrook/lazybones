@@ -6,6 +6,7 @@ import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageNotFoundException
+import uk.co.cacoethes.lazybones.config.Configuration
 import uk.co.cacoethes.lazybones.packagesources.PackageSource
 import uk.co.cacoethes.lazybones.packagesources.PackageSourceBuilder
 import uk.co.cacoethes.lazybones.scm.GitAdapter
@@ -40,10 +41,10 @@ USAGE: create <template> <version>? <dir>
     private static final String VAR_OPT = "P"
     private static final String GIT_OPT = "with-git"
 
-    CreateCommand(ConfigObject config) {
-        this(config.cache.dir as File)
-        assert config.cache.dir
-        mappings = config.templates.mappings
+    CreateCommand(Configuration config) {
+        this(config.settings.cache.dir as File)
+        assert config.settings.cache.dir
+        mappings = config.settings.templates.mappings
     }
 
     CreateCommand(File cacheDir) {
@@ -76,7 +77,7 @@ USAGE: create <template> <version>? <dir>
     @Override
     protected String getUsage() { return USAGE }
 
-    protected int doExecute(OptionSet cmdOptions, Map globalOptions, ConfigObject configuration) {
+    protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration configuration) {
         try {
             def createData = evaluateArgs(cmdOptions)
 
