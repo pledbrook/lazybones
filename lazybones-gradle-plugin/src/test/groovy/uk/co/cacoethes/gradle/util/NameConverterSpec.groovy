@@ -27,6 +27,11 @@ class NameConverterSpec extends Specification {
         "johnDOEMd"        | "john-DOE-md"
         "JOHNDOE"          | "JOHNDOE"
         "ABeeCeeD"         | "a-bee-cee-d"
+        "Neo4jPlugin"      | "neo4j-plugin"
+        "1234ever"         | "1234ever"
+        "1234Ever"         | "1234-ever"
+        "Do1234Ever"       | "do1234-ever"
+        "Do1234"           | "do1234"
     }
 
     @Unroll
@@ -49,5 +54,9 @@ class NameConverterSpec extends Specification {
         "john-DOE-md"      | "JohnDOEMd"
         "JOHNDOE"          | "JOHNDOE"
         "a-bee-cee-d"      | "ABeeCeeD"
+        "1234ever"         | "1234ever"
+        "1234-ever"        | "1234Ever"
+        "do1234-ever"      | "Do1234Ever"
+        "do1234"           | "Do1234"
     }
 }

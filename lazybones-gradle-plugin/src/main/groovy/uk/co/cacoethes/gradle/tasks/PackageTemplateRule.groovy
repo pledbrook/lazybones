@@ -30,10 +30,11 @@ class PackageTemplateRule implements Rule {
 
     @Override
     void apply(String taskName) {
-        def m = taskName =~ /packageTemplate([A-Z]\S+)/
+        def m = taskName =~ /packageTemplate([A-Z-]\S+)/
         if (m) {
             def camelCaseTmplName = m[0][1]
-            def tmplName = NameConverter.camelCaseToHyphenated(camelCaseTmplName)
+            def tmplName = camelCaseTmplName.startsWith("-") ? camelCaseTmplName.substring(1) :
+                    NameConverter.camelCaseToHyphenated(camelCaseTmplName)
             def tmplDir = project.extensions.lazybones.templateDirs.files.find { f -> f.name == tmplName }
 
             if (!tmplDir?.exists()) {

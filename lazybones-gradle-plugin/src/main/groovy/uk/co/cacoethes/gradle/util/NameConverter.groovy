@@ -21,6 +21,11 @@ class NameConverter {
      *   "johnDOEMd"        | "john-DOE-md"
      *   "JOHNDOE"          | "JOHNDOE"
      *   "ABeeCeeD"         | "a-bee-cee-d"
+     *   "Neo4jPlugin"      | "neo4j-plugin"
+     *   "1234ever"         | "1234ever"
+     *   "1234Ever"         | "1234-ever"
+     *   "Do1234Ever"       | "do1234-ever"
+     *   "Do1234"           | "do1234"
      * </pre>
      */
     static String camelCaseToHyphenated(String name) {
@@ -123,7 +128,7 @@ class NameConverter {
 
         private static int getType(ch) {
             ch = ch as char
-            return ch.isUpperCase() ? UPPER : (ch.isLowerCase() ? LOWER : OTHER)
+            return ch.isUpperCase() ? UPPER : (ch.isLowerCase() || ch.isDigit() ? LOWER : OTHER)
         }
     }
 }
