@@ -87,17 +87,18 @@ class PackageTemplateRule implements Rule {
      * the task itself is of type org.gradle.api.tasks.bundling.Zip.
      */
     protected Task createTask(String taskName, String tmplName, File tmplDir) {
-        return project.tasks.create(taskName, Zip).with {
+        def task = project.tasks.create(taskName, Zip)
+        task.with {
             conventionMapping.map("baseName") { tmplName + project.extensions.lazybones.packageNameSuffix }
             conventionMapping.map("destinationDir") { project.extensions.lazybones.packagesDir }
 
-            excludes = ["**/.retain"]
             includeEmptyDirs = true
             version = project.file("$tmplDir/VERSION").text.trim()
 
             from tmplDir
-            exclude "**/.retain", "VERSION", ".gradle"
+            excludes = project.extensions.lazybones.packageExcludes
         }
+        return task
     }
 
     @Override

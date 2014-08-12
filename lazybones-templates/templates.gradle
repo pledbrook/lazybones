@@ -7,18 +7,19 @@ buildscript {
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.1"
+        classpath "uk.co.cacoethes:lazybones-gradle:1.2-SNAPSHOT"
     }
 }
 
 import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
 
-apply plugin: "lazybones-templates"
+apply plugin: "uk.co.cacoethes.lazybones-templates"
 
 lazybones {
     licenses = ["Apache-2.0"]
     publish = false
     repositoryName = "pledbrook/lazybones-templates"
+    packageExclude "**/*.swp", "**/*.swo"
 }
 
 // Lazy initialisation of Bintray upload tasks so that not all build users need

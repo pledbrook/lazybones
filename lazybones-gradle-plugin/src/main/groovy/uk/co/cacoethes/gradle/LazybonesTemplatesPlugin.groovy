@@ -4,7 +4,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import uk.co.cacoethes.gradle.lazybones.LazybonesConventions
-import uk.co.cacoethes.gradle.lazybones.TemplateConvention
 import uk.co.cacoethes.gradle.tasks.InstallTemplateRule
 import uk.co.cacoethes.gradle.tasks.PackageTemplateRule
 import uk.co.cacoethes.gradle.tasks.PublishTemplateRule
@@ -31,6 +30,7 @@ class LazybonesTemplatesPlugin implements Plugin<Project> {
         extension.packagesDir = project.file("${project.buildDir}/packages")
         extension.installDir = new File(System.getProperty("user.home"), ".lazybones/templates")
         extension.packageNameSuffix = "-template"
+        extension.packageExcludes = ["**/.retain", "VERSION", ".gradle"]
         extension.publish = false
 
         // Shared configuration closure that can easily turn a standard task

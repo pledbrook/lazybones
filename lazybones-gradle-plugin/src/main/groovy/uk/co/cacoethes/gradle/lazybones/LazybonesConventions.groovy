@@ -36,6 +36,13 @@ class LazybonesConventions {
     String packageNameSuffix
 
     /**
+     * A collection of Ant file patterns for files that should be excluded from
+     * the template packages. For example, the VERSION file and temporary editor
+     * files.
+     */
+    Collection<String> packageExcludes
+
+    /**
      * The base Bintray URL to publish templates to. This should be the API URL
      * for publishing to a generic Bintray repository. For example:
      * https://api.bintray.com/content/pledbrook/lazybones-templates
@@ -77,6 +84,15 @@ class LazybonesConventions {
      */
     def templateDirs(Object... dirs) {
         templateDirs.add(project.files(dirs))
+    }
+
+    /**
+     * Adds one or more Ant file patterns to the package exclusions. Returns
+     * the current exclusions.
+     */
+    Collection<String> packageExclude(String... patterns) {
+        packageExcludes.addAll(patterns)
+        return Collections.unmodifiableCollection(packageExcludes)
     }
 
     /**
