@@ -37,7 +37,6 @@ gradle.taskGraph.whenReady { graph ->
     }
 }
 
-
 void verifyProperty(Project proj, String name) {
     if (!project.hasProperty(name)) {
         throw new GradleException("You must define the project property '$name'")

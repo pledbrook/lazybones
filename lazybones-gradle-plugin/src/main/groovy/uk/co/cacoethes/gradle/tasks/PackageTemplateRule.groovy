@@ -1,10 +1,9 @@
 package uk.co.cacoethes.gradle.tasks
 
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Project
 import org.gradle.api.Rule
 import org.gradle.api.Task
-import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.AbstractCopyTask
 import org.gradle.api.tasks.bundling.Zip
 import uk.co.cacoethes.gradle.lazybones.TemplateConvention
 import uk.co.cacoethes.gradle.util.NameConverter
@@ -32,20 +31,8 @@ class PackageTemplateRule implements Rule {
     void apply(String taskName) {
         def m = taskName =~ /packageTemplate([A-Z-]\S+)/
         if (m) {
-            def camelCaseTmplName = m[0][1]
-            def tmplName = camelCaseTmplName.startsWith("-") ? camelCaseTmplName.substring(1) :
-                    NameConverter.camelCaseToHyphenated(camelCaseTmplName)
+            def tmplName = taskToTemplateName(m[0][1])
             def tmplDir = project.extensions.lazybones.templateDirs.files.find { f -> f.name == tmplName }
-
-            if (!tmplDir?.exists()) {
-                project.logger.error "No project template directory found for '${tmplName}'"
-                return
-            }
-
-            if (!new File(tmplDir, "VERSION").exists()) {
-                project.logger.error "Project template '${tmplName}' has no VERSION file"
-                return
-            }
 
             addSubTemplatesToPackageTask(
                     findTemplateConvention(tmplName),
@@ -75,6 +62,8 @@ class PackageTemplateRule implements Rule {
 
     /**
      * Finds the template convention for the given main template, if it exists.
+     * The template convention allows for configuration of such things as what
+     * sub-templates should be included in the project template.
      * @param tmplName The name of the main template whose convention you want.
      * @return The convention object, or <code>null</code> if no template
      * convention was defined for the given template.
@@ -94,15 +83,39 @@ class PackageTemplateRule implements Rule {
             conventionMapping.map("destinationDir") { project.extensions.lazybones.packagesDir }
 
             includeEmptyDirs = true
-            version = project.file("$tmplDir/VERSION").text.trim()
 
             from tmplDir
 
             // Can't use convention mapping here because `excludes` isn't a
             // real property (it delegates to a CopySpec object).
             excludes = project.extensions.lazybones.packageExcludes
+
+            doFirst {
+                validateTemplateDir(tmplDir, tmplName)
+                version = project.file("$tmplDir/VERSION").text.trim()
+            }
         }
         return task
+    }
+
+    protected String taskToTemplateName(String requestedTemplateName) {
+        // The rule supports tasks of the form packageTemplateMyTmpl and
+        // packageTemplate-my-tmpl. Only the former requires conversion of
+        // the name to lowercase hyphenated.
+        return requestedTemplateName.startsWith("-") ? requestedTemplateName.substring(1) :
+                NameConverter.camelCaseToHyphenated(requestedTemplateName)
+    }
+
+    protected void validateTemplateDir(File tmplDir, String tmplName) {
+        // Note that tmplDir *may* be null if the directory exists but isn't
+        // included in the templateDirs extension property.
+        if (!tmplDir?.exists()) {
+            throw new InvalidUserDataException("No project template directory found for '${tmplName}'")
+        }
+
+        if (!new File(tmplDir, "VERSION").exists()) {
+            throw new InvalidUserDataException("Project template '${tmplName}' has no VERSION file")
+        }
     }
 
     @Override
