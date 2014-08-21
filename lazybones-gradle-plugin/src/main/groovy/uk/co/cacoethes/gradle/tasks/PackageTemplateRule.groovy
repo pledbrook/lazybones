@@ -97,6 +97,9 @@ class PackageTemplateRule implements Rule {
             version = project.file("$tmplDir/VERSION").text.trim()
 
             from tmplDir
+
+            // Can't use convention mapping here because `excludes` isn't a
+            // real property (it delegates to a CopySpec object).
             excludes = project.extensions.lazybones.packageExcludes
         }
         return task
