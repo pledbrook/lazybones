@@ -77,23 +77,54 @@ class PackageTemplateRule implements Rule {
      * the task itself is of type org.gradle.api.tasks.bundling.Zip.
      */
     protected Task createTask(String taskName, String tmplName, File tmplDir) {
-        def task = project.tasks.create(taskName, Zip)
+        final tmplConvention = findTemplateConvention(tmplName)
+        final packageExcludes = tmplConvention?.packageExcludes ?: project.extensions.lazybones.packageExcludes
+        final fileModes = tmplConvention?.fileModes ?: project.extensions.lazybones.fileModes
+
+        final task = project.tasks.create(taskName, Zip)
         task.with {
             conventionMapping.map("baseName") { tmplName + project.extensions.lazybones.packageNameSuffix }
             conventionMapping.map("destinationDir") { project.extensions.lazybones.packagesDir }
 
             includeEmptyDirs = true
+        }
 
-            from tmplDir
+        // Include directories and files that are not explicitly excluded and
+        // don't have an explicit file mode associated with them.
+        task.from tmplDir, {
+            fileModes.each { String mode, List<String> patterns ->
+                exclude patterns
+            }
 
             // Can't use convention mapping here because `excludes` isn't a
             // real property (it delegates to a CopySpec object).
-            excludes = project.extensions.lazybones.packageExcludes
-
-            doFirst {
-                validateTemplateDir(tmplDir, tmplName)
-                version = project.file("$tmplDir/VERSION").text.trim()
+            if (packageExcludes) {
+                exclude packageExcludes
             }
+        }
+
+        // Include directories and files that are configured with specific unix
+        // permissions.
+        if (fileModes) {
+            fileModes.each { String mode, List<String> patterns ->
+                task.from tmplDir, {
+                    include patterns
+
+                    // This is required otherwise excluded directories may
+                    // actually be included.
+                    if (packageExcludes) {
+                        exclude packageExcludes
+                    }
+
+                    fileMode = unixModeStringToInteger(mode)
+                    dirMode = unixModeStringToInteger(mode)
+                }
+            }
+        }
+
+        task.doFirst {
+            validateTemplateDir(tmplDir, tmplName)
+            version = project.file("$tmplDir/VERSION").text.trim()
         }
         return task
     }
@@ -116,6 +147,10 @@ class PackageTemplateRule implements Rule {
         if (!new File(tmplDir, "VERSION").exists()) {
             throw new InvalidUserDataException("Project template '${tmplName}' has no VERSION file")
         }
+    }
+
+    protected unixModeStringToInteger(String mode) {
+        return Integer.valueOf(mode, 8)
     }
 
     @Override

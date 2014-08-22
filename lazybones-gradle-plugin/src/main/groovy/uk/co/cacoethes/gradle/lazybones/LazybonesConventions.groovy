@@ -40,7 +40,13 @@ class LazybonesConventions {
      * the template packages. For example, the VERSION file and temporary editor
      * files.
      */
-    Collection<String> packageExcludes
+    Collection<String> packageExcludes = []
+
+    /**
+     * A map of file modes to Ant-style patterns representing the files that
+     * those file modes should apply to when packaging templates.
+     */
+    Map<String, String> fileModes = [:]
 
     /**
      * The base Bintray URL to publish templates to. This should be the API URL
@@ -96,18 +102,40 @@ class LazybonesConventions {
     }
 
     /**
+     * Registers a set of Ant-style file path patterns against a given file
+     * mode. This ensures that any files matching those patterns at package
+     * time get the corresponding file permissions.
+     * @param mode The Unix file mode representing file permissions.
+     * @param patterns A collection of Ant-style path patterns.
+     */
+    void fileMode(String mode, String... patterns) {
+        def modePatterns = fileModes[mode]
+        if (modePatterns == null) fileModes[mode] = modePatterns = []
+        modePatterns.addAll(patterns as List)
+    }
+
+    /**
      * Creates a new template convention for the template with the given name.
      * The convention object is added to {@link #templateConventions}.
      * @param name The name of the template to configure.
      * @return The new convention object, allowing for further configuration.
      */
-    TemplateConvention template(String name) {
+    TemplateConvention template(String name, Closure c = null) {
         def convention = templateConventions.find { it.name == name }
         if (!convention) {
             convention = new TemplateConvention(name)
             templateConventions << convention
         }
 
+        if (c) configureTemplate(c, convention)
+
         return convention
+    }
+
+    protected configureTemplate(Closure c, TemplateConvention convention) {
+        def config = c.clone()
+        config.delegate = convention
+        config.resolveStrategy = Closure.DELEGATE_FIRST
+        config.call()
     }
 }

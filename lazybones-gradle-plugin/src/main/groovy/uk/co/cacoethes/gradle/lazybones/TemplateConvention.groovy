@@ -8,6 +8,19 @@ class TemplateConvention {
     private String name
     private List<String> subTemplates = []
 
+    /**
+     * A collection of Ant file patterns for files that should be excluded from
+     * the template packages. For example, the VERSION file and temporary editor
+     * files.
+     */
+    Collection<String> packageExcludes = []
+
+    /**
+     * A map of file modes to Ant-style patterns representing the files that
+     * those file modes should apply to when packaging templates.
+     */
+    Map<String, String> fileModes = [:]
+
     TemplateConvention(String name) {
         this.name = name
     }
@@ -26,5 +39,27 @@ class TemplateConvention {
         subTemplates.addAll(children)
         subTemplates.unique()
         return this
+    }
+
+    /**
+     * Adds one or more Ant file patterns to the package exclusions. Returns
+     * the current exclusions.
+     */
+    Collection<String> packageExclude(String... patterns) {
+        packageExcludes.addAll(patterns)
+        return Collections.unmodifiableCollection(packageExcludes)
+    }
+
+    /**
+     * Registers a set of Ant-style file path patterns against a given file
+     * mode. This ensures that any files matching those patterns at package
+     * time get the corresponding file permissions.
+     * @param mode The Unix file mode representing file permissions.
+     * @param patterns A collection of Ant-style path patterns.
+     */
+    void fileMode(String mode, String... patterns) {
+        def modePatterns = fileModes[mode]
+        if (modePatterns == null) fileModes[mode] = modePatterns = []
+        modePatterns.addAll(patterns as List)
     }
 }
