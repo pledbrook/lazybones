@@ -1,0 +1,28 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath "org.asciidoctor:asciidoctor-gradle-plugin:0.7.1"
+    }
+}
+
+apply plugin: "org.asciidoctor.gradle.asciidoctor"
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+}
+
+asciidoctor {
+    options = [
+        attributes: [
+            'source-highlighter': 'prettify',
+            doctype: 'book',
+            encoding: 'utf-8'
+        ]
+    ]
+}
