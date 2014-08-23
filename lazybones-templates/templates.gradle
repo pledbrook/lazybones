@@ -19,7 +19,7 @@ lazybones {
     licenses = ["Apache-2.0"]
     publish = false
     repositoryName = "pledbrook/lazybones-templates"
-    packageExclude "**/*.swp", "**/*.swo"
+    packageExclude "**/*.swp", "**/*.swo", "**/.gradle"
 }
 
 // Lazy initialisation of Bintray upload tasks so that not all build users need
