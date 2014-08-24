@@ -26,8 +26,6 @@ class PackageLocationBuilder {
         buildForBintray(packageName, version, packageSources)
     }
 
-
-
     private PackageLocation buildForUrl(String url) {
         def packageName = FilenameUtils.getBaseName(new URI(url).path)
 

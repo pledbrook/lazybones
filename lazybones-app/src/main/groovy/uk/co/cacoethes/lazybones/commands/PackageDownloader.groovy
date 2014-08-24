@@ -4,6 +4,10 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Log
 import uk.co.cacoethes.lazybones.PackageNotFoundException
 
+/**
+ * Handles the retrieval of template packages from Bintray (or other supported
+ * repositories).
+ */
 @CompileStatic
 @Log
 class PackageDownloader {

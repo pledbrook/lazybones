@@ -4,7 +4,7 @@ import groovy.util.logging.Log
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageInfo
 import wslite.http.HTTPClientException
-import wslite.rest.*
+import wslite.rest.RESTClient
 
 /**
  * The default location for Lazybones packaged templates is on Bintray, which
@@ -77,14 +77,13 @@ class BintrayPackageSource implements PackageSource {
             return null
         }
 
-
         // The package may have no published versions, so we need to handle the
         // case where `latest_version` is null.
         def data = response.json
         if (!data.'latest_version') {
             throw new NoVersionsFoundException(pkgName)
         }
-        
+
         def pkgInfo = new PackageInfo(this, data.name - PACKAGE_SUFFIX, data.'latest_version')
 
         pkgInfo.with {

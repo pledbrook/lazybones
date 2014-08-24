@@ -3,7 +3,6 @@ package uk.co.cacoethes.lazybones
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Log
-import uk.co.cacoethes.util.UrlUtils
 
 import java.util.jar.Manifest
 import java.util.logging.Level
@@ -15,10 +14,17 @@ import joptsimple.OptionParser
 import joptsimple.OptionSet
 import joptsimple.OptionSpec
 
-import uk.co.cacoethes.lazybones.commands.*
+import uk.co.cacoethes.lazybones.commands.Command
+import uk.co.cacoethes.lazybones.commands.Commands
+import uk.co.cacoethes.util.UrlUtils
 
 import static uk.co.cacoethes.lazybones.OptionParserBuilder.makeOptionParser
 
+/**
+ * This is the main entry point for the command line Lazybones application. It
+ * handles the command line arguments and offloads the work to the relevant
+ * {@link Command} implementation.
+ */
 @CompileStatic
 @Log
 class LazybonesMain {

@@ -11,7 +11,9 @@ ruleset {
     ruleset('rulesets/design.xml')
     ruleset('rulesets/dry.xml')
     ruleset('rulesets/exceptions.xml')
-    ruleset('rulesets/formatting.xml')
+    ruleset('rulesets/formatting.xml') {
+        'SpaceAroundMapEntryColon' characterAfterColonRegex: /\s/
+    }
     ruleset('rulesets/generic.xml')
     ruleset('rulesets/groovyism.xml') {
         'GetterMethodCouldBeProperty' enabled: false

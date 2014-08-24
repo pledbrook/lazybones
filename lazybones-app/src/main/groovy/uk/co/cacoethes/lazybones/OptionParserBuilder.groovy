@@ -4,7 +4,11 @@ import static uk.co.cacoethes.lazybones.Options.*
 
 import joptsimple.OptionParser
 
-
+/**
+ * Simple static factory method class for creating a JOptSimple parser for the
+ * Lazybones command line application.
+ */
+@SuppressWarnings("NoWildcardImports")
 class OptionParserBuilder {
     //TODO: Maybe move these to an enum
 

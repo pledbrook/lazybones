@@ -8,7 +8,8 @@ import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.Options
 
 /**
- *
+ * Base class for most command implementations. It mostly provides help with
+ * parsing extra command-specific options.
  */
 @CompileStatic
 @Log
@@ -24,7 +25,6 @@ abstract class AbstractCommand implements Command {
             println getHelp(getDescription())
             return 0
         }
-
 
         return doExecute(cmdOptions, globalOptions, config)
     }

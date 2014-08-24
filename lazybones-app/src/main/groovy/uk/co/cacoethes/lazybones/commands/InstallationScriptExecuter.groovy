@@ -8,6 +8,11 @@ import uk.co.cacoethes.lazybones.LazybonesScript
 import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.scm.ScmAdapter
 
+/**
+ * Sets up and runs a post-install script, managing properties provided by
+ * parent templates, SCM integration, and setting the appropriate script base
+ * class.
+ */
 @Log
 class InstallationScriptExecuter {
     static final String STORED_PROPS_FILENAME = "stored-params.properties"
@@ -29,7 +34,7 @@ class InstallationScriptExecuter {
             List tmplQualifiers,
             File targetDir,
             File templateDir = null) {
-        if (!templateDir) templateDir = targetDir
+        templateDir = templateDir ?: targetDir
 
         // Run the post-install script if it exists. The user can pass variables
         // to the script via -P command line arguments. This also places

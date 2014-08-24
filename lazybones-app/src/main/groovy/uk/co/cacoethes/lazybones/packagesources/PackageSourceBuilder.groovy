@@ -1,6 +1,9 @@
 package uk.co.cacoethes.lazybones.packagesources
 
-
+/**
+ * Factory class for generating package sources, i.e. repositories that provide
+ * Lazybones template packages.
+ */
 class PackageSourceBuilder {
     /**
      * Builds an ordered list of package sources which could provide the given package name.
