@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.1",
+        classpath "uk.co.cacoethes:lazybones-gradle:1.2.1",
                   "net.saliman:gradle-cobertura-plugin:2.2.4"
     }
 }
@@ -17,7 +17,7 @@ apply plugin: "groovy"
 apply plugin: "application"
 apply plugin: "cobertura"
 apply plugin: "codenarc"
-apply plugin: "lazybones-templates"
+apply plugin: "uk.co.cacoethes.lazybones-templates"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
@@ -151,7 +151,10 @@ check.dependsOn("test", "integTest")
 
 task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
     artifactFile = distZip.archivePath
-    artifactUrlPath = "lazybones/$version/${distZip.archiveName}"
+    artifactUrlPath = "lazybones/${version}/${distZip.archiveName}"
+    repositoryName = "pledbrook/lazybones-templates"
+    packageName = "lazybones"
+    licenses = ["Apache-2.0"]
 }
 
 // Lazy initialisation of uploadDist task so that not all build users need to
