@@ -295,7 +295,8 @@ class LazybonesScript extends Script {
         }
         log.fine "Filtering file ${file}${replace ? ' (replacing)' : ''}"
 
-        def template = engine.createTemplate(file.newReader(fileEncoding)).make(properties)
+        def template = makeTemplate(engine, file, properties)
+
         def targetFile = replace ? file : new File(file.parentFile, FilenameUtils.getBaseName(file.path))
         targetFile.withWriter(fileEncoding) { writer ->
             template.writeTo(writer)
@@ -339,4 +340,18 @@ class LazybonesScript extends Script {
      * properly.
      */
     protected AntPathMatcher getAntPathMatcher() { return this.antPathMatcher }
+
+    /**
+     * Creates a new template instance from a file.
+     * @param engine The template engine to use for parsing the file contents.
+     * @param file The file to use as the content of the template.
+     * @param properties The properties to populate the template with. Each key
+     * in the map should correspond to a variable in the template.
+     * @return The new template object
+     */
+    protected Writable makeTemplate(TemplateEngine engine, File file, Map properties) {
+        file.withReader(fileEncoding) { Reader reader ->
+            return engine.createTemplate(reader).make(properties)
+        }
+    }
 }

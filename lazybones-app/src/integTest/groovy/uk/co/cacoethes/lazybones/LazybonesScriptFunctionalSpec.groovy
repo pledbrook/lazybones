@@ -20,7 +20,6 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         given: "The Lazybones version"
         def lazybonesVersion = readLazybonesVersion()
 
-
         when: "I run lazybones with the create command for the groovy-gradle template"
         def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "0.1"])
 
@@ -132,6 +131,10 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         nmlText.contains('println "hello test"')
         nmlText.contains('println "${bar} was unfiltered"')
         nmlText.contains('println 100')
+
+        and: "the template files are removed"
+        !new File(appDir, "GroovyHello.groovy.gtpl").exists()
+        !new File(appDir, "PrintHello.groovy.hbs").exists()
     }
 
     @Betamax(tape="create-tape")
@@ -189,5 +192,9 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         nmlText.contains('println "hello ${foo}"')
         nmlText.contains('println "\\${bar} was unfiltered"')
         nmlText.contains('println ${bar}')
+
+        and: "the template files are removed"
+        !new File(appDir, "GroovyHello.groovy.gtpl").exists()
+        !new File(appDir, "PrintHello.groovy.hbs").exists()
     }
 }
