@@ -20,6 +20,21 @@ dependencies {
     testCompile "cglib:cglib-nodep:2.2.2"
 }
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: groovydoc) {
+    classifier = 'javadoc'
+    from groovydoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
 uploadArchives { task ->
     repositories {
         mavenDeployer {
