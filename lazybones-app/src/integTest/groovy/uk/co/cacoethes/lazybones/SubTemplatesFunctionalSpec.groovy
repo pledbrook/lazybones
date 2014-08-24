@@ -2,6 +2,7 @@ package uk.co.cacoethes.lazybones
 
 import co.freeside.betamax.Betamax
 import co.freeside.betamax.Recorder
+import java.util.regex.Pattern
 import org.junit.Rule
 
 class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
@@ -23,12 +24,13 @@ class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
         then: "It creates a new controller file in the correct location and with correct name"
         exitCode == 0
 
-        def controllerFile = new File(appDir, "src/main/groovy/org/example/BookController.groovy")
+        def relativePath = new File("src/main/groovy/org/example/BookController.groovy")
+        def controllerFile = new File(appDir, relativePath.toString())
         controllerFile.exists()
         controllerFile.text =~ /class BookController /
 
         and: "The output declares the file was created"
-        output =~ "Created new controller src/main/groovy/org/example/BookController.groovy"
+        output =~ "Created new controller " + Pattern.quote(relativePath.path)
 
         and: "The unpacked template is deleted"
         !new File(appDir, ".lazybones/controller-unpacked").exists()
@@ -44,13 +46,14 @@ class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
         then: "It creates a new controller file in the correct location and with correct name"
         exitCode == 0
 
-        def entityFile = new File(appDir, "src/main/groovy/org/example/Book.groovy")
+        def relativePath = new File("src/main/groovy/org/example/Book.groovy")
+        def entityFile = new File(appDir, relativePath.toString())
         entityFile.exists()
         entityFile.text =~ /Entity\(group="foo", version="0.1"\)/
         entityFile.text =~ /class Book /
 
         and: "The output declares the file was created"
-        output =~ "Created new persistence entity src/main/groovy/org/example/Book.groovy"
+        output =~ "Created new persistence entity " + Pattern.quote(relativePath.path)
 
         and: "The unpacked template is deleted"
         !new File(appDir, ".lazybones/entity-unpacked").exists()

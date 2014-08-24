@@ -42,7 +42,7 @@ class OfflineFunctionalSpec extends AbstractFunctionalSpec {
         where:
             otherOptions    |   hidesException  |   extraOutput
                 []          |       true        |       ""
-              ["-v"]        |       true        |   /\(Error message: ConnectException - Connection refused\)\s+/
+              ["-v"]        |       true        |   /\(Error message: ConnectException - Connection refused.*\)\s+/
           ["--stacktrace"]  |       false       |       ""
 
         showsExceptionLabel = hidesException ? "without stacktrace" : "with stacktrace"
@@ -65,7 +65,7 @@ class OfflineFunctionalSpec extends AbstractFunctionalSpec {
         where:
             otherOptions    |   hidesException  |   extraOutput
                 []          |       true        |       ""
-              ["-v"]        |       true        |   /\(Error message: ConnectException - Connection refused\)\s+/
+              ["-v"]        |       true        |   /\(Error message: ConnectException - Connection refused.*\)\s+/
           ["--stacktrace"]  |       false       |       ""
 
         showsExceptionLabel = hidesException ? "without stacktrace" : "with stacktrace"
@@ -88,7 +88,7 @@ class OfflineFunctionalSpec extends AbstractFunctionalSpec {
         where:
             otherOptions    |   hidesException  |   extraOutput
                 []          |       true        |       ""
-              ["-v"]        |       true        |   /\(Error message: ConnectException - Connection refused\)\s+/
+              ["-v"]        |       true        |   /\(Error message: ConnectException - Connection refused.*\)\s+/
           ["--stacktrace"]  |       false       |       ""
 
         showsExceptionLabel = hidesException ? "without stacktrace" : "with stacktrace"
