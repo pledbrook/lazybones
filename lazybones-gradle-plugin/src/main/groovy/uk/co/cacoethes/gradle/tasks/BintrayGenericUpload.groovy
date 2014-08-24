@@ -10,12 +10,17 @@ import org.gradle.api.tasks.*
 class BintrayGenericUpload extends DefaultTask {
     static final String BASE_BINTRAY_API_URL = "https://api.bintray.com/"
 
-    /** The location on the local filesystem of the artifact to publish. */
-    @InputFile
+    /**
+     * The location on the local filesystem of the artifact to publish. This
+     * cannot be an InputFile because it can be set at execution time.
+     */
     File artifactFile
 
-    /** The URL path of the published artifact, relative to {@link #repositoryUrl}. */
-    @Input
+    /**
+     * The URL path of the published artifact, relative to {@link #repositoryUrl}.
+     * This can't use {@code @Input} because the version isn't known until
+     * execution time, and that typically forms part of the URL path.
+     */
     String artifactUrlPath
 
     /**

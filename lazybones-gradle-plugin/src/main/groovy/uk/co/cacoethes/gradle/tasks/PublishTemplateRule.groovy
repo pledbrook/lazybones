@@ -37,14 +37,12 @@ class PublishTemplateRule implements Rule {
 
             project.tasks.create(taskName, BintrayGenericUpload).with { t ->
                 dependsOn pkgTask
-                artifactFile = pkgTask.archivePath
 
                 username = lzbExtension.repositoryUsername
                 apiKey = lzbExtension.repositoryApiKey
                 publish = lzbExtension.publish
 
                 // Old style properties...
-                artifactUrlPath = "${pkgTask.baseName}/${pkgTask.version}/${pkgTask.archiveName}"
                 repositoryUrl = lzbExtension.repositoryUrl
 
                 // ...superseded by these
@@ -53,6 +51,11 @@ class PublishTemplateRule implements Rule {
                 licenses = lzbExtension.licenses
 
                 doFirst {
+                    // The package version is now evaluated at execution time,
+                    // hence we don't know the package file's name until then.
+                    artifactFile = pkgTask.archivePath
+                    artifactUrlPath = "${pkgTask.baseName}/${pkgTask.version}/${pkgTask.archiveName}"
+
                     def missingProps = verifyPublishProperties(t)
                     if (!repositoryUrl && !repositoryName) missingProps << "repositoryName"
                     if (missingProps) {
