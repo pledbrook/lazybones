@@ -9,6 +9,12 @@ class TemplateConvention {
     private List<String> subTemplates = []
 
     /**
+     * The version string for this template.
+     * @since 1.2.2
+     */
+    String version
+
+    /**
      * A collection of Ant file patterns for files that should be excluded from
      * the template packages. For example, the VERSION file and temporary editor
      * files.
@@ -44,6 +50,7 @@ class TemplateConvention {
     /**
      * Adds one or more Ant file patterns to the package exclusions. Returns
      * the current exclusions.
+     * @since 1.1
      */
     Collection<String> packageExclude(String... patterns) {
         packageExcludes.addAll(patterns)
@@ -56,6 +63,7 @@ class TemplateConvention {
      * time get the corresponding file permissions.
      * @param mode The Unix file mode representing file permissions.
      * @param patterns A collection of Ant-style path patterns.
+     * @since 1.2
      */
     void fileMode(String mode, String... patterns) {
         def modePatterns = fileModes[mode]

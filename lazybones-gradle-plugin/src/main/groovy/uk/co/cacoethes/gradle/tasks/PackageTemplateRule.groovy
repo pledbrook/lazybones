@@ -47,15 +47,15 @@ class PackageTemplateRule implements Rule {
      * package.
      */
     protected void addSubTemplatesToPackageTask(TemplateConvention tmplConvention, Task task) {
-        if (!tmplConvention) return
+        if (!tmplConvention || !tmplConvention.includes) return
 
-        def subPackageTaskNames = tmplConvention.includes.collect { String subpkgName ->
-            "packageTemplateSubtmpl${NameConverter.hyphenatedToCamelCase(subpkgName)}".toString()
+        def subPackageTasks = tmplConvention.includes.collect { String subpkgName ->
+            project.tasks.getByName(subPackageTaskName(subpkgName))
         }
 
-        task.dependsOn(subPackageTaskNames)
-        task.into(".lazybones") {
-            from subPackageTaskNames.collect { project.tasks.getByName(it) }*.archivePath
+        task.dependsOn(subPackageTasks)
+        task.from(subPackageTasks*.archivePath) {
+            into(".lazybones")
             rename(/^subtmpl-(.*\.zip)/, '$1')
         }
     }
@@ -81,10 +81,16 @@ class PackageTemplateRule implements Rule {
         final packageExcludes = tmplConvention?.packageExcludes ?: project.extensions.lazybones.packageExcludes
         final fileModes = tmplConvention?.fileModes ?: project.extensions.lazybones.fileModes
 
+        validateTemplateVersion tmplConvention, tmplDir, tmplName
+
         final task = project.tasks.create(taskName, Zip)
         task.with {
             conventionMapping.map("baseName") { tmplName + project.extensions.lazybones.packageNameSuffix }
             conventionMapping.map("destinationDir") { project.extensions.lazybones.packagesDir }
+
+            conventionMapping.map("version") {
+                tmplConvention?.version ?: project.file("$tmplDir/VERSION").text.trim()
+            }
 
             includeEmptyDirs = true
         }
@@ -124,9 +130,14 @@ class PackageTemplateRule implements Rule {
 
         task.doFirst {
             validateTemplateDir(tmplDir, tmplName)
-            version = project.file("$tmplDir/VERSION").text.trim()
         }
         return task
+    }
+
+    protected void validateTemplateVersion(TemplateConvention tmplConvention, File tmplDir, String tmplName) {
+        if (!tmplConvention?.version && !new File(tmplDir, "VERSION").exists()) {
+            throw new InvalidUserDataException("Project template '${tmplName}' has no source of version info")
+        }
     }
 
     protected String taskToTemplateName(String requestedTemplateName) {
@@ -137,15 +148,15 @@ class PackageTemplateRule implements Rule {
                 NameConverter.camelCaseToHyphenated(requestedTemplateName)
     }
 
+    protected String subPackageTaskName(String subpkgName) {
+        return "packageTemplateSubtmpl${NameConverter.hyphenatedToCamelCase(subpkgName)}".toString()
+    }
+
     protected void validateTemplateDir(File tmplDir, String tmplName) {
         // Note that tmplDir *may* be null if the directory exists but isn't
         // included in the templateDirs extension property.
         if (!tmplDir?.exists()) {
             throw new InvalidUserDataException("No project template directory found for '${tmplName}'")
-        }
-
-        if (!new File(tmplDir, "VERSION").exists()) {
-            throw new InvalidUserDataException("Project template '${tmplName}' has no VERSION file")
         }
     }
 
