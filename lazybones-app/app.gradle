@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.2.1",
+        classpath "uk.co.cacoethes:lazybones-gradle:1.2.2",
                   "net.saliman:gradle-cobertura-plugin:2.2.4"
     }
 }
@@ -76,6 +76,9 @@ jar {
 lazybones {
     templateDirs = files(file("${projectDir}/src/integTest/templates").listFiles())
     template "subtemplates-tmpl" includes "controller", "entity", "bad"
+    template "test-handlebars", {
+        version = "0.1.1"
+    }
 }
 
 task configureCachePath {

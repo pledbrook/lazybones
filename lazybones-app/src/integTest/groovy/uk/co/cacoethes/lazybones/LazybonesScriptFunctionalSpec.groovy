@@ -112,7 +112,7 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         commandTimeout = 30000
 
         when: "I run lazybones with the create command for the handlebars project template"
-        def exitCode = runCommand(["create", "test-handlebars", "0.1", appDir.name], baseWorkDir)
+        def exitCode = runCommand(["create", "test-handlebars", "0.1.1", appDir.name], baseWorkDir)
 
         then: "the post-install script creates the correct file from a .gtpl source"
         def testText = new File(appDir, "GroovyHello.groovy").text

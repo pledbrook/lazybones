@@ -55,7 +55,7 @@ class ListFunctionalSpec extends AbstractFunctionalSpec {
         output =~ /(?m)^Cached templates\s+/ +
                 /ratpack                       0.1\s+/ +
                 /subtemplates-tmpl             0.1\s+/ +
-                /test-handlebars               0.1/
+                /test-handlebars               0.1.1/
         !(output =~ /Exception/)
         !(remoteTmpls.any { it in output })
     }

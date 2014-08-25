@@ -32,7 +32,7 @@ class OfflineFunctionalSpec extends AbstractFunctionalSpec {
         output =~ /(?m)^Cached templates\s+/ +
                 /ratpack                       0.1\s+/ +
                 /subtemplates-tmpl             0.1\s+/ +
-                /test-handlebars               0.1\s+/ +
+                /test-handlebars               0.1.1\s+/ +
                 /test-handlebars-default       0.1/
 
         and: "It displays an offline message, with optional explanation and stacktrace"
