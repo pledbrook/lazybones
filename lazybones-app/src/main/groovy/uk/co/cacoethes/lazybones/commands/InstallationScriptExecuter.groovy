@@ -103,6 +103,7 @@ class InstallationScriptExecuter {
         return script
     }
 
+    @SuppressWarnings("UnnecessaryGetter")
     protected void persistParentParams(File dir, LazybonesScript script) {
         // Save this template's named parameters in a file inside a .lazybones
         // sub-directory of the unpacked template.
