@@ -3,7 +3,6 @@ package uk.co.cacoethes.lazybones.commands
 import groovy.util.logging.Log
 import joptsimple.OptionParser
 import joptsimple.OptionSet
-import org.apache.commons.io.FilenameUtils
 import uk.co.cacoethes.lazybones.LazybonesScriptException
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageNotFoundException
@@ -91,8 +90,9 @@ USAGE: create <template> <version>? <dir>
                     createData.packageArg.templateName,
                     createData.requestedVersion)
 
-            createData.targetDir.mkdirs()
-            ArchiveMethods.unzip(pkg, createData.targetDir)
+            def targetDir = createData.targetDir.canonicalFile
+            targetDir.mkdirs()
+            ArchiveMethods.unzip(pkg, targetDir)
 
             def scmAdapter = null
             if (cmdOptions.has(GIT_OPT)) scmAdapter = new GitAdapter(configuration)
@@ -101,7 +101,7 @@ USAGE: create <template> <version>? <dir>
             executor.runPostInstallScriptWithArgs(
                     cmdOptions.valuesOf(VAR_OPT).collectEntries { String it -> it.split('=') as List },
                     createData.packageArg.qualifiers,
-                    createData.targetDir)
+                    targetDir)
 
             logReadme(createData)
 
@@ -155,7 +155,7 @@ USAGE: create <template> <version>? <dir>
         def mainArgs = commandOptions.nonOptionArguments()
         def createCmdInfo = getCreateInfoFromArgs(mainArgs)
 
-        logStart createCmdInfo.packageArg.templateName, createCmdInfo.requestedVersion, createCmdInfo.targetDir.path
+        logStart createCmdInfo.packageArg.templateName, createCmdInfo.requestedVersion, createCmdInfo.targetDir
 
         return createCmdInfo
     }
@@ -166,17 +166,17 @@ USAGE: create <template> <version>? <dir>
         def packageName = new TemplateArg(mappings?."${mainArgs[0]}" ?: mainArgs[0])
 
         if (hasVersionArg(mainArgs)) {
-            return new CreateCommandInfo(packageName, mainArgs[1], mainArgs[2] as File)
+            return new CreateCommandInfo(packageName, mainArgs[1], toFile(mainArgs[2]))
         }
 
-        return new CreateCommandInfo(packageName, '', mainArgs[1] as File)
+        return new CreateCommandInfo(packageName, '', toFile(mainArgs[1]))
     }
 
     protected boolean hasVersionArg(List<String> args) {
         return args.size() == 3
     }
 
-    private void logStart(String packageName, String version, String targetPath) {
+    private void logStart(String packageName, String version, File targetPath) {
         if (log.isLoggable(Level.INFO)) {
             log.info "Creating project from template " + packageName + ' ' +
                     (version ?: "(latest)") + " in " +
@@ -186,14 +186,14 @@ USAGE: create <template> <version>? <dir>
 
     private void logSuccess(CreateCommandInfo createData) {
         log.info ""
-        log.info "Project created in " + (isPathCurrentDirectory(createData.targetDir.path) ?
+        log.info "Project created in " + (isPathCurrentDirectory(createData.targetDir) ?
             'current directory' : createData.targetDir.path) + '!'
     }
 
     @SuppressWarnings('SpaceBeforeOpeningBrace')
     private void logReadme(CreateCommandInfo createData) {
         // Find a suitable README and display that if it exists.
-        def readmeFiles = createData.targetDir.listFiles({ File dir, String name ->
+        def readmeFiles = createData.targetDir.canonicalFile.listFiles({ File dir, String name ->
             name == README_BASENAME || name.startsWith(README_BASENAME)
         } as FilenameFilter)
 
@@ -202,7 +202,15 @@ USAGE: create <template> <version>? <dir>
         else log.info readmeFiles[0].text
     }
 
-    private boolean isPathCurrentDirectory(String path) {
-        return FilenameUtils.equalsNormalized(path, ".")
+    private boolean isPathCurrentDirectory(File path) {
+        return path.canonicalPath == new File("").canonicalPath
+    }
+
+    /**
+     * Converts a string file path to a `File` instance. Its unique behaviour
+     * is that the path "." is translated to "", i.e. the empty path.
+     */
+    private File toFile(String path) {
+        return new File(path == "." ? "" : path)
     }
 }

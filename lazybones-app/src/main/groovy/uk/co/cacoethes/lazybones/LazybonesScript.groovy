@@ -239,10 +239,10 @@ class LazybonesScript extends Script {
      */
     private List<File> findFilesByPattern(String pattern) {
         def filesToFilter = []
-        def filePatternWithUserDir = FilenameUtils.separatorsToSystem(FilenameUtils.concat(templateDir.path, pattern))
+        def filePatternWithUserDir = new File(templateDir.canonicalFile, pattern).path
 
         templateDir.eachFileRecurse(FileType.FILES) { File file ->
-            if (antPathMatcher.match(filePatternWithUserDir, file.path)) {
+            if (antPathMatcher.match(filePatternWithUserDir, file.canonicalPath)) {
                 filesToFilter << file
             }
         }

@@ -109,7 +109,9 @@ class InstallationScriptExecuter {
         def lzbDir = new File(dir, ".lazybones")
         lzbDir.mkdirs()
         new File(lzbDir, STORED_PROPS_FILENAME).withWriter(FILE_ENCODING) { Writer w ->
-            (script.parentParams as Properties).store(w, "Lazybones saved template parameters")
+            // Need to use the getter method explicitly, otherwise it seems to
+            // return an empty map.
+            (script.getParentParams() as Properties).store(w, "Lazybones saved template parameters")
         }
     }
 

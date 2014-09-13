@@ -127,18 +127,17 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         appDir.mkdirs()
 
         when: "I run lazybones with the create command for the ratpack template in the app directory with '.'"
-        def exitCode = runCommand(["create", "ratpack", "0.1", "."], appDir)
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "."], appDir, ["org.example", "1.0-SNAPSHOT"])
 
         then: "It unpacks the template, retaining file permissions"
         exitCode == 0
 
         appDir.exists()
         new File(appDir, "gradlew").canExecute()
-        new File(appDir, "src/main/groovy").isDirectory()
-        new File(appDir, "src/ratpack/public/index.html").isFile()
+        new File(appDir, "build.gradle").text =~ /version = "1.0-SNAPSHOT"/
 
         and: "It says that the package is being installed in the current directory"
-        output =~ /Creating project from template ratpack 0.1 in current directory/
+        output =~ /Creating project from template test-tmpl 0.2 in current directory/
     }
 
     @Betamax(tape="create-tape")
