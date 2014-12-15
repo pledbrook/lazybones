@@ -21,13 +21,14 @@ apply plugin: "uk.co.cacoethes.lazybones-templates"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.7.1"
+applicationDefaultJvmArgs = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
+version = "0.8-SNAPSHOT"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
 
 ext {
-    groovyVersion = "2.3.3"
+    groovyVersion = "2.3.6"
     cachePath = new File(System.getProperty("user.home"), ".lazybones/templates").absolutePath
     isCiBuild = System.getProperty("drone.io") as boolean
     testWorkDir = file("$buildDir/testWork").path
