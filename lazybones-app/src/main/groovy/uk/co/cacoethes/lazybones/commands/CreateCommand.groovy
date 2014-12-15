@@ -119,7 +119,8 @@ USAGE: create <template> <version>? <dir>
             return 1
         }
         catch (NoVersionsFoundException ex) {
-            log.severe "No version of '${ex.packageName}' has been published"
+            log.severe "No version of '${ex.packageName}' has been published. This can also happen if " +
+                    "the latest version on Bintray is 'null'."
             return 1
         }
         catch (HTTPClientException ex) {
