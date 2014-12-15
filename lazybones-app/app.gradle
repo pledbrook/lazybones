@@ -62,11 +62,17 @@ dependencies {
 
     runtime "org.apache.ivy:ivy:2.3.0"
 
-    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+    testCompile "org.spockframework:spock-core:0.7-groovy-2.0", {
+        exclude module: "groovy-all"
+    }
 
-    integTestCompile "commons-io:commons-io:2.4",
-                     "org.spockframework:spock-core:0.7-groovy-2.0",
+    integTestCompile "org.codehaus.groovy:groovy-all:${groovyVersion}",
+                     "commons-io:commons-io:2.4",
                      "co.freeside:betamax:1.1.2"
+
+    integTestCompile "org.spockframework:spock-core:0.7-groovy-2.0", {
+        exclude module: "groovy-all"
+    }
 }
 
 jar {
