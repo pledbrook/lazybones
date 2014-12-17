@@ -29,7 +29,7 @@ class PackageTemplateRule implements Rule {
 
     @Override
     void apply(String taskName) {
-        def m = taskName =~ /packageTemplate([A-Z-]\S+)/
+        def m = taskName =~ /packageTemplate([A-Z\-]\S+)/
         if (m) {
             def tmplName = taskToTemplateName(m[0][1])
             def tmplDir = project.extensions.lazybones.templateDirs.files.find { f -> f.name == tmplName }

@@ -53,6 +53,7 @@ class ListFunctionalSpec extends AbstractFunctionalSpec {
                 /\s+doesNotExist   -> file:\/\/\/does\/not\/exist\s+/
 
         output =~ /(?m)^Cached templates\s+/ +
+                /Oops-stuff                    1.0.4\s+/ +
                 /ratpack                       0.1\s+/ +
                 /subtemplates-tmpl             0.1\s+/ +
                 /test-handlebars               0.1.1/

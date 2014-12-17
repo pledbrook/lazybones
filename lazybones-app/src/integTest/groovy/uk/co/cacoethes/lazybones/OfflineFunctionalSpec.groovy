@@ -30,6 +30,7 @@ class OfflineFunctionalSpec extends AbstractFunctionalSpec {
                 /customRatpack  -> http:\/\/dl.dropboxusercontent.com\/u\/29802534\/custom-ratpack.zip\s+/ +
                 /doesNotExist   -> file:\/\/\/does\/not\/exist/
         output =~ /(?m)^Cached templates\s+/ +
+                /Oops-stuff                    1.0.4\s+/ +
                 /ratpack                       0.1\s+/ +
                 /subtemplates-tmpl             0.1\s+/ +
                 /test-handlebars               0.1.1\s+/ +

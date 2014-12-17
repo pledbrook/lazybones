@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.2.2",
+        classpath "uk.co.cacoethes:lazybones-gradle:1.2.3-SNAPSHOT",
                   "net.saliman:gradle-cobertura-plugin:2.2.4"
     }
 }
@@ -89,6 +89,9 @@ lazybones {
         version = "0.1.1"
     }
 }
+
+packageAllTemplates.dependsOn("packageTemplate-Oops-stuff")
+installAllTemplates.dependsOn("installTemplate-Oops-stuff")
 
 task configureCachePath {
     if (isCiBuild) {

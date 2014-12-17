@@ -26,7 +26,7 @@ class PublishTemplateRule implements Rule {
 
     @Override
     void apply(String taskName) {
-        def m = taskName =~ /publishTemplate([A-Z]\S+)/
+        def m = taskName =~ /publishTemplate([A-Z\-]\S+)/
         if (m) {
             def camelCaseTmplName = m[0][1]
 

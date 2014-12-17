@@ -33,16 +33,28 @@ class LazybonesTemplatesPlugin implements Plugin<Project> {
         extension.packageExcludes = ["**/.retain", "VERSION", ".gradle"]
         extension.publish = false
 
+        project.gradle.taskGraph.whenReady {
+            project.extensions.lazybones.templateDirs.filter { File f ->
+                !verifyTemplateDirName(f.name)
+            }.files.each { File f ->
+                project.logger.warn "WARN Template directory '${f.name} does not satisfy the convention " +
+                        "of being lowercase hyphenated, so it will be ignored by packageAllTemplates et al " +
+                        "by default. You can manually attach the packageTemplate-${f.name} task to " +
+                        "packageAllTemplates via an explicit dependsOn in your build file."
+            }
+        }
+
         // Shared configuration closure that can easily turn a standard task
         // into an aggregate of others based on the plugin's conventions.
         def addTaskDependencies = { String baseTaskName, Task task ->
             task.dependsOn {
                 project.extensions.lazybones.templateDirs.filter { File f ->
-                    !f.name.startsWith(SUBTEMPLATE_PREFIX)                    // Exclude sub-templates
+                    !f.name.startsWith(SUBTEMPLATE_PREFIX) &&     // Exclude sub-templates
+                            verifyTemplateDirName(f.name)        // and those whose names are not lowercase hyphenated
                 }.files.collect { File f ->
                     def camelCaseTmplName = NameConverter.hyphenatedToCamelCase(f.name)
                     project.tasks.getByName(baseTaskName + camelCaseTmplName)
-                }
+                }.findAll { it != null }
             }
         }
 
@@ -64,5 +76,18 @@ class LazybonesTemplatesPlugin implements Plugin<Project> {
     protected void addPublishTasks(Project project, Closure taskConfigurer) {
         project.tasks.addRule(new PublishTemplateRule(project))
         project.tasks.create("publishAllTemplates", taskConfigurer)
+    }
+
+    /**
+     * Checks that a template directory name is fully reversible according to
+     * the plugin's naming conventions. In other words, it should be possible
+     * to convert the name from lowercase hyphenated to camelcase and back
+     * again, without losing information.
+     * @param dirName The directory name to verify.
+     * @return {@code true} if the name is reversible and hence supports the
+     * plugin's naming convention.
+     */
+    protected boolean verifyTemplateDirName(String dirName) {
+        return NameConverter.camelCaseToHyphenated(NameConverter.hyphenatedToCamelCase(dirName)) == dirName
     }
 }

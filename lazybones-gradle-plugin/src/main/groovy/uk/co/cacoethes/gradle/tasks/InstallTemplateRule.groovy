@@ -22,7 +22,7 @@ class InstallTemplateRule implements Rule {
 
     @Override
     void apply(String taskName) {
-        def m = taskName =~ /installTemplate([A-Z]\S+)/
+        def m = taskName =~ /installTemplate([A-Z\-]\S+)/
         if (m) {
             def camelCaseTmplName = m[0][1]
 
