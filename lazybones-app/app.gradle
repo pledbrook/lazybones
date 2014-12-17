@@ -155,6 +155,7 @@ integTest.finalizedBy packageReports
 codenarc {
     configFile = rootProject.file("codenarc.groovy")
 }
+codenarcMain.excludes = ["**/NameType.groovy"]
 codenarcTest.enabled = false
 codenarcIntegTest.enabled = false
 

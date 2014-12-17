@@ -4,7 +4,6 @@ package uk.co.cacoethes.util
  * Enumeration representing the various naming conventions, including the two
  * intermediate forms: camel case and lower case hyphenated.
  */
-@SuppressWarnings('UnnecessaryGetter')
 enum NameType {
     CAMEL_CASE,
     PROPERTY(CAMEL_CASE, Naming.&propertyToCamelCase, Naming.&camelCaseToProperty),

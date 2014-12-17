@@ -1,4 +1,5 @@
 package uk.co.cacoethes.lazybones.config
+
 /**
  * Created by pledbrook on 09/08/2014.
  */

@@ -1,9 +1,10 @@
 package uk.co.cacoethes.lazybones.config
+
 /**
  * Created by pledbrook on 09/08/2014.
  */
 class ListConverter implements Converter<List> {
-    private Class componentType
+    private final Class componentType
 
     ListConverter(Class componentType) {
         this.componentType = componentType

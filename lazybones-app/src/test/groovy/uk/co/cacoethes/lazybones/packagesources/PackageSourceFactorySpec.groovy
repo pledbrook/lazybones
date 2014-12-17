@@ -1,6 +1,7 @@
 package uk.co.cacoethes.lazybones.packagesources
 
 import spock.lang.Specification
+import uk.co.cacoethes.lazybones.config.Configuration
 
 class PackageSourceFactorySpec extends Specification {
     PackageSourceBuilder packageSourceFactory
@@ -13,9 +14,18 @@ class PackageSourceFactorySpec extends Specification {
 
         when: 'the package name doesn\'t start with http://'
         List<PackageSource> packageSources = packageSourceFactory.buildPackageSourceList(
-                new ConfigObject(bintrayRepositories: expectedBintrayRepositories))
+                initConfig(bintrayRepositories: expectedBintrayRepositories))
 
         then: 'there is a BintrayPackageSource for each of the expectedBintrayRepositories'
         packageSources.collect { it.repoName } == expectedBintrayRepositories
+    }
+
+    protected Configuration initConfig(Map settings) {
+        return new Configuration(
+                new ConfigObject(),
+                settings,
+                [:],
+                ["bintrayRepositories": String[]],
+                new File("delete-me.json"))
     }
 }

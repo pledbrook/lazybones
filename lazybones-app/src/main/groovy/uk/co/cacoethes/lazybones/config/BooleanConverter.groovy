@@ -5,8 +5,9 @@ package uk.co.cacoethes.lazybones.config
  */
 class BooleanConverter implements Converter<Boolean> {
     @Override
+    @SuppressWarnings("BooleanMethodReturnsNull")
     Boolean toType(String value) {
-        return value ? Boolean.valueOf(value) : null
+        return value != null ? Boolean.valueOf(value) : null
     }
 
     @Override

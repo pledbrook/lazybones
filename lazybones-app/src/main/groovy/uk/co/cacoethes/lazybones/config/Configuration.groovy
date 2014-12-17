@@ -4,6 +4,8 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Log
 
+import java.util.logging.Level
+
 /**
  * <p>Central configuration for Lazybones, although only the static data and methods
  * are Lazybones specific. The instance-level API works on the basis of settings
@@ -28,6 +30,9 @@ class Configuration {
     static final String JSON_CONFIG_FILENAME = "managed-config.json"
 
     static final Map<String, Class> VALID_OPTIONS
+    static final String CONFIG_FILE_SYSPROP = "lazybones.config.file"
+    static final String NAME_SEPARATOR = "."
+    static final String NAME_SEPARATOR_REGEX = "\\."
 
     static {
         def options = [
@@ -41,7 +46,7 @@ class Configuration {
 
         // These settings should only be active for the functional tests, not when the
         // application is being used normally.
-        if (System.getProperty("lazybones.config.file")?.endsWith("test-config.groovy")) {
+        if (System.getProperty(CONFIG_FILE_SYSPROP)?.endsWith("test-config.groovy")) {
             options << [
                     "test.my.option": Integer,
                     "test.option.override": String,
@@ -55,11 +60,11 @@ class Configuration {
         VALID_OPTIONS = Collections.unmodifiableMap(options)
     }
 
-    private File jsonConfigFile
-    private ConfigObject settings
-    private ConfigObject managedSettings
-    private Map overrideSettings
-    private Map validOptions
+    private final File jsonConfigFile
+    private final ConfigObject settings
+    private final ConfigObject managedSettings
+    private final Map overrideSettings
+    private final Map validOptions
 
     protected Configuration(
             ConfigObject baseSettings,
@@ -138,7 +143,7 @@ class Configuration {
 
         // A complete match is defined as one in which none of the matching valid
         // options actually has a sub-key ('.' + some string) after the given root.
-        if (validMatchingSettings.every { key, value -> !key.startsWith(rootSettingName + '.') }) {
+        if (validMatchingSettings.every { key, value -> !key.startsWith(rootSettingName + NAME_SEPARATOR) }) {
             throw new InvalidSettingException(rootSettingName, null, "'$rootSettingName' has no sub-settings")
         }
         return getConfigOption(this.settings, rootSettingName) as Map
@@ -180,7 +185,8 @@ class Configuration {
                     Converters.getConverter(settingType).toType(value) :
                     requireValueOfType(name, value, settingType)
         }
-        catch (Exception ex) {
+        catch (all) {
+            log.log Level.FINEST, all.message, all
             throw new InvalidSettingException(name, value)
         }
 
@@ -272,7 +278,7 @@ class Configuration {
      */
     static Configuration initConfiguration() {
         def defaultConfig = loadDefaultConfig()
-        def userConfigFile = (System.getProperty("lazybones.config.file") ?: defaultConfig.config.file) as File
+        def userConfigFile = (System.getProperty(CONFIG_FILE_SYSPROP) ?: defaultConfig.config.file) as File
         def jsonConfigFile = getJsonConfigFile(userConfigFile)
 
         return initConfiguration(
@@ -308,15 +314,17 @@ class Configuration {
         return valueType
     }
 
+    @SuppressWarnings("DuplicateNumberLiteral")
     static String makeWildcard(String dottedString) {
-        if (dottedString.indexOf(".") == -1) return dottedString
-        else return dottedString.split(/\./)[0..-2].join(".") + ".*"
+        if (dottedString.indexOf(NAME_SEPARATOR) == -1) return dottedString
+        else return dottedString.split(NAME_SEPARATOR_REGEX)[0..-2].join(NAME_SEPARATOR) + ".*"
     }
 
     static Map matchingSettings(String name, Map knownSettings) {
-        final dottedName = name + '.'
+        final dottedName = name + NAME_SEPARATOR
         return knownSettings.findAll { String key, value ->
-            key == name || key.startsWith(dottedName) || name =~ key.replace(".", "\\.").replace("*", "[\\w]+")
+            key == name || key.startsWith(dottedName) ||
+                    name =~ key.replace(NAME_SEPARATOR, NAME_SEPARATOR_REGEX).replace("*", "[\\w]+")
         }
     }
 
@@ -363,8 +371,9 @@ class Configuration {
      * @return The ConfigObject containing the final part of the dot-separated string as a
      * key. In other words, {@code retval.dir == value} for the dotted string example above.
      */
+    @SuppressWarnings("DuplicateNumberLiteral")
     protected static getConfigOption(Map root, String dottedString) {
-        def parts = dottedString.split('\\.')
+        def parts = dottedString.split(NAME_SEPARATOR_REGEX)
         def firstParts = parts[0..<(parts.size() - 1)]
         def configEntry = firstParts.inject(root) { Map config, String keyPart ->
             config?.get(keyPart)
@@ -392,8 +401,9 @@ class Configuration {
      * @return The map containing the final part of the dot-separated string as a
      * key. In other words, {@code retval.dir == value} for the dotted string example above.
      */
+    @SuppressWarnings("DuplicateNumberLiteral")
     protected static Map setConfigOption(ConfigObject root, String dottedString, value) {
-        def parts = dottedString.split('\\.')
+        def parts = dottedString.split(NAME_SEPARATOR_REGEX)
         def firstParts = parts[0..<(parts.size() - 1)]
         def configEntry = firstParts.inject(root) { ConfigObject config, String keyPart ->
             config.getProperty(keyPart)
@@ -403,8 +413,9 @@ class Configuration {
         return configEntry
     }
 
+    @SuppressWarnings("DuplicateNumberLiteral")
     protected static void clearConfigOption(ConfigObject root, String dottedString) {
-        def parts = dottedString.split('\\.')
+        def parts = dottedString.split(NAME_SEPARATOR_REGEX)
         def currentConfig = root
         def configParts = []
         for (part in parts) {
@@ -466,7 +477,7 @@ class Configuration {
         for (k in keys) {
             if (map1[k] instanceof Map && map2[k] instanceof Map) {
                 result.remove k
-                result += findIntersectKeys(map1[k], map2[k]).collect { k + '.' + it }
+                result += findIntersectKeys(map1[k], map2[k]).collect { k + NAME_SEPARATOR + it }
             }
         }
 

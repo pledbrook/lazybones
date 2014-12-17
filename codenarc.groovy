@@ -44,6 +44,7 @@ ruleset {
         'UnnecessaryGString' enabled: false
 
         'UnnecessaryReturnKeyword' enabled: false
+        'UnnecessaryElseStatement' enabled: false
     }
     ruleset('rulesets/unused.xml')
 }

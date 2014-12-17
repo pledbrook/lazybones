@@ -39,6 +39,9 @@ USAGE: config set <option> <value> [<value> ...]
 
     private static final String INDENT = "    "
     private static final String ALL_OPT = "all"
+    private static final String INCORRECT_ARG_COUNT_MSG = "Incorrect number of arguments for config "
+    private static final String OVERRIDE_WARNING_MSG = "The user configuration file overrides this setting, so " +
+            "the new value won't take effect"
 
     Configuration config
 
@@ -70,43 +73,44 @@ USAGE: config set <option> <value> [<value> ...]
     protected String getUsage() { return USAGE }
 
     @Override
+    @SuppressWarnings("DuplicateNumberLiteral")
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration config) {
         def cmdArgs = cmdOptions.nonOptionArguments()
         switch (cmdArgs[0]) {
         case "set":
             if (cmdArgs.size() < 3) {
-                log.severe getHelp("Incorrect number of arguments for config set")
+                log.severe getHelp(INCORRECT_ARG_COUNT_MSG + cmdArgs[0])
                 return 1
             }
             return configSet(cmdOptions)
 
         case "add":
             if (cmdArgs.size() < 3 || cmdArgs.size() > 4) {
-                log.severe getHelp("Incorrect number of arguments for config add")
+                log.severe getHelp(INCORRECT_ARG_COUNT_MSG + cmdArgs[0])
                 return 1
             }
             return configAdd(cmdOptions)
 
         case "clear":
             if (cmdArgs.size() < 2 || cmdArgs.size() > 3) {
-                log.severe getHelp("Incorrect number of arguments for config clear")
+                log.severe getHelp(INCORRECT_ARG_COUNT_MSG + cmdArgs[0])
                 return 1
             }
             return configClear(cmdOptions)
 
         case "show":
-            if (cmdArgs.size() > 2 || (cmdArgs.size() == 1&& !cmdOptions.has(ALL_OPT))) {
-                log.severe getHelp("Incorrect number of arguments for config show")
+            if (cmdArgs.size() > 2 || (cmdArgs.size() == 1 && !cmdOptions.has(ALL_OPT))) {
+                log.severe getHelp(INCORRECT_ARG_COUNT_MSG + cmdArgs[0])
                 return 1
             }
             return cmdOptions.has(ALL_OPT) ? configShowAll() : configShow(cmdOptions)
 
         case "list":
             if (cmdArgs.size() > 1) {
-                log.severe getHelp("Incorrect number of arguments for config list")
+                log.severe getHelp(INCORRECT_ARG_COUNT_MSG + cmdArgs[0])
                 return 1
             }
-            return configList(cmdOptions)
+            return configList()
 
         default:
             log.severe getHelp("Invalid config command: '${cmdArgs[0]}'")
@@ -133,7 +137,7 @@ USAGE: config set <option> <value> [<value> ...]
 
         try {
             if (!config.putSetting(cmdArgs[1], cmdArgs[2..-1].join(", "))) {
-                log.warning "The user configuration file overrides this setting, so the new value won't take effect"
+                log.warning OVERRIDE_WARNING_MSG
             }
             config.storeSettings()
             return 0
@@ -165,13 +169,14 @@ USAGE: config set <option> <value> [<value> ...]
      * @return An exit code. 0 means the command successfully completed, while
      * any other value indicates failure.
      */
+    @SuppressWarnings("DuplicateNumberLiteral")
     protected int configAdd(OptionSet cmdOptions) {
         def cmdArgs = cmdOptions.nonOptionArguments()
         def config = Configuration.initConfiguration()
 
         try {
             if (!config.appendToSetting(cmdArgs[1], cmdArgs[2])) {
-                log.warning "The user configuration file overrides this setting, so the new value won't take effect"
+                log.warning OVERRIDE_WARNING_MSG
             }
             config.storeSettings()
             return 0
@@ -234,6 +239,7 @@ USAGE: config set <option> <value> [<value> ...]
         }
     }
 
+    @SuppressWarnings("DuplicateNumberLiteral")
     int configShowAll() {
         def settings = Configuration.initConfiguration().allSettings
         final columnWidth = settings.keySet().inject(0) {
@@ -257,7 +263,8 @@ USAGE: config set <option> <value> [<value> ...]
      * @return An exit code. 0 means the command successfully completed, while
      * any other value indicates failure.
      */
-    int configList(OptionSet cmdOptions) {
+    @SuppressWarnings("DuplicateNumberLiteral")
+    int configList() {
         def validSettings = Configuration.VALID_OPTIONS
         final columnWidth = validSettings.keySet().inject(0) {
             int max, String key -> Math.max(key.size(), max)
