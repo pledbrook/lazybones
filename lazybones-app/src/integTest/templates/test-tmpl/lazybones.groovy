@@ -1,5 +1,7 @@
 import static uk.co.cacoethes.util.NameType.*
 
+log.warning "User should see this log message"
+
 // Specify SCM excludes
 scmExclusions "*.iws", "build/", "*.log"
 

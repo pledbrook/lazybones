@@ -22,7 +22,7 @@ apply plugin: "uk.co.cacoethes.lazybones-templates"
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
 applicationDefaultJvmArgs = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
-version = "0.8"
+version = "0.9-SNAPSHOT"
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"

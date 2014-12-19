@@ -16,6 +16,18 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
     }
 
     @Betamax(tape="create-tape")
+    def "Post-install scripts can access the logger"() {
+        when: "I run lazybones with the create command for the groovy-gradle template"
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", ""])
+
+        then: "It successfully completes"
+        exitCode == 0
+
+        and: "The script's log message is displayed"
+        output =~ "User should see this log message"
+    }
+
+    @Betamax(tape="create-tape")
     def "lazybones is deleted after package is installed"() {
         given: "The Lazybones version"
         def lazybonesVersion = readLazybonesVersion()

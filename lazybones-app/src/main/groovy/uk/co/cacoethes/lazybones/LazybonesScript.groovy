@@ -9,6 +9,7 @@ import uk.co.cacoethes.util.AntPathMatcher
 import uk.co.cacoethes.util.Naming
 
 import java.lang.reflect.Method
+import java.util.logging.Logger
 
 /**
  * Base script that will be applied to the lazybones.groovy root script in a lazybones template
@@ -69,6 +70,12 @@ class LazybonesScript extends Script {
 
     private final AntPathMatcher antPathMatcher =
             new AntPathMatcher(pathSeparator: System.getProperty("file.separator"))
+
+    /**
+     * Provides access to the script's logger.
+     * @since 0.9
+     */
+    Logger getLog() { return this.log }
 
     /**
      * Declares the list of file patterns that should be excluded from SCM.
