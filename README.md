@@ -12,7 +12,7 @@ contribute templates by sending pull requests to this GitHub project or publishi
 the packages to the relevant [Bintray repository](https://bintray.com/repo/browse/pledbrook/lazybones-templates)
 (more info available below).
 
-[![Build Status](https://drone.io/github.com/pledbrook/lazybones/status.png)](https://drone.io/github.com/pledbrook/lazybones/latest)
+[![Build Status](https://travis-ci.org/pledbrook/lazybones.svg?branch=master)](https://travis-ci.org/pledbrook/lazybones)
 
 ## Developers
 
@@ -168,15 +168,74 @@ for it. If you're offline, this will simply display an error message.
 
 ## Configuration
 
-Lazybones will run out of the box without any extra configuration, but you can
-control certain aspects of the tool through the configuration file
-`~/.lazybones/config.groovy`. This is parsed using Groovy's `ConfigSlurper`, so
-if you're familiar with that syntax you'll be right at home. Otherwise, just see
-the examples below.
+Lazybones will run out of the box without any extra configuration, but the tool
+does allow you to override the default behaviour via a fixed set of configuration
+options. These options can be provided in a number of ways following a set order
+of precedence:
+
+1.   System properties of the form `lazybones.*`, which can be passed into the app
+via either `JAVA_OPTS` or `LAZYBONES_OPTS` environment variables. For example:
+
+        env JAVA_OPTS="-Dlazybones.config.file=/path/to/my-custom-default-config.groovy" lazybones ...
+
+    Highest precedence
+    - overrides all other sources of setting data.
+
+2.   User configuration file in `$USER_HOME/.lazybones/config.groovy`. This is parsed
+using Groovy's `ConfigSlurper`, so if you're familiar with that syntax you'll be
+right at home. Otherwise, just see the examples below.
+
+3.   (Since 0.8) A JSON configuration file in `$USER_HOME/.lazybones/managed-config.groovy`
+that is used by the `config` commands. You can edit it this as well.
+
+4.   A Groovy-based default configuration file that is provided by the application
+itself, but you can specify an alternative file via the `lazybones.config.file`
+system property.
+
+Lazybones also provides a convenient mechanism for setting and removing options
+via the command line: the `config` command.
+
+### Command line configuration
+
+The `config` command provides several sub-commands that allow you to interact with
+the persisted Lazybones configuration; specifically, the JSON config file. You
+run a sub-command via
+
+    lazybones config <sub-cmd> <args>
+
+where `<sub-cmd>` is one of:
+
+*   `set <option> <value> [<value> ...]`
+
+    Allows you to change the value of a configuration setting. Multiple values are
+    treated as a single array/list value. The new value replaces any existing one.
+
+*   `add <option> <value>`
+
+    Appends an extra value to an existing array/list setting. Reports an error if
+    the setting doesn't accept multiple values. If the setting doesn't already have
+    a value, this command will initialise it with an array containing the given
+    value.
+
+*   `clear <option>`
+
+    Removes a setting from the configuration, effectively reverting it to whatever
+    the internal default is.
+
+*   `show [--all] <option>`
+
+    Shows the current value of a setting. You can use the `--all` argument (without
+    a setting name) to display all the current settings and their values.
+
+*   `list`
+
+    Displays all the configuration settings supported by Lazybones.
+
+So what configuration settings are you likely to customise?
 
 ### Custom repositories
 
-Lazybones will by default download the templates from a specific BinTray
+Lazybones will by default download the templates from a specific Bintray
 repository. If you want to host template packages in a different repository
 you can add it to Lazybone's search path via the `bintrayRepositories`
 setting:
@@ -188,6 +247,30 @@ setting:
 
 If a template exists in more than one repository, it will be downloaded from the
 first repository in the list that it appears in.
+
+### Package aliases
+
+If you regularly use a template at a specific URL rather than from Bintray, then
+you will want to alias that URL to a name. That's where template mappings (or
+aliases) come in. The aliases are defined as normal settings of the form
+
+    templates.mappings.<alias> = <url>
+
+In a Groovy configuration file, you can define multiple aliases in a block:
+
+    templates {
+        mappings {
+            test = "http://dl.dropboxusercontent.com/u/29802534/custom-ratpack.zip"
+            after = "file:///var/tmp/afterburnerfx-2.0.0.zip"
+        }
+    }
+
+Alternatively, add them from the command line like this:
+
+    lazybones config set templates.mappings.after file:///var/tmp/afterburnerfx-2.0.0.zip
+
+The aliases will always be available to you until you remove them from the persisted
+configuration.
 
 ### General options
 
