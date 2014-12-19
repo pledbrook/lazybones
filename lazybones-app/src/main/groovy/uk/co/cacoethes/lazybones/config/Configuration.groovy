@@ -40,7 +40,10 @@ class Configuration {
                 "cache.dir": String,
                 "git.name": String,
                 "git.email": String,
-                "options.*": String,
+                "options.logLevel": String,
+                "options.verbose": Boolean,
+                "options.quiet": Boolean,
+                "options.info": Boolean,
                 "bintrayRepositories": String[],
                 "templates.mappings.*": URI]
 
