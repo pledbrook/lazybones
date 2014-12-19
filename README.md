@@ -178,8 +178,7 @@ via either `JAVA_OPTS` or `LAZYBONES_OPTS` environment variables. For example:
 
         env JAVA_OPTS="-Dlazybones.config.file=/path/to/my-custom-default-config.groovy" lazybones ...
 
-    Highest precedence
-    - overrides all other sources of setting data.
+    Highest precedence, i.e. it overrides all other sources of setting data.
 
 2.   User configuration file in `$USER_HOME/.lazybones/config.groovy`. This is parsed
 using Groovy's `ConfigSlurper`, so if you're familiar with that syntax you'll be
