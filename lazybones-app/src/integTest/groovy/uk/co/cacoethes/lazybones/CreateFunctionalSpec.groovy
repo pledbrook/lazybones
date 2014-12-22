@@ -57,7 +57,7 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
                 "test-tmpl",
                 "0.2",
                 "my-app"]
-        def exitCode = runCommand(args, baseWorkDir, ["org.example", "1.0-SNAPSHOT"])
+        def exitCode = runCommand(args, baseWorkDir, ["org.example", "1.0-SNAPSHOT", "4"])
 
         then: "It successfully completes"
         exitCode == 0
@@ -127,7 +127,7 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         appDir.mkdirs()
 
         when: "I run lazybones with the create command for the ratpack template in the app directory with '.'"
-        def exitCode = runCommand(["create", "test-tmpl", "0.2", "."], appDir, ["org.example", "1.0-SNAPSHOT"])
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "."], appDir, ["org.example", "1.0-SNAPSHOT", "4"])
 
         then: "It unpacks the template, retaining file permissions"
         exitCode == 0
@@ -220,6 +220,7 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
                 "groovyappWithGit",
                 "-Pversion=0.2",
                 "-Pgroup=bar",
+                "-PmaxThreads=3",
                 "--with-git"]
         def exitCode = runCommand(args, baseWorkDir)
 
@@ -245,7 +246,7 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
     def "Create can install from cache without template being in repository"() {
         when: "I run lazybones with the create command for a template that's only in the cache"
         def exitCode = runCommand(
-                ["create", "test-tmpl", "0.2", "testapp", "-Pgroup=foo", "-Pversion=0.1"],
+                ["create", "test-tmpl", "0.2", "testapp", "-Pgroup=foo", "-Pversion=0.1", "-PmaxThreads=3"],
                 baseWorkDir)
 
         then: "It unpacks the template, retaining file permissions"

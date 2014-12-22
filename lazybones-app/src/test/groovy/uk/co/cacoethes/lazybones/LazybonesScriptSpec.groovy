@@ -144,7 +144,7 @@ class LazybonesScriptSpec extends Specification {
         given:
         def scriptText = """
             ask("give me foo", null, "foo")
-            ask("how old are you?", -1, "age")
+            ask("how old are you?", "-1", "age")
         """
         LazybonesScript script = createScript(scriptText)
         script.setReader(createReader("foobar${NEW_LINE}42${NEW_LINE}"))
