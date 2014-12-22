@@ -18,7 +18,7 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
     @Betamax(tape="create-tape")
     def "Post-install scripts can access the logger"() {
         when: "I run lazybones with the create command for the groovy-gradle template"
-        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", ""])
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "", "4"])
 
         then: "It successfully completes"
         exitCode == 0
@@ -33,7 +33,7 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         def lazybonesVersion = readLazybonesVersion()
 
         when: "I run lazybones with the create command for the groovy-gradle template"
-        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "0.1"])
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "0.1", "4"])
 
         then: "It successfully completes, deleting the lazybones script after unpacking the template"
         exitCode == 0
@@ -64,7 +64,7 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
     @Betamax(tape="create-tape")
     def "Default 'ask' values are used"() {
         when: "I run lazybones with the create command for the groovy-gradle template"
-        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", ""])
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "", ""])
 
         then: "It successfully completes, deleting the lazybones script after unpacking the template"
         exitCode == 0
@@ -75,6 +75,7 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         def text = new File(appDir, "build.gradle").text
         text.contains("group = \"foo\"")
         text.contains("version = \"0.1\"")
+        text.contains("test.maxParallelForks = 5")
     }
 
     @Betamax(tape="create-tape")
@@ -87,7 +88,8 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
                 "0.2",
                 "groovyappWithArgs",
                 "-Pversion=0.2",
-                "-Pgroup=bar"]
+                "-Pgroup=bar",
+                "-PmaxThreads=4"]
         def exitCode = runCommand(args, baseWorkDir)
 
         then: "It successfully completes"
@@ -106,7 +108,7 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
         def appDir = new File(baseWorkDir, "groovyapp")
 
         when: "I run lazybones with the create command for the groovy-gradle template"
-        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "0.1"])
+        def exitCode = runCommand(["create", "test-tmpl", "0.2", "groovyapp"], baseWorkDir, ["foo", "0.1", "4"])
 
         then: "the post-install script creates a text file containing the appropriate converted names"
         def testText = new File(appDir, "test.txt").text

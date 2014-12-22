@@ -154,7 +154,7 @@ class LazybonesScript extends Script {
      * @return the response
      * @since 0.4
      */
-    def ask(String message, defaultValue = null) {
+    String ask(String message, String defaultValue = null) {
         System.out.print message
         String line = reader.readLine()
 
@@ -176,7 +176,7 @@ class LazybonesScript extends Script {
      * whether the user entered a value.
      * @since 0.4
      */
-    def ask(String message, defaultValue, String propertyName) {
+    String ask(String message, String defaultValue, String propertyName) {
         def val = propertyName && binding.hasVariable(propertyName) ?
                 binding.getVariable(propertyName) :
                 ask(message, defaultValue)
@@ -337,7 +337,8 @@ class LazybonesScript extends Script {
      * @deprecated Will be removed before Lazybones 1.0
      */
     String getTargetDir() {
-        log.warning "The targetDir property is deprecated and should no longer be used by post-install scripts"
+        log.warning "The targetDir property is deprecated and should no longer be used by post-install scripts. " +
+                "Use `projectDir` instead."
         return projectDir.path
     }
 

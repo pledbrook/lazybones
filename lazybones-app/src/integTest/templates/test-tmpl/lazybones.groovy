@@ -5,9 +5,13 @@ log.warning "User should see this log message"
 // Specify SCM excludes
 scmExclusions "*.iws", "build/", "*.log"
 
+// Test for regression of #135 - the argument to `ask()` should be coerced to
+// a string by default rather than trigger an exception.
+def maxThreads = 5
 def filterProperties = [:]
 filterProperties.group = ask("Define value for 'group': ", null, "group")
 filterProperties.version = ask("Define value for 'version' [0.1]: ", "0.1", "version")
+filterProperties.maxThreads = ask("Maximum number of threads to use [$maxThreads]: ", "${maxThreads}", "maxThreads")
 
 processTemplates("build.gradle", filterProperties)
 
@@ -35,7 +39,7 @@ catch (IllegalArgumentException ex) {
     testContent << "Missing 'to' argument for transformText()"
 }
 
-new File(targetDir, "test.txt").text = testContent.toString()
+new File(projectDir, "test.txt").text = testContent.toString()
 
 filterProperties.name = "foo"
 processTemplates("**/Print*.groovy", filterProperties)
