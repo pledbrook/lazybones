@@ -32,14 +32,24 @@ class ArchiveMethods {
         // if destination directory is not given, we'll fall back to the parent directory of 'self'
         def destination = originalDestination ?: new File(self.parent)
 
-        def unzippedFiles = []
         def zipFile = new ZipFile(self)
+
+        try {
+            return unpackZipEntries(zipFile, destination, filter)
+        }
+        finally {
+            zipFile.close()
+        }
+    }
+
+    protected static Collection<File> unpackZipEntries(ZipFile zipFile, File destination, Closure<Boolean> filter) {
+        def unzippedFiles = []
 
         // The type coercion here is down to http://jira.codehaus.org/browse/GROOVY-6123
         for (ZipArchiveEntry entry in (zipFile.entries as List<ZipArchiveEntry>)) {
             final file = new File(destination, entry.name)
             if (filter == null || filter(file)) {
-                if (entry.isDirectory())  {
+                if (entry.isDirectory()) {
                     file.mkdirs()
                 }
                 else {
