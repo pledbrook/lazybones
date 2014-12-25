@@ -36,6 +36,8 @@ USAGE: help <cmd>?
 
     @Override
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration config) {
+        def service = initLazybonesService(config)
+
         def cmdArgs = cmdOptions.nonOptionArguments()
         if (cmdArgs) {
             def cmd = Commands.getAll(config).find { Command it -> it.name == cmdArgs[0] }

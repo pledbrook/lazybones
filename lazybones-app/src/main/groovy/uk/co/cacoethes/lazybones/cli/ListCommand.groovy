@@ -1,6 +1,8 @@
 package uk.co.cacoethes.lazybones.cli
 
 import groovy.util.logging.Log
+import uk.co.cacoethes.lazybones.api.LazybonesService
+
 import java.util.logging.Level
 import java.util.regex.Pattern
 import joptsimple.OptionParser
@@ -26,10 +28,10 @@ USAGE: list
 
     private static final String VERSION_PATTERN = /\d+\.\d[^-]*(?:-SNAPSHOT)?/
 
-    File cacheDir
+    private Configuration config
 
     ListCommand(Configuration config) {
-        this.cacheDir = config.getSetting("cache.dir") as File
+        this.config = config
     }
 
     @Override
@@ -50,6 +52,8 @@ USAGE: list
 
     @Override
     protected int doExecute(OptionSet optionSet, Map globalOptions, Configuration config) {
+        def service = initLazybonesService(config)
+        service.listTemplates()
 
         def remoteTemplates = fetchRemoteTemplates(config.getSetting("bintrayRepositories"))
 

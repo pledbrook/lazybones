@@ -73,7 +73,9 @@ dependencies {
             "org.apache.commons:commons-compress:1.5",
             "com.github.groovy-wslite:groovy-wslite:1.1.2",
             "net.sf.jopt-simple:jopt-simple:4.4",
-            "org.ini4j:ini4j:0.5.2"
+            "org.ini4j:ini4j:0.5.2",
+            "com.squareup.dagger:dagger:1.2.2",
+            "com.squareup.dagger:dagger-compiler:1.2.2"
 
     runtime "org.apache.ivy:ivy:2.3.0"
 
@@ -115,6 +117,10 @@ lazybones {
     template "test-handlebars", {
         version = "0.1.1"
     }
+}
+
+compileGroovy {
+    groovyOptions.javaAnnotationProcessing = true
 }
 
 packageAllTemplates.dependsOn("packageTemplate-Oops-stuff")

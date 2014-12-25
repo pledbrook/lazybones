@@ -8,6 +8,9 @@ interface PackageCache {
     File copyToCache(String packageName, String packageVersion, URI packageUrl)
     File getPackage(URI packageUrl)
     File getPackage(String name, String version)
+    CachedPackage getPackageInfo(URI packageUrl)
+    CachedPackage getPackageInfo(String name, String version)
     boolean hasPackage(URI packageUrl)
     boolean hasPackage(String name, String version)
+    List<CachedPackage> listPackages()
 }

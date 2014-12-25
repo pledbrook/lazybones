@@ -1,33 +1,58 @@
 package uk.co.cacoethes.lazybones.impl
 
 import uk.co.cacoethes.lazybones.PackageNotFoundException
+import uk.co.cacoethes.lazybones.api.CachedPackage
 import uk.co.cacoethes.lazybones.api.LazybonesService
 import uk.co.cacoethes.lazybones.api.PackageCache
 import uk.co.cacoethes.lazybones.api.PackageInfo
 import uk.co.cacoethes.lazybones.api.PackageSource
 import uk.co.cacoethes.lazybones.api.PackageSourceManager
+import uk.co.cacoethes.lazybones.api.NewProjectInfo
 import uk.co.cacoethes.lazybones.api.TemplateInstaller
+import uk.co.cacoethes.lazybones.config.Configuration
+
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Created by pledbrook on 13/04/2014.
  */
+@Singleton
 class DefaultLazybonesService implements LazybonesService {
     PackageSourceManager packageSourceManager
     PackageCache packageCache
     TemplateInstaller templateInstaller
 
-    DefaultLazybonesService initFromDefaultConfig() {
+    @Inject
+    DefaultLazybonesService(
+            PackageSourceManager psm,
+            PackageCache pc,
+            TemplateInstaller ti) {
+        packageSourceManager = psm
+        packageCache = pc
+        templateInstaller = ti
+    }
+
+    DefaultLazybonesService initFromConfig(Configuration config) {
+        for (String repo in config.getSetting("bintrayRepositories")) {
+            registerPackageSource(new BintrayPackageSource(repo))
+        }
         return this
     }
 
     @Override
     PackageSource registerPackageSource(PackageSource repository) {
-        return null
+        return packageSourceManager.registerPackageSource(repository)
     }
 
     @Override
     Map<PackageSource, List<String>> listTemplates() {
         return packageSourceManager.listPackageSources()*.listPackages()
+    }
+
+    @Override
+    List<CachedPackage> listCachedTemplates() {
+        return packageCache.listPackages()
     }
 
     @Override
@@ -40,22 +65,29 @@ class DefaultLazybonesService implements LazybonesService {
         return packageSourceManager
     }
 
-    @Override
-    String installTemplate(String name, String version, String targetPath, Map model = [:]) {
+    NewProjectInfo installTemplate(
+            String name,
+            String version,
+            String targetPath,
+            List<String> tmplQualifiers,
+            Map model = [:]) {
         def packageFile = packageCache.hasPackage(name, version) ?
                 packageCache.getPackage(name, version) :
                 fetchFromPackageSource(name, version)
 
-        return installTemplate(packageFile, targetPath as File, model)
+        return installTemplate(packageFile, targetPath as File, tmplQualifiers, model)
     }
 
-    @Override
-    String installTemplate(URI packageUrl, String targetPath, Map model = [:]) {
+    NewProjectInfo installTemplate(
+            URI packageUrl,
+            String targetPath,
+            List<String> tmplQualifiers,
+            Map model = [:]) {
         def packageFile = packageCache.hasPackage(packageUrl) ?
                 packageCache.getPackage(packageUrl) :
                 packageCache.copyToCache(packageUrl)
 
-        return installTemplate(packageFile, targetPath as File, model)
+        return installTemplate(packageFile, targetPath as File, tmplQualifiers, model)
     }
 
     protected File fetchFromPackageSource(String name, String version) {
@@ -68,8 +100,17 @@ class DefaultLazybonesService implements LazybonesService {
         }
     }
 
-    protected String installTemplate(File packageFile, File targetDir, Map model) {
-        templateInstaller.createFromTemplate(packageFile, targetDir, model)
-        return templateInstaller.getReadme(targetDir)
+    protected NewProjectInfo installTemplate(File packageFile, File targetDir, List<String> tmplQualifiers, Map model) {
+        return templateInstaller.installTemplate(packageFile, targetDir, tmplQualifiers, model)
+    }
+
+    @Override
+    boolean isLazybonesProjectDir(File dir) {
+        return false
+    }
+
+    @Override
+    List<String> listSubtemplates() {
+        return null
     }
 }

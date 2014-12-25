@@ -1,10 +1,15 @@
 package uk.co.cacoethes.lazybones.cli
 
+import dagger.ObjectGraph
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import groovy.util.logging.Log
+import uk.co.cacoethes.lazybones.dagger.ConfigModule
+import uk.co.cacoethes.lazybones.dagger.DefaultModule
+import uk.co.cacoethes.lazybones.api.LazybonesService
+import uk.co.cacoethes.lazybones.impl.DefaultLazybonesService
 
-import java.util.jar.Manifest
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.LogManager
@@ -55,7 +60,7 @@ class LazybonesMain {
         }
 
         if (optionSet.has(Options.VERSION)) {
-            println "Lazybones version ${readVersion()}"
+            println "Lazybones version ${Configuration.readVersion()}"
             System.exit 0
         }
 
@@ -88,23 +93,7 @@ class LazybonesMain {
         System.exit retval
     }
 
-    static String readVersion() {
-        // First find the MANIFEST.MF for the JAR containing this class
-        //
-        // Can't use this.getResource() since that looks for a static method
-        def cls = this
-        def classPath = cls.getResource(cls.simpleName + ".class").toString()
-        if (!classPath.startsWith("jar")) return "unknown"
-
-        def manifestPath = classPath[0..classPath.lastIndexOf("!")] + "/META-INF/MANIFEST.MF"
-
-        // Now read the manifest and extract Implementation-Version to get the
-        // Lazybones version.
-        def manifest = new Manifest(new URL(manifestPath).openStream())
-        return manifest.mainAttributes.getValue("Implementation-Version")
-    }
-
-    @CompileDynamic
+    @CompileStatic(TypeCheckingMode.SKIP)
     protected static void validateConfig(Configuration config) {
         config.getSubSettings("templates.mappings").each { key, value ->
             if (!UrlUtils.isUrl(value as String)) {

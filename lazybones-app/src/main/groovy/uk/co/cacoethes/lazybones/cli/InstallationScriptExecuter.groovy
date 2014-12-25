@@ -5,6 +5,7 @@ import groovy.util.logging.Log
 import org.codehaus.groovy.control.CompilerConfiguration
 import uk.co.cacoethes.lazybones.LazybonesScript
 import uk.co.cacoethes.lazybones.LazybonesScriptException
+import uk.co.cacoethes.lazybones.config.Configuration
 import uk.co.cacoethes.lazybones.scm.ScmAdapter
 
 /**
@@ -142,7 +143,7 @@ class InstallationScriptExecuter {
      * to a map that is then returned.
      */
     protected Map evaluateVersionScriptVariables() {
-        def version = LazybonesMain.readVersion()
+        def version = Configuration.readVersion()
         def vars = [lazybonesVersion: version]
 
         def versionParts = version.split(/[\.\-]/)

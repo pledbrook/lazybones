@@ -2,10 +2,13 @@ package uk.co.cacoethes.lazybones.impl
 
 import groovy.util.logging.Log
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
+import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.lazybones.api.PackageInfo
 import uk.co.cacoethes.lazybones.api.PackageSource
 import wslite.http.HTTPClientException
 import wslite.rest.RESTClient
+
+import java.lang.reflect.UndeclaredThrowableException
 
 /**
  * The default location for Lazybones packaged templates is on Bintray, which
@@ -22,22 +25,26 @@ class BintrayPackageSource implements PackageSource {
     final String repoName
     def restClient
 
-    BintrayPackageSource(String repositoryName) {
-        repoName = repositoryName
-        restClient = new RESTClient(API_BASE_URL)
+    BintrayPackageSource(String repositoryName, restClient = null) {
+        this.repoName = repositoryName
+        this.restClient = restClient != null ? restClient : new RESTClient(API_BASE_URL)
+        
         if (System.getProperty("integration.test") == "true") {
             restClient.httpClient.sslTrustAllCerts = true
         }
     }
 
+    @Override
     String getName() { return repoName }
 
+    @Override
     int getPackageCount() {
         def response = restClient.get(path: "/repos/${repoName}")
         return response.json.package_count.toInteger()
     }
 
-    List<String> listPackages(Map options) {
+    @Override
+    List<PackageInfo> listPackages(Map options = [:]) {
         def response = restClient.get(path: "/repos/${repoName}/packages")
 
         def pkgNames = response.json.findAll {
@@ -49,11 +56,17 @@ class BintrayPackageSource implements PackageSource {
         return pkgNames
     }
 
+    @Override
     URI getTemplateUrl(String pkgName, String version) {
+        def pkg = getPackage(pkgName)
+        if (!pkg) throw new PackageNotFoundException(pkgName)
+        if (!pkg.hasVersion(version)) throw new PackageNotFoundException(pkgName, version)
+
         def pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX
         return new URI("${TEMPLATE_BASE_URL}/${repoName}/${pkgNameWithSuffix}-${version}.zip")
     }
 
+    @Override
     boolean hasPackage(String name) {
         return getPackage(name) != null
     }
@@ -67,6 +80,7 @@ class BintrayPackageSource implements PackageSource {
      * @return The required package info or {@code null} if the repository
      * doesn't host the requested packaged.
      */
+    @Override
     @SuppressWarnings("ReturnNullFromCatchBlock")
     PackageInfo getPackage(String name) {
         def pkgNameWithSuffix = name + PACKAGE_SUFFIX
@@ -75,12 +89,15 @@ class BintrayPackageSource implements PackageSource {
         try {
             response = restClient.get(path: "/packages/${repoName}/${pkgNameWithSuffix}")
         }
-        catch (HTTPClientException ex) {
-            if (ex.response?.statusCode != 404) {
-                throw ex
+        catch (HTTPClientException|UndeclaredThrowableException ex) {
+            def unwrapped = ex
+            if (ex instanceof UndeclaredThrowableException) unwrapped = ex.cause
+
+            if (!(unwrapped instanceof HTTPClientException) || unwrapped.response?.statusCode != 404) {
+                throw unwrapped
             }
 
-            return null
+            throw new PackageNotFoundException(name)
         }
 
         // The package may have no published versions, so we need to handle the

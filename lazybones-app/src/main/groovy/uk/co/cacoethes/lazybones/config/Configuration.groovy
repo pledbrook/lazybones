@@ -5,6 +5,7 @@ import groovy.json.JsonSlurper
 import groovy.util.logging.Log
 
 import java.net.Authenticator.RequestorType
+import java.util.jar.Manifest
 import java.util.logging.Level
 
 /**
@@ -326,6 +327,22 @@ class Configuration {
         loadConfigFromSystemProperties(overrideConfig)
 
         return new Configuration(baseConfig, overrideConfig, jsonConfig, VALID_OPTIONS, jsonConfigFile)
+    }
+
+    static String readVersion() {
+        // First find the MANIFEST.MF for the JAR containing this class
+        //
+        // Can't use this.getResource() since that looks for a static method
+        def cls = this
+        def classPath = cls.getResource(cls.simpleName + ".class").toString()
+        if (!classPath.startsWith("jar")) return "unknown"
+
+        def manifestPath = classPath[0..classPath.lastIndexOf("!")] + "/META-INF/MANIFEST.MF"
+
+        // Now read the manifest and extract Implementation-Version to get the
+        // Lazybones version.
+        def manifest = new Manifest(new URL(manifestPath).openStream())
+        return manifest.mainAttributes.getValue("Implementation-Version")
     }
 
     static Class getSettingType(String name, Map knownSettings) {

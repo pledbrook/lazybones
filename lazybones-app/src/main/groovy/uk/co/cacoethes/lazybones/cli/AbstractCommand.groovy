@@ -1,10 +1,15 @@
 package uk.co.cacoethes.lazybones.cli
 
+import dagger.ObjectGraph
 import groovy.util.logging.Log
 import joptsimple.OptionException
 import joptsimple.OptionParser
 import joptsimple.OptionSet
+import uk.co.cacoethes.lazybones.api.LazybonesService
 import uk.co.cacoethes.lazybones.config.Configuration
+import uk.co.cacoethes.lazybones.dagger.ConfigModule
+import uk.co.cacoethes.lazybones.dagger.DefaultModule
+import uk.co.cacoethes.lazybones.impl.DefaultLazybonesService
 
 /**
  * Base class for most command implementations. It mostly provides help with
@@ -85,6 +90,13 @@ abstract class AbstractCommand implements Command {
             log.severe getHelp(ex.message)
             return null
         }
+    }
+
+    protected LazybonesService initLazybonesService(Configuration config) {
+        def graph = ObjectGraph.create(new DefaultModule(), new ConfigModule(config))
+        def service = graph.get(LazybonesService)
+        if (service instanceof DefaultLazybonesService) service.initFromConfig(config)
+        return service
     }
 
     /**

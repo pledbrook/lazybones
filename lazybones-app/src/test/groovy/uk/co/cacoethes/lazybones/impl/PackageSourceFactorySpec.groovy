@@ -1,6 +1,7 @@
 package uk.co.cacoethes.lazybones.impl
 
 import spock.lang.Specification
+import uk.co.cacoethes.lazybones.api.PackageSource
 import uk.co.cacoethes.lazybones.config.Configuration
 
 class PackageSourceFactorySpec extends Specification {

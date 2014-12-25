@@ -13,6 +13,7 @@ interface LazybonesService {
      */
     PackageSource registerPackageSource(PackageSource repository)
     Map<PackageSource, List<String>> listTemplates()
+    List<CachedPackage> listCachedTemplates()
     List<PackageInfo> findPackages(String namePattern)
 
     /**
@@ -22,6 +23,9 @@ interface LazybonesService {
      * @return
      */
     PackageInfo getPackageInfo(String name)
-    void installTemplate(String name, String version, String targetPath)
-    void installTemplate(URI packageUrl, String targetPath)
+    NewProjectInfo installTemplate(String name, String version, String targetPath, List<String> tmplQualifiers, Map model)
+    NewProjectInfo installTemplate(URI packageUrl, String targetPath, List<String> tmplQualifiers, Map model)
+
+    boolean isLazybonesProjectDir(File dir)
+    List<String> listSubtemplates()
 }

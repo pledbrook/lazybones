@@ -11,9 +11,15 @@ interface PackageSource {
     String getName()
 
     /**
-     * Returns the number of packages available from this packages source.
+     * Returns the number of packages available from this package source.
      */
     int getPackageCount()
+
+    /**
+     * Returns a list of the available packages. If there are no packages, this
+     * returns an empty list.
+     */
+    List<PackageInfo> listPackages()
 
     /**
      * Returns a list of the available packages. If there are no packages, this
@@ -31,8 +37,9 @@ interface PackageSource {
     boolean hasPackage(String name)
 
     /**
-     * Returns details about a given package. If no package is found with the
-     * given name, this returns {@code null}.
+     * Returns details about a given package.
+     * @throws {@link uk.co.cacoethes.lazybones.PackageNotFoundException} if
+     * the package isn't hosted by this package source.
      */
     PackageInfo getPackage(String name)
 

@@ -4,6 +4,9 @@ import groovy.util.logging.Log
 import org.ini4j.Wini
 import uk.co.cacoethes.lazybones.config.Configuration
 
+import javax.inject.Inject
+import javax.inject.Named
+
 /**
  * An SCM adapter for git. Make sure that when executing the external processes
  * you use the {@code text} property to ensure that the process output is fully
@@ -16,7 +19,8 @@ class GitAdapter implements ScmAdapter {
     private final String userName
     private final String userEmail
 
-    GitAdapter(Configuration config) {
+    @Inject
+    GitAdapter(@Named("git.name") String gitName, @Named("git.email") String gitEmail) {
         // Load the current user's git config if it exists.
         def configFile = new File(System.getProperty("user.home"), ".gitconfig")
         if (configFile.exists()) {
@@ -27,8 +31,8 @@ class GitAdapter implements ScmAdapter {
         }
         else {
             // Use Lazybones config entries if they exist.
-            userName = config.getSetting("git.name") ?: "Unknown"
-            userEmail = config.getSetting("git.email") ?: "unknown@nowhere.net"
+            userName = gitName ?: "Unknown"
+            userEmail = gitEmail ?: "unknown@nowhere.net"
         }
     }
 

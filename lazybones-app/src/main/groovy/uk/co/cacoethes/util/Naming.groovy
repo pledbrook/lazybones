@@ -110,8 +110,7 @@ class Naming {
      * Converts a name in natural form into its corresponding intermediate
      * form, hyphenated.
      */
-    @SuppressWarnings('DuplicateStringLiteral')
-    @SuppressWarnings('UnnecessaryElseStatement')
+    @SuppressWarnings(['DuplicateStringLiteral', 'UnnecessaryElseStatement'])
     protected static String naturalToHyphenated(String content) {
         return content.split(' ').collect {
             if (it.size() > 1 && Character.isUpperCase(it[1] as char)) return it
@@ -132,8 +131,7 @@ class Naming {
      * Converts a name in camel case form into its property form. Camel case is
      * the intermediate form for property names.
      */
-    @SuppressWarnings('DuplicateStringLiteral')
-    @SuppressWarnings('UnnecessaryElseStatement')
+    @SuppressWarnings(['DuplicateStringLiteral', 'UnnecessaryElseStatement'])
     protected static String camelCaseToProperty(String content) {
         def upperBound = Math.min(content.size(), 3)
         if (content[0..<upperBound].every { Character.isUpperCase(it as char) }) {
