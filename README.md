@@ -12,6 +12,10 @@ contribute templates by sending pull requests to this GitHub project or publishi
 the packages to the relevant [Bintray repository](https://bintray.com/repo/browse/pledbrook/lazybones-templates)
 (more info available below).
 
+The concept of LazyBones is very similar to what Maven does with archetypes, and what [Yeoman](http://yeoman.io/) does for web
+applications. Lazybones is more similar to Yeoman, in that Lazybones sub-templates can integrate templated features
+into an existing project, similar to how Yeoman can add useful parts to an existing project.
+
 [![Build Status](https://travis-ci.org/pledbrook/lazybones.svg?branch=master)](https://travis-ci.org/pledbrook/lazybones)
 
 ## Developers
