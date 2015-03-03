@@ -22,6 +22,7 @@ USAGE: list
 
     private static final String INDENT = "    "
     private static final String CACHED_OPTION = "cached"
+    private static final int PADDING = 30
 
     File cacheDir
 
@@ -91,7 +92,7 @@ USAGE: list
 
         for (f in templates) {
             def matcher = templateNamePattern.matcher(f.name)
-            println INDENT + matcher[0][1].padRight(30) + matcher[0][2]
+            println INDENT + matcher[0][1].padRight(PADDING) + matcher[0][2]
         }
 
         println()
@@ -174,7 +175,7 @@ USAGE: list
 
                 for (f in templates) {
                     def matcher = templateNamePattern.matcher(f.name)
-                    println INDENT + matcher[0][1].padRight(30)
+                    println INDENT + matcher[0][1].padRight(PADDING)
                 }
 
                 println()
@@ -183,7 +184,7 @@ USAGE: list
     }
 
     private static File[] findMatchingTemplates(File dir, Pattern pattern) {
-        dir.listFiles({ File f ->
+        dir.listFiles( { File f ->
             pattern.matcher(f.name).matches()
         } as FileFilter).sort { it.name }
     }
