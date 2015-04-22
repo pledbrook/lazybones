@@ -192,7 +192,7 @@ task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
     licenses = ["Apache-2.0"]
 }
 
-task release(dependsOn: "uploadDist", "sdkMajorRelease")
+task release(dependsOn: ["uploadDist", "sdkMajorRelease"])
 
 // Lazy initialisation of uploadDist task so that not all build users need to
 // set the repo.* project properties.
