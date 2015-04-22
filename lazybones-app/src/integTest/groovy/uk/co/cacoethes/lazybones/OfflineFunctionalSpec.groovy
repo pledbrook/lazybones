@@ -7,8 +7,8 @@ import spock.lang.Unroll
 class OfflineFunctionalSpec extends AbstractFunctionalSpec {
 
     void setup() {
-        env["JAVA_OPTS"] = "-Dhttps.proxyHost=localhost -Dhttps.proxyPort=61431 " +
-                "-Dhttp.proxyHost=localhost -Dhttp.proxyPort=61431"
+        // Create dummy proxy to ensure the app can't access the internet.
+        initProxy(new InetSocketAddress("localhost", 61431))
     }
 
     @Betamax(tape="create-tape")

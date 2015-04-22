@@ -75,10 +75,11 @@ class ConfigurationSpec extends Specification {
 
         where:
         rootSetting    |              expected
-        "options"     |    [logLevel: "debug", quiet: true]
-        "mappings"    |  [dev: "url-one", custom: "url-two"]
-        "mvn"       | [repo: [dev: "url-3", other: "url-4"]]
-        "mvn.repo"    |    [dev: "url-3", other: "url-4"]
+        "options"      |    [logLevel: "debug", quiet: true]
+        "mappings"     |  [dev: "url-one", custom: "url-two"]
+        "mvn"          | [repo: [dev: "url-3", other: "url-4"]]
+        "mvn.repo"     |    [dev: "url-3", other: "url-4"]
+        "mvn.repo.br"  |                [:]
     }
 
     @Unroll
@@ -98,7 +99,6 @@ class ConfigurationSpec extends Specification {
         "mvn.not.known" |   UnknownSettingException
         "test.option"   |   InvalidSettingException
         "options.quiet" |   InvalidSettingException
-         "mvn.repo.br"  |   InvalidSettingException
     }
 
     def "Fetching current settings as a flat property map"() {
@@ -240,21 +240,22 @@ class ConfigurationSpec extends Specification {
         result == expected
 
         where:
-          settingName     |      settingValue      |     expected
-            "stuff"       |        "ilike"         |       true
-         "test.option"    |          10            |       true
-         "other.option"   |        "test"          |       true
-         "mappings.dev"   |     "venividivici"     |       true
-        "mappings.test"   |          100           |       false
-          "num.option"    |     "not a number"     |       false
-         "mvn.repo.dev"   |       "some-url"       |       true
-         "array.option"   | ["abc", "def", "ghi"]  |       true
-         "array.num.bers" |       [1, 5, 7]        |       true
-         "array.num.bers" |     [1, "five", 7]     |       false
+          settingName      |      settingValue      |     expected
+            "stuff"        |        "ilike"         |       true
+         "test.option"     |          10            |       true
+         "other.option"    |        "test"          |       true
+         "mappings.dev"    |     "venividivici"     |       true
+        "mappings.test"    |          100           |       false
+        "mappings.dev.one" |        "working"       |       true
+          "num.option"     |     "not a number"     |       false
+         "mvn.repo.dev"    |       "some-url"       |       true
+         "array.option"    | ["abc", "def", "ghi"]  |       true
+         "array.num.bers"  |       [1, 5, 7]        |       true
+         "array.num.bers"  |     [1, "five", 7]     |       false
     }
 
     @Unroll
-    def "Handle unknown and non-leaf settings during validation"() {
+    def "Handle unknown and non-leaf settings during validation (#settingName)"() {
         when: "I validate an unknown or non-leaf setting"
         def result = Configuration.validateSetting(settingName, knownSettings, settingValue)
 
@@ -264,9 +265,10 @@ class ConfigurationSpec extends Specification {
         where:
           settingName         |      settingValue      |        expected
            "unknown"          |         "abc"          | UnknownSettingException
-           "mappings"         |[dev: "one", test: 100] | InvalidSettingException
-           "mvn.repo"         |    [dev: "some-url"]   | InvalidSettingException
-             "mvn"            |  [repo: [dev: "url"]]  | InvalidSettingException
+         "options.loud"       |         "abc"          | UnknownSettingException
+           "mappings"         |[dev: "one", test: 100] | UnknownSettingException
+           "mvn.repo"         |    [dev: "some-url"]   | UnknownSettingException
+             "mvn"            |  [repo: [dev: "url"]]  | UnknownSettingException
         "one.two.three"       |       "unknown"        | UnknownSettingException
     }
 

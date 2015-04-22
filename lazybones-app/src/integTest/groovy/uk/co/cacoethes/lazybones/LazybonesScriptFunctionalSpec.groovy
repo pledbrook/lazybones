@@ -10,9 +10,7 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
     @Rule Recorder recorder = new Recorder()
 
     void setup() {
-        def proxyAddress = recorder.proxy.address()
-        env["JAVA_OPTS"] = "-Dhttps.proxyHost=" + proxyAddress.hostName + " -Dhttps.proxyPort=" + proxyAddress.port +
-                " -Dhttp.proxyHost=" + proxyAddress.hostName + " -Dhttp.proxyPort=" + proxyAddress.port
+        initProxy(recorder.proxy.address())
     }
 
     @Betamax(tape="create-tape")

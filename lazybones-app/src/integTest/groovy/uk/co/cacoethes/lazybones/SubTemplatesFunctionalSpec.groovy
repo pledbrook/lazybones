@@ -1,18 +1,8 @@
 package uk.co.cacoethes.lazybones
 
-import co.freeside.betamax.Betamax
-import co.freeside.betamax.Recorder
 import java.util.regex.Pattern
-import org.junit.Rule
 
 class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
-    @Rule Recorder recorder = new Recorder()
-
-    void setup() {
-        def proxyAddress = recorder.proxy.address()
-        env["JAVA_OPTS"] = "-Dhttps.proxyHost=" + proxyAddress.hostName + " -Dhttps.proxyPort=" + proxyAddress.port +
-                " -Dhttp.proxyHost=" + proxyAddress.hostName + " -Dhttp.proxyPort=" + proxyAddress.port
-    }
 
     def "Generate command installs a sub-template"() {
         given: "A new project created from a Lazybones template"

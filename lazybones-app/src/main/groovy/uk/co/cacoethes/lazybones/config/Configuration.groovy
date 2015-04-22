@@ -23,6 +23,7 @@ import java.util.logging.Level
  * </p>
  */
 @Log
+@SuppressWarnings("MethodCount")
 class Configuration {
 
     static final String SYSPROP_OVERRIDE_PREFIX = "lazybones."
@@ -45,7 +46,8 @@ class Configuration {
                 "options.quiet": Boolean,
                 "options.info": Boolean,
                 "bintrayRepositories": String[],
-                "templates.mappings.*": URI]
+                "templates.mappings.*": URI,
+                "systemProp.*": String]
 
         // These settings should only be active for the functional tests, not when the
         // application is being used normally.
@@ -85,6 +87,8 @@ class Configuration {
 
         this.managedSettings = new ConfigObject()
         addConfigEntries managedSettings, this.managedSettings
+
+        processSystemProperties(this.settings)
 
         // Validate the provided settings to ensure that they are known and that
         // they have a value of the appropriate type.
@@ -134,22 +138,25 @@ class Configuration {
      * method.
      * @param rootSettingName The partial setting name (dot-separated) that you
      * want.
-     * @return A map of the keys under the given setting name.
+     * @return A map of the keys under the given setting name. The map will be empty
+     * if there are no settings under the given key.
      * @throws UnknownSettingException If the partial setting name doesn't match
      * any of the settings in the known settings map.
      * @throws InvalidSettingException If the setting name is not partial but
      * is a complete match for an entry in the known settings map.
      */
     Map getSubSettings(String rootSettingName) {
-        def validMatchingSettings = matchingSettings(rootSettingName, validOptions)
-        if (!validMatchingSettings) throw new UnknownSettingException(rootSettingName)
-
-        // A complete match is defined as one in which none of the matching valid
-        // options actually has a sub-key ('.' + some string) after the given root.
-        if (validMatchingSettings.every { key, value -> !key.startsWith(rootSettingName + NAME_SEPARATOR) }) {
+        if (validOptions.containsKey(rootSettingName)) {
             throw new InvalidSettingException(rootSettingName, null, "'$rootSettingName' has no sub-settings")
         }
-        return getConfigOption(this.settings, rootSettingName) as Map
+
+        final foundMatching = validOptions.any { pattern, valueType ->
+            pattern.startsWith(rootSettingName + NAME_SEPARATOR) ||
+                rootSettingName ==~ settingNameAsRegex(pattern)
+        }
+        if (!foundMatching) throw new UnknownSettingException(rootSettingName)
+
+        return getConfigOption(this.settings, rootSettingName) as Map ?: [:]
     }
 
     /**
@@ -243,6 +250,18 @@ class Configuration {
         clearConfigOption(managedSettings, name)
     }
 
+    /**
+     * Takes any config settings under the key "systemProp" and converts them
+     * into system properties. For example, a "systemProp.http.proxyHost" setting
+     * becomes an "http.proxyHost" system property in the current JVM.
+     * @param config The configuration to load system properties from.
+     */
+    protected void processSystemProperties(ConfigObject config) {
+        config.systemProp.flatten().each { name, value ->
+            System.setProperty(name, value?.toString())
+        }
+    }
+
     protected Class requireSettingType(String name) {
         def settingType = getSettingType(name, validOptions)
         if (!settingType) {
@@ -299,15 +318,7 @@ class Configuration {
         def overrideConfig = loadConfig(userConfigSource)
 
         // Load settings from system properties. These override all other sources.
-        System.properties.findAll { it.key.startsWith(SYSPROP_OVERRIDE_PREFIX) }.each { String key, String value ->
-            def settingName = key[SYSPROP_OVERRIDE_PREFIX.size()..-1]
-
-            if (!validateSetting(settingName, VALID_OPTIONS, value)) {
-                log.warning "Unknown option '$settingName' or its values are invalid: ${value}"
-            }
-
-            setConfigOption overrideConfig, settingName, value
-        }
+        loadConfigFromSystemProperties(overrideConfig)
 
         return new Configuration(baseConfig, overrideConfig, jsonConfig, VALID_OPTIONS, jsonConfigFile)
     }
@@ -323,12 +334,14 @@ class Configuration {
         else return dottedString.split(NAME_SEPARATOR_REGEX)[0..-2].join(NAME_SEPARATOR) + ".*"
     }
 
-    static Map matchingSettings(String name, Map knownSettings) {
-        final dottedName = name + NAME_SEPARATOR
-        return knownSettings.findAll { String key, value ->
-            key == name || key.startsWith(dottedName) ||
-                    name =~ key.replace(NAME_SEPARATOR, NAME_SEPARATOR_REGEX).replace("*", "[\\w]+")
+    static Map.Entry matchingSetting(String name, Map knownSettings) {
+        return knownSettings.find { String key, value ->
+            key == name || name =~ settingNameAsRegex(key)
         }
+    }
+
+    protected static String settingNameAsRegex(String name) {
+        return name.replace(NAME_SEPARATOR, NAME_SEPARATOR_REGEX).replace("*", "[\\w]+")
     }
 
     /**
@@ -339,15 +352,10 @@ class Configuration {
      * @return
      */
     static boolean validateSetting(String name, Map knownSettings, value) {
-        def settings = matchingSettings(name, knownSettings)
-        if (!settings) throw new UnknownSettingException(name)
+        def setting = matchingSetting(name, knownSettings)
+        if (!setting) throw new UnknownSettingException(name)
 
-        def valueType = getSettingType(name, knownSettings)
-        if (!valueType) {
-            throw new InvalidSettingException(name, value, "You cannot validate a parent (non-leaf) setting")
-        }
-
-        def converter = Converters.getConverter(valueType)
+        def converter = Converters.getConverter(setting.value)
         return value == null || converter.validate(value)
     }
 
@@ -364,15 +372,11 @@ class Configuration {
     }
 
     /**
-     * <p>Takes a dot-separated string, such as "test.report.dir", and sets the corresponding
-     * config object property, {@code root.test.report.dir}, to the given value.</p>
-     * <p><em>Note</em> the {@code @CompileDynamic} annotation is currently required due to
-     * issue <a href="https://jira.codehaus.org/browse/GROOVY-6480">GROOVY-6480</a>.</p>
-     * @param root The config object to set the value on.
+     * <p>Takes a dot-separated string, such as "test.report.dir", and gets the corresponding
+     * config object property, {@code root.test.report.dir}.</p>
+     * @param root The config object to retrieve the value from.
      * @param dottedString The dot-separated string representing a configuration option.
-     * @param value The new value for this option.
-     * @return The ConfigObject containing the final part of the dot-separated string as a
-     * key. In other words, {@code retval.dir == value} for the dotted string example above.
+     * @return The required configuration value, or {@code null} if the setting doesn't exist.
      */
     @SuppressWarnings("DuplicateNumberLiteral")
     protected static getConfigOption(Map root, String dottedString) {
@@ -438,6 +442,20 @@ class Configuration {
     protected static ConfigObject loadDefaultConfig() {
         def cls = this
         return new ConfigSlurper().parse(cls.getResource("defaultConfig.groovy").text)
+    }
+
+    protected static Map loadConfigFromSystemProperties(overrideConfig) {
+        return System.properties.findAll {
+            it.key.startsWith(SYSPROP_OVERRIDE_PREFIX)
+        }.each { String key, String value ->
+            def settingName = key[SYSPROP_OVERRIDE_PREFIX.size()..-1]
+
+            if (!validateSetting(settingName, VALID_OPTIONS, value)) {
+                log.warning "Unknown option '$settingName' or its values are invalid: ${value}"
+            }
+
+            setConfigOption overrideConfig, settingName, value
+        }
     }
 
     protected static File getJsonConfigFile(File userConfigFile) {

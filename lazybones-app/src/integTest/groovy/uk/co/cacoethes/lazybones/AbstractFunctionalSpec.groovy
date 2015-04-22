@@ -151,6 +151,15 @@ abstract class AbstractFunctionalSpec extends Specification {
 
     protected final boolean isWindows() { return System.getProperty("os.name")?.startsWith("Windows") }
 
+    protected final void initProxy(InetSocketAddress proxyAddress) {
+        // We could just set the Java proxy properties directly, but this helps
+        // test the configuration handling of systemProp.* settings.
+        env["JAVA_OPTS"] = "-Dlazybones.systemProp.https.proxyHost=" + proxyAddress.hostName +
+                " -Dlazybones.systemProp.https.proxyPort=" + proxyAddress.port +
+                " -Dlazybones.systemProp.http.proxyHost=" + proxyAddress.hostName +
+                " -Dlazybones.systemProp.http.proxyPort=" + proxyAddress.port
+    }
+
     private Thread consumeProcessStream(final InputStream stream) {
         char[] buffer = new char[256]
         Thread.start {
