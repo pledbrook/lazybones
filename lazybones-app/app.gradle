@@ -1,15 +1,17 @@
-/* Keep this for testing dev versions of the lazybones-templates plugin
 buildscript {
     repositories {
-        mavenCentral()
-        mavenLocal()
+        // Keep this for testing dev versions of the lazybones-templates plugin
+//        mavenCentral()
+//        mavenLocal()
+        maven { url 'http://dl.bintray.com/vermeulen-mp/gradle-plugins' }
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.2.3"
+        // Keep this for testing dev versions of the lazybones-templates plugin
+//        classpath "uk.co.cacoethes:lazybones-gradle:1.2.3"
+        classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.3.1'
     }
 }
-*/
 
 import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
 
@@ -21,6 +23,7 @@ plugins {
 apply plugin: "groovy"
 apply plugin: "application"
 apply plugin: "codenarc"
+apply plugin: "net.gvmtool.sdkvendor"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
@@ -85,6 +88,14 @@ jar {
     manifest {
         attributes("Implementation-Title": "Lazybones", "Implementation-Version": version)
     }
+}
+
+gvm {
+    api = "https://gvm-vendor.herokuapp.com/"
+    candidate = project.applicationName
+    version = project.version
+    url = "https://bintray.com/artifact/download/pledbrook/lazybones-templates/${project.applicationName}-${project.version}.zip"
+    hashtag = "#lazybones"
 }
 
 lazybones {
@@ -180,6 +191,8 @@ task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
     packageName = "lazybones"
     licenses = ["Apache-2.0"]
 }
+
+task release(dependsOn: "uploadDist", "sdkMajorRelease")
 
 // Lazy initialisation of uploadDist task so that not all build users need to
 // set the repo.* project properties.
