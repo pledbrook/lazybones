@@ -1,28 +1,33 @@
+/* Keep this for testing dev versions of the lazybones-templates plugin
 buildscript {
     repositories {
         mavenCentral()
-        maven { url "http://dl.bintray.com/pledbrook/plugins" }
         mavenLocal()
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.2.3",
-                  "net.saliman:gradle-cobertura-plugin:2.2.4"
+        classpath "uk.co.cacoethes:lazybones-gradle:1.2.3"
     }
 }
+*/
 
 import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
 
+plugins {
+    id "net.saliman.cobertura" version "2.2.7"
+    id "uk.co.cacoethes.lazybones-templates" version "1.2.3"
+}
+
 apply plugin: "groovy"
 apply plugin: "application"
-apply plugin: "cobertura"
 apply plugin: "codenarc"
-apply plugin: "uk.co.cacoethes.lazybones-templates"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-applicationDefaultJvmArgs = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
 version = "0.9-SNAPSHOT"
+
+// These settings mimic the old client VM behavior. Should result in faster startup.
+applicationDefaultJvmArgs = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
 
 sourceCompatibility = "1.6"
 targetCompatibility = "1.6"
