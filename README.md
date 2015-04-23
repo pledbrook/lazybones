@@ -276,6 +276,32 @@ Alternatively, add them from the command line like this:
 The aliases will always be available to you until you remove them from the persisted
 configuration.
 
+### Setting a proxy (and other system properties) (Since 0.8.1)
+
+Many people have to work behind a proxy, but Lazybones didn't make it easy to
+configure one. In fact the only way to do it was to add the relevant system
+properties to a `JAVA_OPTS` environment variable. From 0.8.1, you now have another
+option.
+
+Lazybones has stolen the idea of having a special form of configuration option for
+system properties from Gradle. So if you define a property with a `systemProp.`
+prefix, it will be added as a system property internally. So to configure an HTTP
+proxy, you only need to add the following to your Lazybones configuration:
+
+    systemProp {
+        http {
+            proxyHost = "localhost"
+            proxyPort = 8181
+        }
+        https {
+            proxyHost = "localhost"
+            proxyPort = 8181
+        }
+    }
+    
+You do need to make sure that you configure both HTTP and HTTPS for Lazybones to
+work properly.
+
 ### General options
 
 These are miscellaneous options that can be overridden on the command line:
