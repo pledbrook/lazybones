@@ -9,7 +9,7 @@ buildscript {
     dependencies {
         // Keep this for testing dev versions of the lazybones-templates plugin
 //        classpath "uk.co.cacoethes:lazybones-gradle:1.2.3"
-        classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.3.1'
+        classpath 'net.gvmtool:gradle-sdkvendor-plugin:0.4.0'
     }
 }
 
@@ -193,6 +193,7 @@ task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
 }
 
 task release(dependsOn: ["uploadDist", "sdkMajorRelease"])
+sdkMajorRelease.mustRunAfter uploadDist
 
 // Lazy initialisation of uploadDist task so that not all build users need to
 // set the repo.* project properties.
@@ -207,6 +208,13 @@ gradle.taskGraph.whenReady { graph ->
 
         uploadDist.username = project.'repo.username'
         uploadDist.apiKey = project.'repo.apiKey'
+    }
+
+    if (graph.hasTask(":lazybones-app:sdkMajorRelease")) {
+        verifyProperty(project, 'gvm.consumerKey')
+        verifyProperty(project, 'gvm.consumerToken')
+        sdkMajorRelease.consumerKey = project.'gvm.consumerKey'
+        sdkMajorRelease.consumerToken = project.'gvm.consumerToken'
     }
 }
 
