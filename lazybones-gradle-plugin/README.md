@@ -23,11 +23,11 @@ to set it up manually in the `buildscript` section of your build file:
         }
     
         dependencies {
-            classpath "uk.co.cacoethes:lazybones-gradle:1.1"
+            classpath "uk.co.cacoethes:lazybones-gradle:1.2.3"
         }
     }
 
-	apply plugin: "lazybones-templates"
+	apply plugin: "uk.co.cacoethes.lazybones-templates"
 	...
 
 ## Conventions & required configuration
