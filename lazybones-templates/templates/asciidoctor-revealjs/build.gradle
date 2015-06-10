@@ -1,0 +1,83 @@
+import org.ajoberstar.grgit.*
+
+buildscript {
+  repositories {
+    jcenter()
+  }
+
+  dependencies {
+    classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.2'
+    classpath 'com.github.jruby-gradle:jruby-gradle-plugin:0.1.5'
+    classpath 'org.ysb33r.gradle:vfs-gradle-plugin:1.0-beta1'
+    classpath 'commons-httpclient:commons-httpclient:3.1'
+    classpath 'com.bluepapa32:gradle-watch-plugin:0.1.4'
+    classpath 'org.ajoberstar:gradle-git:1.1.0'
+  }
+}
+
+apply plugin: 'com.github.jruby-gradle.base'
+apply plugin: 'org.ysb33r.vfs'
+apply plugin: 'java'
+apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'com.bluepapa32.watch'
+
+version = '1.0.0-SNAPSHOT'
+
+ext {
+  revealjs_version = '3.0.0'
+  revealjsDir = new File(buildDir, 'reveal.js')
+  adocRevealjsDir = new File(buildDir, 'asciidoctor-reveal.js')
+}
+
+repositories {
+  jcenter()
+}
+
+dependencies {
+  gems 'rubygems:asciidoctor-diagram:1.3.0.preview.3'
+  gems 'rubygems:slim:2.1.0'
+  gems 'rubygems:thread_safe:0.3.4'
+}
+
+task download << {
+  mkdir buildDir
+  vfs {
+    cp "zip:https://github.com/hakimel/reveal.js/archive/"+revealjs_version+".zip!reveal.js-"+revealjs_version, revealjsDir, recursive: true, overwrite: true
+  }
+
+  if(!adocRevealjsDir.exists()) {
+   Grgit.clone(dir: adocRevealjsDir, uri: 'https://github.com/asciidoctor/asciidoctor-reveal.js')
+ }
+}
+
+asciidoctor {
+  dependsOn jrubyPrepareGems
+  gemPath = jrubyPrepareGems.outputDir
+  requires = ['asciidoctor-diagram']
+  sources {
+    include 'slides.adoc'
+  }
+  resources {
+    from(sourceDir) {
+      include 'images/**'
+      include 'styles/**'
+      include 'snippets/**'
+    }
+    from(buildDir) {
+      include 'reveal.js/**'
+      include 'asciidoctor-reveal.js/**'
+    }
+  }
+
+  attributes 'sourcedir': project.sourceSets.main.java.srcDirs[0],
+              revealjs_theme: '${revealjsTheme}'
+  options template_dirs: [new File(adocRevealjsDir, 'templates/slim').absolutePath]
+  dependsOn download
+}
+
+watch {
+  asciidoc {
+    files fileTree(dir: 'src')
+    tasks 'asciidoctor'
+  }
+}
