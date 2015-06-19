@@ -291,11 +291,11 @@ proxy, you only need to add the following to your Lazybones configuration:
     systemProp {
         http {
             proxyHost = "localhost"
-            proxyPort = 8181
+            proxyPort = "8181"
         }
         https {
             proxyHost = "localhost"
-            proxyPort = 8181
+            proxyPort = "8181"
         }
     }
     
