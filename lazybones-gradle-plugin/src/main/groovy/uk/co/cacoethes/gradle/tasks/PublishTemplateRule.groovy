@@ -51,6 +51,7 @@ class PublishTemplateRule implements Rule {
                 repositoryName = lzbExtension.repositoryName
                 packageName = pkgTask.baseName
                 licenses = lzbExtension.licenses
+                vcsUrl = lzbExtension.vcsUrl
 
                 doFirst {
                     def missingProps = verifyPublishProperties(t)

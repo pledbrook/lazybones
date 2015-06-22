@@ -40,10 +40,16 @@ class BintrayGenericUpload extends DefaultTask {
     String packageName
 
     /**
-     * A list of the licenses that apply to the package. This is required in
-     * order to create a new package in Bintray.
+     * A list of the licenses that apply to the package. This is only required
+     * when creating a new OSS package in Bintray.
      */
     List<String> licenses
+
+    /**
+     * The URL where the source code for the templates is hosted. This is only
+     * required for OSS projects.
+     */
+    String vcsUrl
 
     /**
      * Determines whether the artifact will be published as soon as it's
@@ -65,7 +71,7 @@ class BintrayGenericUpload extends DefaultTask {
     @TaskAction
     def publish() {
         if (!packageExists(packageName)) {
-            createPackage(packageName, licenses)
+            createPackage(packageName, licenses, vcsUrl)
         }
         uploadPackage(calculateUploadUrl())
     }
@@ -100,7 +106,7 @@ Failed to upload to Bintray (status ${status}):
         }
     }
 
-    protected void createPackage(String pkgName, List<String> licenses) {
+    protected void createPackage(String pkgName, List<String> licenses, String vcsUrl) {
         def conn = createConnection(calculateCreatePackageUrl(), "POST")
         logger.info "Creating package $pkgName via ${conn.URL}"
         conn.with {
@@ -109,7 +115,10 @@ Failed to upload to Bintray (status ${status}):
             setRequestProperty "Content-Type", "application/json;charset=utf-8"
 
             outputStream.withWriter("UTF-8") { Writer w ->
-                new JsonBuilder(name: pkgName, licenses: licenses).writeTo(w)
+                def data = [name: pkgName]
+                if (licenses) data.licenses = licenses
+                if (vcsUrl) data.'vcs_url' = vcsUrl
+                new JsonBuilder(data).writeTo(w)
             }
 
             if (!(responseCode in 200..<300)) {

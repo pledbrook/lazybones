@@ -63,9 +63,14 @@ class LazybonesConventions {
 
     /**
      * The licenses that the packages will be available under, such as Apache
-     * 2.0 and GPL 3.
+     * 2.0 and GPL 3. Required for OSS packages.
      */
     List<String> licenses
+
+    /**
+     * The URL where the templates project is hosted. Required for OSS projects.
+     */
+    String vcsUrl
 
     /** The Bintray account to use when publishing the templates */
     String repositoryUsername
