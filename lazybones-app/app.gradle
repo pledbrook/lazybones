@@ -27,7 +27,7 @@ apply plugin: "net.gvmtool.sdkvendor"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.8.1"
+version = "0.8.2"
 
 // These settings mimic the old client VM behavior. Should result in faster startup.
 applicationDefaultJvmArgs = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]

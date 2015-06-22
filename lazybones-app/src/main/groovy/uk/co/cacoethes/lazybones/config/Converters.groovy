@@ -5,6 +5,7 @@ package uk.co.cacoethes.lazybones.config
  */
 class Converters {
     static final Map<Class, Converter> CONVERTER_MAP = Collections.unmodifiableMap([
+            (Object): new ObjectConverter(),
             (Boolean): new BooleanConverter(),
             (Integer): new IntegerConverter(),
             (String): new StringConverter(),

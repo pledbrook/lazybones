@@ -47,7 +47,7 @@ class Configuration {
                 "options.info": Boolean,
                 "bintrayRepositories": String[],
                 "templates.mappings.*": URI,
-                "systemProp.*": String]
+                "systemProp.*": Object]
 
         // These settings should only be active for the functional tests, not when the
         // application is being used normally.
