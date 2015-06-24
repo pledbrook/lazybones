@@ -8,6 +8,7 @@ import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
 import wslite.http.HTTPClientException
 
 import java.util.logging.Level
+import java.util.regex.Pattern
 
 /**
  * A Lazybones command that prints out all the available templates by name,
@@ -21,6 +22,7 @@ USAGE: list
 
     private static final String INDENT = "    "
     private static final String CACHED_OPTION = "cached"
+    private static final int PADDING = 30
 
     File cacheDir
 
@@ -57,6 +59,7 @@ USAGE: list
             handleCachedTemplates(cacheDir)
         }
         handleMappings(config.getSubSettings("templates.mappings"))
+        handleSubTemplates()
 
         return 0
     }
@@ -85,13 +88,11 @@ USAGE: list
 
         def templateNamePattern = ~/^(.*)-(\d[^-]*(?:-SNAPSHOT)?)\.zip$/
 
-        def templates = cacheDir.listFiles({ File f ->
-            templateNamePattern.matcher(f.name).matches()
-        } as FileFilter).sort()
+        def templates = findMatchingTemplates(cacheDir, templateNamePattern)
 
-        for (f in templates.sort { it.name }) {
+        for (f in templates) {
             def matcher = templateNamePattern.matcher(f.name)
-            println INDENT + matcher[0][1].padRight(30) + matcher[0][2]
+            println INDENT + matcher[0][1].padRight(PADDING) + matcher[0][2]
         }
 
         println()
@@ -144,7 +145,7 @@ USAGE: list
     protected static void handleMappings(Map mappings) {
         if (mappings) {
             println "Available mappings"
-            println ""
+            println()
 
             int maxKeySize = mappings.keySet().inject(0) { int max, String key -> Math.max(key.size(), max) }
 
@@ -152,7 +153,39 @@ USAGE: list
                 println INDENT + key.padRight(maxKeySize + 2) + "-> " + value
             }
 
-            println ""
+            println()
         }
+    }
+
+    /**
+     * Handle local sub-templates only
+     */
+    protected static void handleSubTemplates() {
+        // is the current dir a project created by Lazybones?
+        File lazybonesDir = new File('.lazybones')
+        if (lazybonesDir.exists()) {
+            def templateNamePattern = ~/^(.*)-template-(\d[^-]*(?:-SNAPSHOT)?)\.zip$/
+
+            def templates = findMatchingTemplates(lazybonesDir, templateNamePattern)
+
+            // are there any templates available?
+            if (templates) {
+                println "Available sub-templates"
+                println()
+
+                for (f in templates) {
+                    def matcher = templateNamePattern.matcher(f.name)
+                    println INDENT + matcher[0][1].padRight(PADDING)
+                }
+
+                println()
+            }
+        }
+    }
+
+    private static File[] findMatchingTemplates(File dir, Pattern pattern) {
+        dir.listFiles( { File f ->
+            pattern.matcher(f.name).matches()
+        } as FileFilter).sort { it.name }
     }
 }

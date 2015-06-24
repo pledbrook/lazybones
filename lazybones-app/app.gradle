@@ -84,6 +84,12 @@ dependencies {
     }
 }
 
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.integTestCompile]
+    }
+}
+
 jar {
     manifest {
         attributes("Implementation-Title": "Lazybones", "Implementation-Version": version)

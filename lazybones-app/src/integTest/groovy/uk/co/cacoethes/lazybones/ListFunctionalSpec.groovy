@@ -59,4 +59,54 @@ class ListFunctionalSpec extends AbstractFunctionalSpec {
         !(output =~ /Exception/)
         !(remoteTmpls.any { it in output })
     }
+
+    @Betamax(tape='list-tape')
+    def "list command prints no sub-templates"() {
+        given: "A lazybones generated project"
+        def projectDir = new File(baseWorkDir, 'project')
+        def localLazybonesDir = new File(projectDir, '.lazybones')
+        localLazybonesDir.mkdirs()
+
+        filesToDelete << localLazybonesDir
+        filesToDelete << projectDir
+
+        when: "I run the list command with --cached option"
+        // do not clear workdir or we loose our setup
+        def exitCode = runCommand(["list", "--cached"], projectDir, [], false)
+
+        then: "It does not display any available sub-templates"
+        exitCode == 0
+        !(output =~ /(?m)^Available sub-templates\s+/)
+        !(output =~ /Exception/)
+    }
+
+    @Betamax(tape='list-tape')
+    def "list command prints available sub-templates"() {
+        given: "A lazybones generated project"
+        def projectDir = new File(baseWorkDir, 'project')
+        def localLazybonesDir = new File(projectDir, '.lazybones')
+        localLazybonesDir.mkdirs()
+
+        and: "A sub-template is available in the local lazybones directory"
+        def templateFile = new File(localLazybonesDir, 'artifact-template-1.0.0.zip')
+        templateFile.text = '''
+        Any content will do. We check for the file's existence
+        and its filename pattern only.
+        '''
+
+        filesToDelete << templateFile
+        filesToDelete << localLazybonesDir
+        filesToDelete << projectDir
+
+        when: "I run the list command with --cached option"
+        // do not clear workdir or we loose our setup
+        def exitCode = runCommand(["list", "--cached"], projectDir, [], false)
+
+        then: "It does display all available sub-templates"
+        exitCode == 0
+        output =~ /(?m)^Available sub-templates\s+/ +
+                  /\s+artifact\s+/
+
+        !(output =~ /Exception/)
+    }
 }
