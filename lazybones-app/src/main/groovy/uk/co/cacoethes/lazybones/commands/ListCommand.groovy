@@ -167,6 +167,7 @@ USAGE: list
     /**
      * Handle local subtemplates only
      */
+    @SuppressWarnings("DuplicateNumberLiteral")
     protected static int handleSubtemplates() {
         // is the current dir a project created by Lazybones?
         File lazybonesDir = new File('.lazybones')
