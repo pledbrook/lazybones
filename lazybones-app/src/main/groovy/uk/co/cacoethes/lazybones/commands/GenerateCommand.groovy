@@ -12,8 +12,8 @@ import uk.co.cacoethes.util.ArchiveMethods
 import java.util.logging.Level
 
 /**
- * Implements Lazybone's generate command, which processes sub-templates in a
- * Lazybones-created project. The command unpacks the sub-template into the
+ * Implements Lazybone's generate command, which processes subtemplates in a
+ * Lazybones-created project. The command unpacks the subtemplate into the
  * project's .lazybones directory and runs the post-install script. It's up
  * to that script to create directories and files in main project source tree.
  */
@@ -26,7 +26,7 @@ class GenerateCommand extends AbstractCommand {
     static final String USAGE = """\
 USAGE: generate <template>
 
-  where  template = The name of the sub-template to use.
+  where  template = The name of the subtemplate to use.
 """
     private static final String SPACES_OPT = "spaces"
     private static final String VAR_OPT = "P"
@@ -36,7 +36,7 @@ USAGE: generate <template>
 
     @Override
     String getDescription() {
-        return "Generates new files in the current project based on a sub-template."
+        return "Generates new files in the current project based on a subtemplate."
     }
 
     @Override
@@ -48,7 +48,7 @@ USAGE: generate <template>
 
     @Override
     protected IntRange getParameterRange() {
-        1..1 // Just the sub-template name
+        1..1 // Just the subtemplate name
     }
 
     @Override
@@ -57,7 +57,7 @@ USAGE: generate <template>
     @Override
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration configuration) {
         // Make sure this is a Lazybones-created project, otherwise there are
-        // no sub-templates to use.
+        // no subtemplates to use.
         if (!LAZYBONES_DIR.exists()) {
             log.severe "You cannot use `generate` here: this is not a Lazybones-created project"
             return 1
@@ -106,7 +106,7 @@ USAGE: generate <template>
             f.name ==~ /^${name}\-template\-.*\.zip$/
         } as FileFilter)
 
-        if (!matchingFiles) throw new PackageNotFoundException("Cannot find a sub-template named '$name'")
+        if (!matchingFiles) throw new PackageNotFoundException("Cannot find a subtemplate named '$name'")
         return matchingFiles[0]
     }
 }

@@ -49,7 +49,7 @@ class LazybonesTemplatesPlugin implements Plugin<Project> {
         def addTaskDependencies = { String baseTaskName, Task task ->
             task.dependsOn {
                 project.extensions.lazybones.templateDirs.filter { File f ->
-                    !f.name.startsWith(SUBTEMPLATE_PREFIX) &&     // Exclude sub-templates
+                    !f.name.startsWith(SUBTEMPLATE_PREFIX) &&     // Exclude subtemplates
                             verifyTemplateDirName(f.name)        // and those whose names are not lowercase hyphenated
                 }.files.collect { File f ->
                     def camelCaseTmplName = NameConverter.hyphenatedToCamelCase(f.name)

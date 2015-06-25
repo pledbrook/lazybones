@@ -4,7 +4,7 @@ import java.util.regex.Pattern
 
 class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
 
-    def "Generate command installs a sub-template"() {
+    def "Generate command installs a subtemplate"() {
         given: "A new project created from a Lazybones template"
         def appDir = createProjectWithSubTemplates()
 
@@ -26,7 +26,7 @@ class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
         !new File(appDir, ".lazybones/controller-unpacked").exists()
     }
 
-    def "Generate command passes project template parameters to sub-template"() {
+    def "Generate command passes project template parameters to subtemplate"() {
         given: "A new project created from a Lazybones template"
         def appDir = createProjectWithSubTemplates()
 
@@ -63,7 +63,7 @@ class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
         output =~ "Found command qualifiers: \\[one, apple, shoe\\]"
     }
 
-    def "Generate command fails gracefully when sub-template not found"() {
+    def "Generate command fails gracefully when subtemplate not found"() {
         given: "A new project created from a Lazybones template"
         def appDir = createProjectWithSubTemplates()
 
@@ -74,11 +74,11 @@ class SubTemplatesFunctionalSpec extends AbstractFunctionalSpec {
         exitCode == 1
 
         and: "It prints a warning, but no exception"
-        output =~ "Cannot find a sub-template named 'unknown'"
+        output =~ "Cannot find a subtemplate named 'unknown'"
         !(output =~ "Exception")
     }
 
-    def "Generate command fails gracefully when sub-template post-install script throws exception"() {
+    def "Generate command fails gracefully when subtemplate post-install script throws exception"() {
         given: "A new project created from a Lazybones template"
         def appDir = createProjectWithSubTemplates()
 

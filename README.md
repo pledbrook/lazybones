@@ -13,7 +13,7 @@ the packages to the relevant [Bintray repository](https://bintray.com/repo/brows
 (more info available below).
 
 The concept of Lazybones is very similar to Maven archetypes, and what [Yeoman](http://yeoman.io/)
-does for web applications. Lazybones also includes a sub-templates feature that
+does for web applications. Lazybones also includes a subtemplates feature that
 resembles the behaviour of Yeoman's sub-generators, allowing you to generate optional
 extras (controllers, scaffolding etc.) inside a project.
 
@@ -120,7 +120,7 @@ have the `git` command on your path.
 
 ### Sub-templates
 
-As of Lazybones version 0.7, project templates can incorporate sub-templates.
+As of Lazybones version 0.7, project templates can incorporate subtemplates.
 Imagine that you have just created a new web application project from a template
 and that template documents that you can create new controllers using a sub-
 template named `controller`. To use it, just `cd` into the project directory
@@ -133,12 +133,12 @@ generating the corresponding controller file in your project. You can reuse the
 command to create as many controllers as you need.
 
 As with the `create` command, you can also pass in property values on the command
-line if the sub-template is parameterised:
+line if the subtemplate is parameterised:
 
     lazybones generate controller -Ppackage=org.example.myapp -Pclass=Book
     
 The last option available to you as a user is template qualifiers. These only
-work if the sub-template supports them, but they allow you to pass additional
+work if the subtemplate supports them, but they allow you to pass additional
 information in a concise way:
 
     lazybones generate artifact::controller
@@ -148,7 +148,7 @@ an extra `controller`. You can pass in as many qualifiers as you want, you just
 separate them with `::`.
 
 Note that you do not specify a version with the `generate` command. This is
-because the sub-templates are embedded directly in the project template, and
+because the subtemplates are embedded directly in the project template, and
 so there can only be one version available to you.
 
 ### Finding out what templates are available

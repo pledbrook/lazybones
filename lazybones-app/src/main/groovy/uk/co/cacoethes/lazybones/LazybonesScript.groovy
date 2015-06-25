@@ -24,7 +24,7 @@ class LazybonesScript extends Script {
     /**
      * The target project directory. For project templates, this will be the
      * same as the directory into which the template was installed, i.e.
-     * {@link #templateDir}. But for sub-templates, this will be the directory
+     * {@link #templateDir}. But for subtemplates, this will be the directory
      * of the project that the <code>generate</code> command is running in.
      */
     File projectDir
@@ -32,7 +32,7 @@ class LazybonesScript extends Script {
     /**
      * The location of the unpacked template. This will be the same as
      * {@link #projectDir} for project templates, but will be different for
-     * sub-templates. This is the base path used when searching for files
+     * subtemplates. This is the base path used when searching for files
      * that need filtering.
      * @since 0.7
      */

@@ -42,8 +42,8 @@ class PackageTemplateRule implements Rule {
 
     /**
      * Takes a template convention and uses it to configure the given package
-     * task so that it both depends on all the necessary sub-template packaging
-     * tasks and also copies the sub-template packages into the main template
+     * task so that it both depends on all the necessary subtemplate packaging
+     * tasks and also copies the subtemplate packages into the main template
      * package.
      */
     protected void addSubTemplatesToPackageTask(TemplateConvention tmplConvention, Task task) {
@@ -63,7 +63,7 @@ class PackageTemplateRule implements Rule {
     /**
      * Finds the template convention for the given main template, if it exists.
      * The template convention allows for configuration of such things as what
-     * sub-templates should be included in the project template.
+     * subtemplates should be included in the project template.
      * @param tmplName The name of the main template whose convention you want.
      * @return The convention object, or <code>null</code> if no template
      * convention was defined for the given template.

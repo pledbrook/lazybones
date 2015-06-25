@@ -122,7 +122,7 @@ class InstallationScriptExecuter {
         // parameters. If `tempateDir` is CWD, then the parent directory will
         // actually be null, in which case there is no store parameters file
         // (for example in the case of an unpacked project template rather
-        // than a sub-template).
+        // than a subtemplate).
         def lzbDir = templateDir.parentFile
         if (!lzbDir) return [:]
 

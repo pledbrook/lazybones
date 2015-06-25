@@ -7,7 +7,7 @@ along with this plugin.
 
 The plugin allows you to manage multiple templates, giving you the tools to
 package, install, and publish them individually or all together. In addition,
-since version 1.1 you can also easily set up sub-templates. Let's see how you
+since version 1.1 you can also easily set up subtemplates. Let's see how you
 use the plugin.
 
 ## Installation
@@ -103,20 +103,20 @@ template in your project:
 
 As long as you stick to the conventions, that's all you need.
  
-## Managing sub-templates
+## Managing subtemplates
 
-As of version 0.7 of Lazybones, template authors can create sub-templates inside
+As of version 0.7 of Lazybones, template authors can create subtemplates inside
 their project templates. These allow users to perform extra code generation in
 a project after it has been created from a Lazybones project template.
 
-From version 1.1 of the Gradle plugin you can easily set up sub-templates. There
+From version 1.1 of the Gradle plugin you can easily set up subtemplates. There
 are basically two steps:
 
-1. Add the sub-templates as directories alongside the project templates, giving
+1. Add the subtemplates as directories alongside the project templates, giving
    each directory a `subtmpl-` prefix to its name.
 
 2. Add a directive to the `lazybones` configuration block telling the plugin
-   which sub-templates are to be packaged in which project templates.
+   which subtemplates are to be packaged in which project templates.
 
 The first of these will result in a project structure like this:
 
@@ -130,9 +130,9 @@ The first of these will result in a project structure like this:
           .
 
 The `subtmpl-` prefix ensures that the plugin won't attempt to publish the
-sub-templates, since they should not exist independently of a project template.
+subtemplates, since they should not exist independently of a project template.
 
-Once you have created the sub-template directories and populated them with
+Once you have created the subtemplate directories and populated them with
 files and a post-install script, you need to link them to project templates.
 To do that, just add this setting:
 
@@ -142,7 +142,7 @@ To do that, just add this setting:
 	}
 
 This states that the 'grails-standard' project template should include the
-'subtmpl-controller' and 'subtmpl-domain-class' sub-templates. Note that you
+'subtmpl-controller' and 'subtmpl-domain-class' subtemplates. Note that you
 don't need to include the `subtmpl-` prefix in the configuration setting. It's
 implied.
 
