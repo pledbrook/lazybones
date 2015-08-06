@@ -18,10 +18,10 @@ class GitAdapter implements ScmAdapter {
 
     GitAdapter(Configuration config) {
         // Load the current user's git config if it exists.
-        def configFile = new File(System.getProperty("user.home"), ".gitconfig")
+        File configFile = new File(System.getProperty("user.home"), ".gitconfig")
         if (configFile.exists()) {
-            def ini = new Wini(configFile)
-            def userKey = "user"
+            Wini ini = new Wini(configFile)
+            String userKey = "user"
             userName = ini.get(userKey, "name")
             userEmail = ini.get(userKey, "email")
         }
@@ -55,7 +55,7 @@ class GitAdapter implements ScmAdapter {
      */
     @Override
     void commitInitialFiles(File location, String message) {
-        def configCmd = "config"
+        String configCmd = "config"
         execGit(["add", "."], location)
         execGit([configCmd, "user.name", userName], location)
         execGit([configCmd, "user.email", userEmail], location)
@@ -70,8 +70,8 @@ class GitAdapter implements ScmAdapter {
      * @return The return code from the process.
      */
     private int execGit(List args, File location) {
-        def process = ((List) [GIT] + args).execute([], location)
-        def out = new StringWriter()
+        Process process = ([GIT] + args).execute([], location)
+        StringWriter out = new StringWriter()
         process.consumeProcessOutput out, out
         log.finest out.toString()
         return process.waitFor()

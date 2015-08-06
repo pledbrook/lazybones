@@ -27,7 +27,7 @@ class PackageLocationBuilder {
     }
 
     private PackageLocation buildForUrl(String url) {
-        def packageName = FilenameUtils.getBaseName(new URI(url).path)
+        String packageName = FilenameUtils.getBaseName(new URI(url).path)
 
         return new PackageLocation(remoteLocation: url, cacheLocation: cacheLocationPattern(packageName, null))
     }
@@ -53,7 +53,7 @@ class PackageLocationBuilder {
         for (PackageSource packageSource in packageSources) {
             log.fine "Searching for ${packageName} in ${packageSource}"
 
-            def pkgInfo = packageSource.fetchPackageInfo(packageName)
+            PackageInfo pkgInfo = packageSource.fetchPackageInfo(packageName)
             if (pkgInfo) {
                 log.fine "Found!"
                 return pkgInfo

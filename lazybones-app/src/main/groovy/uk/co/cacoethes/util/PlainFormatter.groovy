@@ -11,7 +11,7 @@ import java.util.logging.LogRecord
 @groovy.transform.CompileStatic
 class PlainFormatter extends Formatter {
     String format(LogRecord record) {
-        def message = record.message + '\n'
+        String message = record.message + '\n'
         //copied from SimpleFormatter
         if (record.thrown) {
             StringWriter sw = new StringWriter()

@@ -16,7 +16,8 @@ class BooleanConverter implements Converter<Boolean> {
     }
 
     @Override
+    @SuppressWarnings('Instanceof')
     boolean validate(Object value) {
-        return value == null || value instanceof Boolean
+        return value == null || (value instanceof Boolean)
     }
 }

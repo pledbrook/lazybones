@@ -12,7 +12,7 @@ class ListConverter implements Converter<List> {
 
     @Override
     List toType(String value) {
-        def converter = Converters.getConverter(componentType)
+        Converter converter = Converters.getConverter(componentType)
         return value?.split(/,\s+/)?.collect { converter.toType(it) }
     }
 
@@ -22,8 +22,9 @@ class ListConverter implements Converter<List> {
     }
 
     @Override
+    @SuppressWarnings('Instanceof')
     boolean validate(Object value) {
-        def converter = Converters.getConverter(componentType)
+        Converter converter = Converters.getConverter(componentType)
         return value == null || (value instanceof List && value.every { converter.validate(it) })
     }
 }

@@ -36,12 +36,9 @@ class CompositePolicy extends Policy {
     }
 
     protected PermissionCollection aggregatePermissions(Closure cl) {
-        def permissions = new Permissions()
-        for (Policy policy in policies) {
-            // TODO Does this work in Groovy? Enumerations are awkward IIRC
-            for (Permission permission in cl.call(policy)) {
-                permissions.add(permission)
-            }
+        Permissions permissions = new Permissions()
+        policies.each { Policy policy ->
+            permissions.addAll(cl.call(policy))
         }
         return permissions
     }

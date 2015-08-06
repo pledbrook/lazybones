@@ -95,7 +95,7 @@ USAGE: info <template>
 
     protected PackageInfo findPackageInBintrayRepositories(String pkgName, Collection<String> repositories) {
         for (String bintrayRepoName in repositories) {
-            def pkgInfo = new BintrayPackageSource(bintrayRepoName).fetchPackageInfo(pkgName)
+            PackageInfo pkgInfo = new BintrayPackageSource(bintrayRepoName).fetchPackageInfo(pkgName)
             if (pkgInfo) return pkgInfo
         }
 

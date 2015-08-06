@@ -36,9 +36,9 @@ USAGE: help <cmd>?
 
     @Override
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration config) {
-        def cmdArgs = cmdOptions.nonOptionArguments()
+        List cmdArgs = cmdOptions.nonOptionArguments()
         if (cmdArgs) {
-            def cmd = Commands.getAll(config).find { Command it -> it.name == cmdArgs[0] }
+            Command cmd = Commands.getAll(config).find { Command it -> it.name == cmdArgs[0] }
             if (cmd) {
                 println cmd.getHelp(cmd.description)
             }

@@ -19,7 +19,7 @@ class BintrayPackageSource implements PackageSource {
     static final String PACKAGE_SUFFIX = "-template"
 
     final String repoName
-    def restClient
+    RESTClient restClient
 
     BintrayPackageSource(String repositoryName) {
         repoName = repositoryName
@@ -28,7 +28,7 @@ class BintrayPackageSource implements PackageSource {
         // For testing with Betamax: set up a proxy if required. groovyws-lite
         // doesn't currently support the http(s).proxyHost and http(s).proxyPort
         // system properties, so we have to manually create the proxy ourselves.
-        def proxy = loadSystemProxy(true)
+        Proxy proxy = loadSystemProxy(true)
         if (proxy)  {
             restClient.httpClient.proxy = proxy
             restClient.httpClient.sslTrustAllCerts = true
@@ -36,14 +36,14 @@ class BintrayPackageSource implements PackageSource {
     }
 
     String getTemplateUrl(String pkgName, String version) {
-        def pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX
+        String pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX
         return "${TEMPLATE_BASE_URL}/${repoName}/${pkgNameWithSuffix}-${version}.zip"
     }
 
     List<String> listPackageNames() {
-        def response = restClient.get(path: "/repos/${repoName}/packages")
+        Object response = restClient.get(path: "/repos/${repoName}/packages")
 
-        def pkgNames = response.json.findAll {
+        List pkgNames = response.json.findAll {
             it.name.endsWith(PACKAGE_SUFFIX)
         }.collect {
             it.name - PACKAGE_SUFFIX
@@ -63,9 +63,9 @@ class BintrayPackageSource implements PackageSource {
      */
     @SuppressWarnings("ReturnNullFromCatchBlock")
     PackageInfo fetchPackageInfo(String pkgName) {
-        def pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX
+        String pkgNameWithSuffix = pkgName + PACKAGE_SUFFIX
 
-        def response
+        Object response
         try {
             response = restClient.get(path: "/packages/${repoName}/${pkgNameWithSuffix}")
         }
@@ -79,12 +79,12 @@ class BintrayPackageSource implements PackageSource {
 
         // The package may have no published versions, so we need to handle the
         // case where `latest_version` is null.
-        def data = response.json
+        Object data = response.json
         if (!data.'latest_version') {
             throw new NoVersionsFoundException(pkgName)
         }
 
-        def pkgInfo = new PackageInfo(this, data.name - PACKAGE_SUFFIX, data.'latest_version')
+        PackageInfo pkgInfo = new PackageInfo(this, data.name - PACKAGE_SUFFIX, data.'latest_version')
 
         pkgInfo.with {
             versions = data.versions as List
@@ -104,11 +104,11 @@ class BintrayPackageSource implements PackageSource {
      * @param useHttpsProxy {@code true} if you want the HTTPS proxy, otherwise {@code false}.
      */
     private Proxy loadSystemProxy(boolean useHttpsProxy) {
-        def propertyPrefix = useHttpsProxy ? "https" : "http"
-        def proxyHost = System.getProperty("${propertyPrefix}.proxyHost")
+        String propertyPrefix = useHttpsProxy ? "https" : "http"
+        String proxyHost = System.getProperty("${propertyPrefix}.proxyHost")
         if (!proxyHost) return null
 
-        def proxyPort = System.getProperty("${propertyPrefix}.proxyPort")?.toInteger()
+        Integer proxyPort = System.getProperty("${propertyPrefix}.proxyPort")?.toInteger()
         proxyPort = proxyPort ?: (useHttpsProxy ? 443 : 80)
 
         return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort))

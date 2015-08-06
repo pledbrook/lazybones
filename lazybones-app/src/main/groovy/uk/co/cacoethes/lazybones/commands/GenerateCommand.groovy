@@ -64,13 +64,13 @@ USAGE: generate <template>
         }
 
         try {
-            def arg = new TemplateArg(cmdOptions.nonOptionArguments()[0])
+            TemplateArg arg = new TemplateArg(cmdOptions.nonOptionArguments()[0])
 
-            def outDir = new File(LAZYBONES_DIR, "${arg.templateName}-unpacked")
+            File outDir = new File(LAZYBONES_DIR, "${arg.templateName}-unpacked")
             outDir.mkdirs()
             ArchiveMethods.unzip(templateNameToPackageFile(arg.templateName), outDir)
 
-            def executor = new InstallationScriptExecuter()
+            InstallationScriptExecuter executor = new InstallationScriptExecuter()
             executor.runPostInstallScriptWithArgs(
                     cmdOptions.valuesOf(VAR_OPT).collectEntries { String it -> it.split('=') as List },
                     arg.qualifiers,
@@ -102,7 +102,7 @@ USAGE: generate <template>
 
     @SuppressWarnings("SpaceBeforeOpeningBrace")
     protected File templateNameToPackageFile(String name) {
-        def matchingFiles = LAZYBONES_DIR.listFiles({ File f ->
+        List matchingFiles = LAZYBONES_DIR.listFiles({ File f ->
             f.name ==~ /^${name}\-template\-.*\.zip$/
         } as FileFilter)
 

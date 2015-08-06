@@ -13,7 +13,7 @@ import uk.co.cacoethes.lazybones.PackageNotFoundException
 class PackageDownloader {
 
     File downloadPackage(PackageLocation packageLocation, String packageName, String version) {
-        def packageFile = new File(packageLocation.cacheLocation)
+        File packageFile = new File(packageLocation.cacheLocation)
 
         if (!packageFile.exists()) {
             packageFile.parentFile.mkdirs()

@@ -75,7 +75,7 @@ USAGE: config set <option> <value> [<value> ...]
     @Override
     @SuppressWarnings("DuplicateNumberLiteral")
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration config) {
-        def cmdArgs = cmdOptions.nonOptionArguments()
+        List cmdArgs = cmdOptions.nonOptionArguments()
         switch (cmdArgs[0]) {
         case "set":
             if (cmdArgs.size() < 3) {
@@ -132,8 +132,8 @@ USAGE: config set <option> <value> [<value> ...]
      * any other value indicates failure.
      */
     protected int configSet(OptionSet cmdOptions) {
-        def cmdArgs = cmdOptions.nonOptionArguments()
-        def config = Configuration.initConfiguration()
+        List cmdArgs = cmdOptions.nonOptionArguments()
+        Configuration config = Configuration.initConfiguration()
 
         try {
             if (!config.putSetting(cmdArgs[1], cmdArgs[2..-1].join(", "))) {
@@ -171,8 +171,8 @@ USAGE: config set <option> <value> [<value> ...]
      */
     @SuppressWarnings("DuplicateNumberLiteral")
     protected int configAdd(OptionSet cmdOptions) {
-        def cmdArgs = cmdOptions.nonOptionArguments()
-        def config = Configuration.initConfiguration()
+        List cmdArgs = cmdOptions.nonOptionArguments()
+        Configuration config = Configuration.initConfiguration()
 
         try {
             if (!config.appendToSetting(cmdArgs[1], cmdArgs[2])) {
@@ -202,8 +202,8 @@ USAGE: config set <option> <value> [<value> ...]
      * any other value indicates failure.
      */
     protected int configClear(OptionSet cmdOptions) {
-        def cmdArgs = cmdOptions.nonOptionArguments()
-        def config = Configuration.initConfiguration()
+        List cmdArgs = cmdOptions.nonOptionArguments()
+        Configuration config = Configuration.initConfiguration()
 
         try {
             config.clearSetting(cmdArgs[1])
@@ -226,8 +226,8 @@ USAGE: config set <option> <value> [<value> ...]
      * any other value indicates failure.
      */
     int configShow(OptionSet cmdOptions) {
-        def cmdArgs = cmdOptions.nonOptionArguments()
-        def config = Configuration.initConfiguration()
+        List cmdArgs = cmdOptions.nonOptionArguments()
+        Configuration config = Configuration.initConfiguration()
 
         try {
             println config.getSetting(cmdArgs[1])
@@ -241,7 +241,7 @@ USAGE: config set <option> <value> [<value> ...]
 
     @SuppressWarnings("DuplicateNumberLiteral")
     int configShowAll() {
-        def settings = Configuration.initConfiguration().allSettings
+        Map settings = Configuration.initConfiguration().allSettings
         final columnWidth = settings.keySet().inject(0) {
             int max, String key -> Math.max(key.size(), max)
         } + 3
@@ -265,7 +265,7 @@ USAGE: config set <option> <value> [<value> ...]
      */
     @SuppressWarnings("DuplicateNumberLiteral")
     int configList() {
-        def validSettings = Configuration.VALID_OPTIONS
+        Map validSettings = Configuration.VALID_OPTIONS
         final columnWidth = validSettings.keySet().inject(0) {
             int max, String key -> Math.max(key.size(), max)
         } + 3

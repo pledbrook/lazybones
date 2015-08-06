@@ -2,6 +2,8 @@ package uk.co.cacoethes.util
 
 import groovy.transform.Immutable
 
+import java.util.regex.Matcher
+
 /**
  * <p>Provides static methods for converting between different forms of names,
  * such as camel case, hyphenated lower case, and natural. You can find the
@@ -26,6 +28,7 @@ class Naming {
      * @return A new string representing {@code content} in the requested
      * form.
      */
+    @SuppressWarnings('Instanceof')
     static String convert(Map args, String content) {
         if (!(args.from instanceof NameType)) {
             throw new IllegalArgumentException("Invalid or no value for 'from' named argument: ${args.from}")
@@ -64,8 +67,8 @@ class Naming {
     protected static String camelCaseToHyphenated(String name) {
         if (!name) return name
 
-        def out = new StringBuilder(name.size() + 5)
-        def lexer = new BasicLexer(name)
+        StringBuilder out = new StringBuilder(name.size() + 5)
+        BasicLexer lexer = new BasicLexer(name)
 
         out << lexer.nextWord()
         for (String part = lexer.nextWord(); part; part = lexer.nextWord()) {
@@ -82,8 +85,8 @@ class Naming {
     protected static String hyphenatedToCamelCase(String name) {
         if (!name) return name
 
-        def out = new StringBuffer()
-        def m = name =~ /-([a-zA-Z0-9])/
+        StringBuffer out = new StringBuffer()
+        Matcher m = name =~ /-([a-zA-Z0-9])/
         while (m) {
             m.appendReplacement out, m.group(1).toUpperCase()
         }
@@ -100,7 +103,7 @@ class Naming {
     @SuppressWarnings('DuplicateStringLiteral')
     protected static String hyphenatedToNatural(String content) {
         return content.split('-').collect {
-            def str = it[0].toUpperCase()
+            String str = it[0].toUpperCase()
             if (it.size() > 1) str += it[1..-1]
             return str
         }.join(' ')
@@ -135,7 +138,7 @@ class Naming {
     @SuppressWarnings('DuplicateStringLiteral')
     @SuppressWarnings('UnnecessaryElseStatement')
     protected static String camelCaseToProperty(String content) {
-        def upperBound = Math.min(content.size(), 3)
+        Integer upperBound = Math.min(content.size(), 3)
         if (content[0..<upperBound].every { Character.isUpperCase(it as char) }) {
             return content
         }
@@ -178,7 +181,7 @@ class Naming {
         String to(NameType type) {
             // If the from and to types have different intermediate types, we
             // first need to convert between the two intermediate types.
-            def currentContent = this.content
+            String currentContent = this.content
             if (this.type.intermediateType == NameType.CAMEL_CASE && type.intermediateType == NameType.HYPHENATED) {
                 currentContent = camelCaseToHyphenated(currentContent)
             }
@@ -208,15 +211,15 @@ class Naming {
             if (position == maxPos) return null
 
             char ch = source[position]
-            def state = getType(ch as char)
+            Integer state = getType(ch as char)
 
             // Start looking at the next characters
-            def pos = position + 1
+            Integer pos = position + 1
             while (pos < maxPos) {
                 // When this character is different to the one before,
                 // it is a word boundary unless this is a lower-case
                 // letter and the previous one was upper-case.
-                def newState = getType(source[pos] as char)
+                Integer newState = getType(source[pos] as char)
                 if (newState != state && (state != UPPER || newState != LOWER)) break
 
                 // Look ahead if both the previous character and the current
@@ -230,7 +233,7 @@ class Naming {
                 pos++
             }
 
-            def word = source[position..<pos]
+            String word = source[position..<pos]
             position = pos
 
             // Do we need to lower case this word?
