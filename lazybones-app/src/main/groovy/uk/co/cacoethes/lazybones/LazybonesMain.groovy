@@ -33,8 +33,7 @@ class LazybonesMain {
     static final String USAGE = "USAGE: lazybones [OPTIONS] [COMMAND]\n"
 
     static void main(String[] args) {
-        def config = Configuration.initConfiguration()
-//        def settings = config.settings
+        Configuration config = Configuration.initConfiguration()
 
         OptionParser parser = makeOptionParser()
         OptionSet optionSet
@@ -50,9 +49,9 @@ class LazybonesMain {
         // Create a map of options from the "options.*" key in the user's
         // configuration and then add any command line options to that map,
         // overriding existing values.
-        def globalOptions = config.getSubSettings("options") ?: [:]
+        Map globalOptions = config.getSubSettings("options") ?: [:]
         for (OptionSpec spec in optionSet.specs()) {
-            def valueList = spec.values(optionSet)
+            List valueList = spec.values(optionSet)
             globalOptions[spec.options()[0]] = valueList ? valueList[0] : true
         }
 
@@ -80,7 +79,7 @@ class LazybonesMain {
         validateConfig(config)
 
         // Execute the corresponding command
-        def cmdInstance = Commands.getAll(config).find { Command it -> it.name == cmd }
+        Command cmdInstance = Commands.getAll(config).find { Command it -> it.name == cmd }
         if (!cmdInstance) {
             log.severe "There is no command '" + cmd + "'"
             System.exit 1
@@ -94,15 +93,15 @@ class LazybonesMain {
         // First find the MANIFEST.MF for the JAR containing this class
         //
         // Can't use this.getResource() since that looks for a static method
-        def cls = this
-        def classPath = cls.getResource(cls.simpleName + ".class").toString()
+        Class cls = this
+        String classPath = cls.getResource(cls.simpleName + ".class")
         if (!classPath.startsWith("jar")) return "unknown"
 
-        def manifestPath = classPath[0..classPath.lastIndexOf("!")] + "/META-INF/MANIFEST.MF"
+        String manifestPath = classPath[0..classPath.lastIndexOf("!")] + "/META-INF/MANIFEST.MF"
 
         // Now read the manifest and extract Implementation-Version to get the
         // Lazybones version.
-        def manifest = new Manifest(new URL(manifestPath).openStream())
+        Manifest manifest = new Manifest(new URL(manifestPath).openStream())
         return manifest.mainAttributes.getValue("Implementation-Version")
     }
 
@@ -118,14 +117,14 @@ class LazybonesMain {
     private static void initLogging(Map options) {
         // Load a basic logging configuration from a string containing Java
         // properties syntax.
-        def inputStream = new ByteArrayInputStream(LOG_CONFIG.getBytes(Configuration.ENCODING))
+        InputStream inputStream = new ByteArrayInputStream(LOG_CONFIG.getBytes(Configuration.ENCODING))
         LogManager.logManager.readConfiguration(inputStream)
 
         // Update logging level based on the global options. We temporarily
         // get hold of the parent logger of all Lazybones loggers so that all
         // child loggers are updated (as the child loggers inherit the level
         // from this parent).
-        def parentLogger = Logger.getLogger("uk.co.cacoethes.lazybones")
+        Logger parentLogger = Logger.getLogger("uk.co.cacoethes.lazybones")
 
         if (options[Options.VERBOSE_SHORT]) parentLogger.level = Level.FINEST
         else if (options[Options.QUIET]) parentLogger.level = Level.WARNING
@@ -146,7 +145,7 @@ class LazybonesMain {
      * message, the command's usage string, and the supported JOptSimple options.
      */
     protected static String getHelp(String message, OptionParser parser) {
-        def writer = new StringWriter()
+        StringWriter writer = new StringWriter()
         parser.printHelpOn(writer)
 
         return """\

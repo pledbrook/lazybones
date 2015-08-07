@@ -79,7 +79,7 @@ USAGE: create <template> <version>? <dir>
 
     protected int doExecute(OptionSet cmdOptions, Map globalOptions, Configuration configuration) {
         try {
-            def createData = evaluateArgs(cmdOptions)
+            CreateCommandInfo createData = evaluateArgs(cmdOptions)
 
             List<PackageSource> packageSources = packageSourceFactory.buildPackageSourceList(configuration)
             PackageLocation packageLocation = packageLocationFactory.buildPackageLocation(
@@ -91,14 +91,14 @@ USAGE: create <template> <version>? <dir>
                     createData.packageArg.templateName,
                     createData.requestedVersion)
 
-            def targetDir = createData.targetDir.canonicalFile
+            File targetDir = createData.targetDir.canonicalFile
             targetDir.mkdirs()
             ArchiveMethods.unzip(pkg, targetDir)
 
-            def scmAdapter = null
+            GitAdapter scmAdapter = null
             if (cmdOptions.has(GIT_OPT)) scmAdapter = new GitAdapter(configuration)
 
-            def executor = new InstallationScriptExecuter(scmAdapter)
+            InstallationScriptExecuter executor = new InstallationScriptExecuter(scmAdapter)
             executor.runPostInstallScriptWithArgs(
                     cmdOptions.valuesOf(VAR_OPT).collectEntries { String it -> it.split('=') as List },
                     createData.packageArg.qualifiers,
@@ -154,8 +154,8 @@ USAGE: create <template> <version>? <dir>
     }
 
     protected CreateCommandInfo evaluateArgs(OptionSet commandOptions) {
-        def mainArgs = commandOptions.nonOptionArguments()
-        def createCmdInfo = getCreateInfoFromArgs(mainArgs)
+        List mainArgs = commandOptions.nonOptionArguments()
+        CreateCommandInfo createCmdInfo = getCreateInfoFromArgs(mainArgs)
 
         logStart createCmdInfo.packageArg.templateName, createCmdInfo.requestedVersion, createCmdInfo.targetDir
 
@@ -165,7 +165,7 @@ USAGE: create <template> <version>? <dir>
     @SuppressWarnings('SpaceAroundOperator')
     protected CreateCommandInfo getCreateInfoFromArgs(List<String> mainArgs) {
 
-        def packageName = new TemplateArg(mappings?."${mainArgs[0]}" ?: mainArgs[0])
+        TemplateArg packageName = new TemplateArg(mappings?."${mainArgs[0]}" ?: mainArgs[0])
 
         if (hasVersionArg(mainArgs)) {
             return new CreateCommandInfo(packageName, mainArgs[1], toFile(mainArgs[2]))
@@ -195,7 +195,7 @@ USAGE: create <template> <version>? <dir>
     @SuppressWarnings('SpaceBeforeOpeningBrace')
     private void logReadme(CreateCommandInfo createData) {
         // Find a suitable README and display that if it exists.
-        def readmeFiles = createData.targetDir.canonicalFile.listFiles({ File dir, String name ->
+        List readmeFiles = createData.targetDir.canonicalFile.listFiles({ File dir, String name ->
             name == README_BASENAME || name.startsWith(README_BASENAME)
         } as FilenameFilter)
 

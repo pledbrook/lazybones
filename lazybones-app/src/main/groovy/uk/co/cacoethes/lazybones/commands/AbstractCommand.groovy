@@ -75,7 +75,7 @@ abstract class AbstractCommand implements Command {
     @SuppressWarnings('ReturnNullFromCatchBlock')
     protected OptionSet parseArguments(List<String> args, IntRange validArgCount) {
         try {
-            def options = createParser().parse(args as String[])
+            OptionSet options = createParser().parse(args as String[])
 
             if (!(options.nonOptionArguments().size() in validArgCount) && !options.has(Options.HELP_SHORT)) {
                 log.severe getHelp("Incorrect number of arguments.")
@@ -95,7 +95,7 @@ abstract class AbstractCommand implements Command {
      * message, the command's usage string, and the supported JOptSimple options.
      */
     String getHelp(String message) {
-        def writer = new StringWriter()
+        StringWriter writer = new StringWriter()
         createParser().printHelpOn(writer)
 
         return """\

@@ -1,14 +1,18 @@
 package uk.co.cacoethes.lazybones.commands
 
 import groovy.util.logging.Log
-import joptsimple.OptionParser
-import joptsimple.OptionSet
-import uk.co.cacoethes.lazybones.config.Configuration
-import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
-import wslite.http.HTTPClientException
 
 import java.util.logging.Level
 import java.util.regex.Pattern
+import java.util.regex.Matcher
+
+import joptsimple.OptionParser
+import joptsimple.OptionSet
+
+import uk.co.cacoethes.lazybones.config.Configuration
+import uk.co.cacoethes.lazybones.packagesources.BintrayPackageSource
+
+import wslite.http.HTTPClientException
 
 /**
  * A Lazybones command that prints out all the available templates by name,
@@ -20,9 +24,9 @@ class ListCommand extends AbstractCommand {
 USAGE: list
 """
 
-    private static final String INDENT = "    "
-    private static final String CACHED_OPTION = "cached"
-    private static final String SUBTEMPLATES_OPTION = "subs"
+    private static final String INDENT = '    '
+    private static final String CACHED_OPTION = 'cached'
+    private static final String SUBTEMPLATES_OPTION = 'subs'
     private static final int PADDING = 30
 
     private static final String VERSION_PATTERN = /\d+\.\d[^-]*(?:-SNAPSHOT)?/
@@ -52,7 +56,7 @@ USAGE: list
     @Override
     protected int doExecute(OptionSet optionSet, Map globalOptions, Configuration config) {
 
-        def remoteTemplates = fetchRemoteTemplates(config.getSetting("bintrayRepositories"))
+        Map<String, Object> remoteTemplates = fetchRemoteTemplates(config.getSetting("bintrayRepositories"))
 
         boolean offline = false
         if (!optionSet.hasOptions()) {
@@ -89,9 +93,9 @@ USAGE: list
         println "Cached templates"
         println()
 
-        def templateNamePattern = ~/^(.*)-($VERSION_PATTERN)\.zip$/
+        Pattern templateNamePattern = ~/^(.*)-($VERSION_PATTERN)\.zip$/
 
-        def templates = findMatchingTemplates(cacheDir, templateNamePattern).groupBy { File f ->
+        Map templates = findMatchingTemplates(cacheDir, templateNamePattern).groupBy { File f ->
             templateNamePattern.matcher(f.name)[0][1]
         }.collectEntries { String tmplName, List<File> files ->
             // Extract the version numbers and make those the key value.
@@ -140,7 +144,7 @@ USAGE: list
 
     protected fetchPackageNames(String repoName) {
         try {
-            def pkgSource = new BintrayPackageSource(repoName)
+            BintrayPackageSource pkgSource = new BintrayPackageSource(repoName)
             return pkgSource.listPackageNames().sort()
         }
         catch (HTTPClientException ex) {
@@ -176,8 +180,8 @@ USAGE: list
             return 1   // Error exit code
         }
 
-        def templateNamePattern = ~/^(.*)-template-($VERSION_PATTERN)\.zip$/
-        def templates = findMatchingTemplates(lazybonesDir, templateNamePattern)
+        Pattern templateNamePattern = ~/^(.*)-template-($VERSION_PATTERN)\.zip$/
+        File[] templates = findMatchingTemplates(lazybonesDir, templateNamePattern)
 
         // are there any templates available?
         if (templates) {
@@ -185,7 +189,7 @@ USAGE: list
             println()
 
             for (f in templates) {
-                def matcher = templateNamePattern.matcher(f.name)
+                Matcher matcher = templateNamePattern.matcher(f.name)
                 println INDENT + matcher[0][1].padRight(PADDING) + matcher[0][2]
             }
 

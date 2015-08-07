@@ -41,7 +41,7 @@ class InstallationScriptExecuter {
         // lazybonesVersion, lazybonesMajorVersion, and lazybonesMinorVersion
         // variables into the script binding.
         try {
-            def scriptVariables = new HashMap(variables)
+            Map scriptVariables = new HashMap(variables)
             scriptVariables << loadParentParams(templateDir)
             scriptVariables << evaluateVersionScriptVariables()
             runPostInstallScript(tmplQualifiers, targetDir, templateDir, scriptVariables)
@@ -60,9 +60,9 @@ class InstallationScriptExecuter {
      * @return the lazybones script if it exists
      */
     Script runPostInstallScript(List tmplQualifiers, File targetDir, File templateDir, Map<String, String> model) {
-        def installScriptFile = new File(templateDir, "lazybones.groovy")
+        File installScriptFile = new File(templateDir, "lazybones.groovy")
         if (installScriptFile.exists()) {
-            def script = initializeScript(model, tmplQualifiers, installScriptFile, targetDir, templateDir)
+            LazybonesScript script = initializeScript(model, tmplQualifiers, installScriptFile, targetDir, templateDir)
             script.run()
             installScriptFile.delete()
 
@@ -79,19 +79,19 @@ class InstallationScriptExecuter {
             File scriptFile,
             File targetDir,
             File templateDir) {
-        def compiler = new CompilerConfiguration()
+        CompilerConfiguration compiler = new CompilerConfiguration()
         compiler.scriptBaseClass = LazybonesScript.name
 
         // Can't use 'this' here because the static type checker does not
         // treat it as the class instance:
         //       https://jira.codehaus.org/browse/GROOVY-6162
-        def shell = new GroovyShell(getClass().classLoader, new Binding(model), compiler)
+        GroovyShell shell = new GroovyShell(getClass().classLoader, new Binding(model), compiler)
 
         // Setter methods must be used here otherwise the physical properties on the
         // script object won't be set. I can only assume that the properties are added
         // to the script binding instead.
         LazybonesScript script = shell.parse(scriptFile) as LazybonesScript
-        def groovyEngine = new SimpleTemplateEngine()
+        SimpleTemplateEngine groovyEngine = new SimpleTemplateEngine()
         script.with {
             registerDefaultEngine(groovyEngine)
             registerEngine("gtpl", groovyEngine)
@@ -107,7 +107,7 @@ class InstallationScriptExecuter {
     protected void persistParentParams(File dir, LazybonesScript script) {
         // Save this template's named parameters in a file inside a .lazybones
         // sub-directory of the unpacked template.
-        def lzbDir = new File(dir, ".lazybones")
+        File lzbDir = new File(dir, ".lazybones")
         lzbDir.mkdirs()
         new File(lzbDir, STORED_PROPS_FILENAME).withWriter(FILE_ENCODING) { Writer w ->
             // Need to use the getter method explicitly, otherwise it seems to
@@ -123,11 +123,11 @@ class InstallationScriptExecuter {
         // actually be null, in which case there is no store parameters file
         // (for example in the case of an unpacked project template rather
         // than a subtemplate).
-        def lzbDir = templateDir.parentFile
+        File lzbDir = templateDir.parentFile
         if (!lzbDir) return [:]
 
-        def paramsFile = new File(lzbDir, STORED_PROPS_FILENAME)
-        def props = new Properties()
+        File paramsFile = new File(lzbDir, STORED_PROPS_FILENAME)
+        Properties props = new Properties()
         if (paramsFile.exists()) {
             paramsFile.withReader(FILE_ENCODING) { Reader r ->
                 props.load(r)
@@ -143,10 +143,10 @@ class InstallationScriptExecuter {
      * to a map that is then returned.
      */
     protected Map evaluateVersionScriptVariables() {
-        def version = LazybonesMain.readVersion()
-        def vars = [lazybonesVersion: version]
+        String version = LazybonesMain.readVersion()
+        Map vars = [lazybonesVersion: version]
 
-        def versionParts = version.split(/[\.\-]/)
+        List versionParts = version.split(/[\.\-]/)
         assert versionParts.size() > 1
 
         vars["lazybonesMajorVersion"] = versionParts[0]?.toInteger()

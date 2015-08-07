@@ -23,7 +23,7 @@ import java.util.logging.Level
  * </p>
  */
 @Log
-@SuppressWarnings("MethodCount")
+@SuppressWarnings(['MethodCount', 'Instanceof'])
 class Configuration {
 
     static final String SYSPROP_OVERRIDE_PREFIX = "lazybones."
@@ -36,7 +36,7 @@ class Configuration {
     static final String NAME_SEPARATOR_REGEX = "\\."
 
     static {
-        def options = [
+        Map options = [
                 "config.file": String,
                 "cache.dir": String,
                 "git.name": String,
@@ -92,7 +92,7 @@ class Configuration {
 
         // Validate the provided settings to ensure that they are known and that
         // they have a value of the appropriate type.
-        def invalidOptions = this.settings.flatten().findAll { key, value ->
+        Set invalidOptions = this.settings.flatten().findAll { key, value ->
             !validateSetting(key, validOptions, value)
         }.keySet()
 
@@ -112,7 +112,7 @@ class Configuration {
      * (represented by a map of override settings).
      */
     List storeSettings() {
-        def sharedKeys = findIntersectKeys(managedSettings, overrideSettings)
+        List sharedKeys = findIntersectKeys(managedSettings, overrideSettings)
         jsonConfigFile.setText(new JsonBuilder(managedSettings).toPrettyString(), ENCODING)
 
         return sharedKeys
@@ -125,7 +125,7 @@ class Configuration {
      * @throws UnknownSettingException If the setting name is not recognised,
      * i.e. it isn't in the registered list of known settings.
      */
-    def getSetting(String name) {
+    Object getSetting(String name) {
         requireSettingType(name)
         return getConfigOption(this.settings, name)
     }
@@ -187,9 +187,9 @@ class Configuration {
      * a string.
      */
     boolean putSetting(String name, value) {
-        def settingType = requireSettingType(name)
+        Class settingType = requireSettingType(name)
 
-        def convertedValue
+        Object convertedValue
         try {
             convertedValue = value instanceof CharSequence ?
                     Converters.getConverter(settingType).toType(value) :
@@ -221,14 +221,14 @@ class Configuration {
      * a string.
      */
     boolean appendToSetting(String name, value) {
-        def settingType = requireSettingType(name)
+        Class settingType = requireSettingType(name)
         if (!settingType.isArray()) {
             throw new InvalidSettingException(
                     name, value,
                     "Setting '${name}' is not an array type, so you cannot add to it")
         }
 
-        def convertedValue = value instanceof CharSequence ?
+        Object convertedValue = value instanceof CharSequence ?
                 Converters.getConverter(settingType.componentType).toType(value) :
                 requireValueOfType(name, value, settingType.componentType)
 
@@ -263,7 +263,7 @@ class Configuration {
     }
 
     protected Class requireSettingType(String name) {
-        def settingType = getSettingType(name, validOptions)
+        Class settingType = getSettingType(name, validOptions)
         if (!settingType) {
             throw new UnknownSettingException(name)
         }
@@ -299,9 +299,9 @@ class Configuration {
      * <p>The system properties take the form of 'lazybones.&lt;config.option&gt;'.</p>
      */
     static Configuration initConfiguration() {
-        def defaultConfig = loadDefaultConfig()
-        def userConfigFile = (System.getProperty(CONFIG_FILE_SYSPROP) ?: defaultConfig.config.file) as File
-        def jsonConfigFile = getJsonConfigFile(userConfigFile)
+        ConfigObject defaultConfig = loadDefaultConfig()
+        File userConfigFile = (System.getProperty(CONFIG_FILE_SYSPROP) ?: defaultConfig.config.file) as File
+        File jsonConfigFile = getJsonConfigFile(userConfigFile)
 
         return initConfiguration(
                 defaultConfig,
@@ -310,12 +310,12 @@ class Configuration {
     }
 
     static Configuration initConfiguration(ConfigObject baseConfig, Reader userConfigSource, File jsonConfigFile) {
-        def jsonConfig = [:]
+        Map jsonConfig = [:]
         if (jsonConfigFile?.exists()) {
             jsonConfig = loadJsonConfig(jsonConfigFile.newReader(ENCODING))
         }
 
-        def overrideConfig = loadConfig(userConfigSource)
+        ConfigObject overrideConfig = loadConfig(userConfigSource)
 
         // Load settings from system properties. These override all other sources.
         loadConfigFromSystemProperties(overrideConfig)
@@ -324,7 +324,7 @@ class Configuration {
     }
 
     static Class getSettingType(String name, Map knownSettings) {
-        def valueType = knownSettings[name] ?: knownSettings[makeWildcard(name)]
+        Class valueType = knownSettings[name] ?: knownSettings[makeWildcard(name)]
         return valueType
     }
 
@@ -352,10 +352,10 @@ class Configuration {
      * @return
      */
     static boolean validateSetting(String name, Map knownSettings, value) {
-        def setting = matchingSetting(name, knownSettings)
+        Map.Entry setting = matchingSetting(name, knownSettings)
         if (!setting) throw new UnknownSettingException(name)
 
-        def converter = Converters.getConverter(setting.value)
+        Converter converter = Converters.getConverter(setting.value)
         return value == null || converter.validate(value)
     }
 
@@ -379,10 +379,10 @@ class Configuration {
      * @return The required configuration value, or {@code null} if the setting doesn't exist.
      */
     @SuppressWarnings("DuplicateNumberLiteral")
-    protected static getConfigOption(Map root, String dottedString) {
-        def parts = dottedString.split(NAME_SEPARATOR_REGEX)
-        def firstParts = parts[0..<(parts.size() - 1)]
-        def configEntry = firstParts.inject(root) { Map config, String keyPart ->
+    protected static Object getConfigOption(Map root, String dottedString) {
+        List parts = dottedString.split(NAME_SEPARATOR_REGEX)
+        List firstParts = parts[0..<(parts.size() - 1)]
+        Object configEntry = firstParts.inject(root) { Map config, String keyPart ->
             config?.get(keyPart)
         }
 
@@ -390,7 +390,7 @@ class Configuration {
     }
 
     protected static getConfigOptionAsList(ConfigObject root, String dottedString) {
-        def currentValue = getConfigOption(root, dottedString)
+        Object currentValue = getConfigOption(root, dottedString)
         currentValue = currentValue != null ? new ArrayList(currentValue) : []
 
         setConfigOption(root, dottedString, currentValue)
@@ -409,10 +409,10 @@ class Configuration {
      * key. In other words, {@code retval.dir == value} for the dotted string example above.
      */
     @SuppressWarnings("DuplicateNumberLiteral")
-    protected static Map setConfigOption(ConfigObject root, String dottedString, value) {
-        def parts = dottedString.split(NAME_SEPARATOR_REGEX)
-        def firstParts = parts[0..<(parts.size() - 1)]
-        def configEntry = firstParts.inject(root) { ConfigObject config, String keyPart ->
+    protected static Map setConfigOption(ConfigObject root, String dottedString, Object value) {
+        List parts = dottedString.split(NAME_SEPARATOR_REGEX)
+        List firstParts = parts[0..<(parts.size() - 1)]
+        Object configEntry = firstParts.inject(root) { ConfigObject config, String keyPart ->
             config.getProperty(keyPart)
         }
 
@@ -422,9 +422,9 @@ class Configuration {
 
     @SuppressWarnings("DuplicateNumberLiteral")
     protected static void clearConfigOption(ConfigObject root, String dottedString) {
-        def parts = dottedString.split(NAME_SEPARATOR_REGEX)
-        def currentConfig = root
-        def configParts = []
+        List parts = dottedString.split(NAME_SEPARATOR_REGEX)
+        Object currentConfig = root
+        List configParts = []
         for (part in parts) {
             configParts << currentConfig
             currentConfig = currentConfig.getProperty(part)
@@ -440,7 +440,7 @@ class Configuration {
     }
 
     protected static ConfigObject loadDefaultConfig() {
-        def cls = this
+        Class cls = this
         return new ConfigSlurper().parse(cls.getResource("defaultConfig.groovy").text)
     }
 
@@ -448,7 +448,7 @@ class Configuration {
         return System.properties.findAll {
             it.key.startsWith(SYSPROP_OVERRIDE_PREFIX)
         }.each { String key, String value ->
-            def settingName = key[SYSPROP_OVERRIDE_PREFIX.size()..-1]
+            String settingName = key[SYSPROP_OVERRIDE_PREFIX.size()..-1]
 
             if (!validateSetting(settingName, VALID_OPTIONS, value)) {
                 log.warning "Unknown option '$settingName' or its values are invalid: ${value}"
@@ -492,8 +492,8 @@ class Configuration {
      * are flattened.
      */
     protected static List findIntersectKeys(Map map1, Map map2) {
-        def keys = map1.keySet().intersect(map2.keySet())
-        def result = new ArrayList(keys)
+        Set keys = map1.keySet().intersect(map2.keySet())
+        List result = new ArrayList(keys)
 
         for (k in keys) {
             if (map1[k] instanceof Map && map2[k] instanceof Map) {

@@ -15,6 +15,7 @@ class IntegerConverter implements Converter<Integer> {
     }
 
     @Override
+    @SuppressWarnings('Instanceof')
     boolean validate(Object value) {
         return value == null || value instanceof Integer
     }

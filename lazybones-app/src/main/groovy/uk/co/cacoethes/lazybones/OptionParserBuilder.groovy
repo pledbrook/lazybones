@@ -14,7 +14,7 @@ class OptionParserBuilder {
 
     static OptionParser makeOptionParser() {
         // These are the global options available for all commands.
-        def parser = new OptionParser()
+        OptionParser parser = new OptionParser()
         parser.accepts(STACKTRACE, "Show stack traces when exceptions are thrown.")
         parser.acceptsAll([VERBOSE, VERBOSE_SHORT], "Display extra information when running commands.")
         parser.accepts(QUIET, "Show minimal output.")

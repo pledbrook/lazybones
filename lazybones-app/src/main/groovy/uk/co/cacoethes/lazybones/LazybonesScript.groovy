@@ -177,7 +177,7 @@ class LazybonesScript extends Script {
      * @since 0.4
      */
     String ask(String message, String defaultValue, String propertyName) {
-        def val = propertyName && binding.hasVariable(propertyName) ?
+        String val = propertyName && binding.hasVariable(propertyName) ?
                 binding.getVariable(propertyName) :
                 ask(message, defaultValue)
 
@@ -194,7 +194,7 @@ class LazybonesScript extends Script {
      * @param substitutionVariables
      * @since 0.4
      */
-    def filterFiles(String filePattern, Map substitutionVariables) {
+    LazybonesScript filterFiles(String filePattern, Map substitutionVariables) {
         String warningMessage = "The template you are using depends on a deprecated part of the API, [filterFiles], " +
                 "which will be removed in Lazybones 1.0. Use a version of Lazybones prior to 0.5 with this template."
         log.warning(warningMessage)
@@ -207,7 +207,7 @@ class LazybonesScript extends Script {
      * @return
      * @since 0.5
      */
-    def processTemplates(String filePattern, Map substitutionVariables) {
+    LazybonesScript processTemplates(String filePattern, Map substitutionVariables) {
         if (projectDir == null) throw new IllegalStateException("projectDir has not been set")
         if (templateDir == null) throw new IllegalStateException("templateDir has not been set")
 
@@ -245,8 +245,8 @@ class LazybonesScript extends Script {
      * than the platform file separator.
      */
     private List<File> findFilesByPattern(String pattern) {
-        def filesToFilter = []
-        def filePatternWithUserDir = new File(templateDir.canonicalFile, pattern).path
+        List filesToFilter = []
+        String filePatternWithUserDir = new File(templateDir.canonicalFile, pattern).path
 
         templateDir.eachFileRecurse(FileType.FILES) { File file ->
             if (antPathMatcher.match(filePatternWithUserDir, file.canonicalPath)) {
@@ -302,9 +302,9 @@ class LazybonesScript extends Script {
         }
         log.fine "Filtering file ${file}${replace ? ' (replacing)' : ''}"
 
-        def template = makeTemplate(engine, file, properties)
+        Writable template = makeTemplate(engine, file, properties)
 
-        def targetFile = replace ? file : new File(file.parentFile, FilenameUtils.getBaseName(file.path))
+        File targetFile = replace ? file : new File(file.parentFile, FilenameUtils.getBaseName(file.path))
         targetFile.withWriter(fileEncoding) { writer ->
             template.writeTo(writer)
         }

@@ -30,9 +30,9 @@ class ArchiveMethods {
         checkUnzipDestination(originalDestination)
 
         // if destination directory is not given, we'll fall back to the parent directory of 'self'
-        def destination = originalDestination ?: new File(self.parent)
+        File destination = originalDestination ?: new File(self.parent)
 
-        def zipFile = new ZipFile(self)
+        ZipFile zipFile = new ZipFile(self)
 
         try {
             return unpackZipEntries(zipFile, destination, filter)
@@ -43,7 +43,7 @@ class ArchiveMethods {
     }
 
     protected static Collection<File> unpackZipEntries(ZipFile zipFile, File destination, Closure<Boolean> filter) {
-        def unzippedFiles = []
+        List unzippedFiles = []
 
         // The type coercion here is down to http://jira.codehaus.org/browse/GROOVY-6123
         for (ZipArchiveEntry entry in (zipFile.entries as List<ZipArchiveEntry>)) {
@@ -55,7 +55,7 @@ class ArchiveMethods {
                 else {
                     file.parentFile?.mkdirs()
 
-                    def output = new FileOutputStream(file)
+                    FileOutputStream output = new FileOutputStream(file)
                     output.withStream {
                         output << zipFile.getInputStream(entry)
                     }
@@ -93,7 +93,7 @@ class ArchiveMethods {
     private static void checkUnzipFileType(File self) {
         if (!self.isFile()) throw new IllegalArgumentException(EXCEPTION_TEXT)
 
-        def filename = self.name
+        String filename = self.name
         if (!filename.toLowerCase().endsWith(".zip")) throw new IllegalArgumentException(EXCEPTION_TEXT)
     }
 

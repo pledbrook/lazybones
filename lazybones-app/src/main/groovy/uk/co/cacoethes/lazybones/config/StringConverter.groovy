@@ -15,6 +15,7 @@ class StringConverter implements Converter<CharSequence> {
     }
 
     @Override
+    @SuppressWarnings('Instanceof')
     boolean validate(Object value) {
         return value == null || value instanceof CharSequence
     }
