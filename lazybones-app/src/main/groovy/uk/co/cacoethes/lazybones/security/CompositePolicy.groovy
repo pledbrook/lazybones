@@ -35,6 +35,7 @@ class CompositePolicy extends Policy {
         }
     }
 
+    @SuppressWarnings("NestedForLoop")
     protected PermissionCollection aggregatePermissions(Closure cl) {
         def permissions = new Permissions()
         for (Policy policy in policies) {

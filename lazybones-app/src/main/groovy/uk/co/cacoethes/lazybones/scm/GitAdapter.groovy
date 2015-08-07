@@ -70,7 +70,7 @@ class GitAdapter implements ScmAdapter {
      * @return The return code from the process.
      */
     private int execGit(List args, File location) {
-        def process = ((List) [GIT] + args).execute([], location)
+        def process = ([GIT] + args).execute([], location)
         def out = new StringWriter()
         process.consumeProcessOutput out, out
         log.finest out.toString()

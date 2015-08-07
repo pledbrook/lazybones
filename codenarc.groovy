@@ -7,8 +7,12 @@ ruleset {
         'ElseBlockBraces' enabled: false
     }
     ruleset('rulesets/concurrency.xml')
-    ruleset('rulesets/convention.xml')
-    ruleset('rulesets/design.xml')
+    ruleset('rulesets/convention.xml') {
+        'NoDef' enabled: false
+    }
+    ruleset('rulesets/design.xml') {
+        'Instanceof' enabled: false
+    }
     ruleset('rulesets/dry.xml')
     ruleset('rulesets/exceptions.xml')
     ruleset('rulesets/formatting.xml') {
