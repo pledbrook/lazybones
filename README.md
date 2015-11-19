@@ -36,9 +36,9 @@ extras (controllers, scaffolding etc.) inside a project.
 
 ## Running it
 
-Grab lazybones from [gvm](http://gvmtool.net):
+Grab lazybones from [sdkman](http://sdkman.io/) (formerly gvm):
 
-    gvm install lazybones
+    sdk install lazybones
 
 or alternatively, grab the distribution [from Bintray](https://bintray.com/pkg/show/general/pledbrook/lazybones-templates/lazybones),
 unpack it to a local directory, and then add its 'bin' directory to your `PATH`
