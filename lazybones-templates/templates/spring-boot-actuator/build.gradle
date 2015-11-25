@@ -3,7 +3,7 @@ apply plugin: "spring-boot"
 apply plugin: "application"
 
 sourceCompatibility = "1.6"
-targetCompatibility = "1.6"
+targetCompatibility = "1.8"
 
 version = "${version}"
 group = "${group}"
@@ -11,7 +11,7 @@ mainClassName = "sample.SampleApplication"
 
 buildscript {
     ext {
-        springBootVersion = '1.2.2.RELEASE'
+        springBootVersion = '1.3.0.RELEASE'
     }    
     repositories {
         mavenCentral()
