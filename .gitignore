@@ -1,4 +1,8 @@
+.classpath
 .gradle/
+.project
+.settings/
+bin/
 build/
 /gradle.properties
 *.iml
