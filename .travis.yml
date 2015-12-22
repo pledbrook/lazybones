@@ -2,5 +2,5 @@ language: groovy
 jdk:
   - oraclejdk7
   - openjdk7
-  - openjdk6
-script: "./gradlew check"
+  - openjdk8
+script: "./gradlew --no-daemon check"
