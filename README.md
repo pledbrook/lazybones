@@ -1,7 +1,7 @@
 Lazybones Project Creation Tool
 ===============================
 
-Lazybones was born out of frustration that [Ratpack](http://ratpack-framework.org/)
+Lazybones was born out of frustration that [Ratpack](https://ratpack.io)
 does not and will not have a command line tool that will bootstrap a project.
 It's a good decision for Ratpack, but I'm lazy and want tools to do the boring
 stuff for me.
