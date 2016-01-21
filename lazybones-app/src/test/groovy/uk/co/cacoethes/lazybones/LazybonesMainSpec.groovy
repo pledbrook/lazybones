@@ -2,6 +2,7 @@ package uk.co.cacoethes.lazybones
 
 import spock.lang.Specification
 import uk.co.cacoethes.lazybones.config.Configuration
+import uk.co.cacoethes.lazybones.cli.LazybonesMain
 
 /**
  * @author Peter Ledbrook

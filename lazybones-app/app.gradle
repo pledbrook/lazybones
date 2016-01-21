@@ -26,10 +26,10 @@ apply plugin: "codenarc"
 apply plugin: "net.gvmtool.sdkvendor"
 
 applicationName = "lazybones"
-mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.8.3"
 
 // These settings mimic the old client VM behavior. Should result in faster startup.
+mainClassName = "uk.co.cacoethes.lazybones.cli.LazybonesMain"
+version = "0.8.3"
 applicationDefaultJvmArgs = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
 
 sourceCompatibility = "1.6"
