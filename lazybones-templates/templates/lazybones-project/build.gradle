@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.2"
+        classpath "uk.co.cacoethes:lazybones-gradle:1.2.4"
     }
 }
 
@@ -25,4 +25,10 @@ lazybones {
     // and `project.bintrayApiKey` respectively.
     repositoryUsername = "your_bintray_username"
     repositoryApiKey = "your_bintray_api_key"
+
+    // Required for Bintray open source hosting, substitute you license and
+    // vcsUrl:
+
+    // licenses = ["Apache-2.0"]
+    // vcsUrl = "https://github.com/yourRepoName"
 }
