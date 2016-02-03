@@ -26,8 +26,8 @@ lazybones {
     repositoryUsername = "your_bintray_username"
     repositoryApiKey = "your_bintray_api_key"
 
-    // Required for Bintray open source hosting, substitute you license and
-    // vcsUrl:
+    // These properties are required for Bintray open source hosting. Uncomment
+    // and substitute in your project's license and vcsUrl:
 
     // licenses = ["Apache-2.0"]
     // vcsUrl = "https://github.com/yourRepoName"
