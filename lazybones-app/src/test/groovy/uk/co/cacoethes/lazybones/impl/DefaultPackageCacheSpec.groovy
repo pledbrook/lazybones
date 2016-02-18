@@ -79,6 +79,20 @@ class DefaultPackageCacheSpec extends Specification {
         ex.message.contains(testPackageFilename)
     }
 
+    def "Should throw an exception if overwriting a file in cache without the overwrite option"() {
+        given: "An intialised package cache"
+        final cacheDir = testDir.newFolder()
+        final dpc = new DefaultPackageCache(cacheDir)
+
+        and: "An existing cached package"
+        final pkg = createCachedFile()
+
+        when: "I try to copy a file that will overwrite that cached package"
+        dpc.copyToCache()
+
+        then: "I should get an exception"
+    }
+
     def "Should retrieve requested package file from the cache based on a package URL"() {
         given: "A test package URI"
         final testPkg = getClass().getResource(testPackageFilename).toURI()
