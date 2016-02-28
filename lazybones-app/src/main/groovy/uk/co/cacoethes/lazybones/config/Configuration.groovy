@@ -510,6 +510,7 @@ class Configuration {
         return result
     }
 
+    @SuppressWarnings("DuplicateStringLiteral")
     private static class ProxyAuthenticator extends Authenticator {
         @Override
         protected PasswordAuthentication getPasswordAuthentication() {
