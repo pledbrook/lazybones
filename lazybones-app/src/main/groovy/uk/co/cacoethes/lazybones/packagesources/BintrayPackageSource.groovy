@@ -28,7 +28,7 @@ class BintrayPackageSource implements PackageSource {
         // For testing with Betamax: set up a proxy if required. groovyws-lite
         // doesn't currently support the http(s).proxyHost and http(s).proxyPort
         // system properties, so we have to manually create the proxy ourselves.
-        def proxy = loadSystemProxy(true)
+        def proxy = loadSystemProxy(false)
         if (proxy)  {
             restClient.httpClient.proxy = proxy
             restClient.httpClient.sslTrustAllCerts = true

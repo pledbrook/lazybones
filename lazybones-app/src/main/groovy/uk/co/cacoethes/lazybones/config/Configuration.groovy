@@ -4,6 +4,7 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import groovy.util.logging.Log
 
+import java.net.Authenticator.RequestorType
 import java.util.logging.Level
 
 /**
@@ -99,6 +100,10 @@ class Configuration {
         if (invalidOptions) {
             throw new MultipleInvalidSettingsException(invalidOptions as List)
         }
+
+        // If there are no problems, it's time to enable support for HTTP proxies
+        // that require authentication.
+        Authenticator.setDefault(new ProxyAuthenticator())
     }
 
     /** Returns the location of the managed config file (stored as JSON). */
@@ -503,5 +508,23 @@ class Configuration {
         }
 
         return result
+    }
+
+    private static class ProxyAuthenticator extends Authenticator {
+        @Override
+        protected PasswordAuthentication getPasswordAuthentication() {
+            if (requestorType == RequestorType.PROXY) {
+                def prot = requestingProtocol.toLowerCase()
+                def (host, port, user, password) = ["Host", "Port", "User", "Password"].collect { prop ->
+                    System.getProperty(prot + ".proxy${prop}", prop == "Port" ? "80" : "")
+                }
+
+                if (requestingHost.equalsIgnoreCase(host) && port.toInteger() == requestingPort) {
+                    return new PasswordAuthentication(user, password.toCharArray())
+                }
+            }
+
+            return null
+        }
     }
 }
