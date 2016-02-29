@@ -299,8 +299,21 @@ proxy, you only need to add the following to your Lazybones configuration:
         }
     }
     
-You do need to make sure that you configure both HTTP and HTTPS for Lazybones to
-work properly.
+To avoid potential configuration issues, use the same proxy settings for HTTP and
+HTTPS if possible.
+
+If your proxy requires authentication, you will need to add a couple of extra
+properties:
+
+    systemProp {
+        http {
+            proxyUser = "johndoe"
+            proxyPassword = "mypassword"
+        }
+    }
+
+As with the host and port, there are `https` variants of the username and passwordi
+as well.
 
 ### General options
 
