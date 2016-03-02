@@ -71,7 +71,7 @@ dependencies {
             "org.codehaus.groovy:groovy-json:${groovyVersion}",
             "org.codehaus.groovy:groovy-templates:${groovyVersion}",
             "org.apache.commons:commons-compress:1.5",
-            "com.github.groovy-wslite:groovy-wslite:0.7.2",
+            "com.github.groovy-wslite:groovy-wslite:1.1.2",
             "net.sf.jopt-simple:jopt-simple:4.4",
             "org.ini4j:ini4j:0.5.2"
 
@@ -145,6 +145,7 @@ task integTest(type: Test) {
     mustRunAfter "test"
     ignoreFailures = true
 
+    systemProperty "integration.test", "true"
     systemProperty "lazybones.testWorkDir", testWorkDir
     systemProperty "lazybones.installDir", installDist.destinationDir.path
     systemProperty "lzbtest.expected.version", version
