@@ -53,7 +53,7 @@ To create a new project, run
 So if you wanted to create a skeleton Ratpack project in a new 'my-rat-app'
 directory you would run
 
-    lazybones create ratpack-lite 0.1 my-rat-app
+    lazybones create ratpack 1.2.0 my-rat-app
     
 The version is optional and if you leave it out, Lazybones will install the
 latest version of the template it can find. 
@@ -107,7 +107,7 @@ There is also the problem of scripting and automation when you want to create
 a project without user intervention. The solution to both these issues is to
 pass the values on the command line:
 
-    lazybones create ratpack 0.2 ratapp -Pgroup=org.example -Ppackage=org.example.myapp
+    lazybones create ratpack 1.2.0 ratapp -Pgroup=org.example -Ppackage=org.example.myapp
 
 The `-P` option allows you to pass property values into the project templates
 without user intervention. The key is to know what the property names are, and
@@ -381,10 +381,10 @@ To package up a template, simply run
 
 The name of the project template comes from the containing directory, which is
 assumed to be lowercase hyphenated. The template name is the equivalent camel
-case form. So the template directory structure in src/templates/ratpack-lite
-results in a template called 'RatpackLite', which can be packaged with
+case form. So the template directory structure in src/templates/my-template
+results in a template called 'MyTemplate', which can be packaged with
 
-    ./gradlew packageTemplateRatpackLite
+    ./gradlew packageTemplateMyTemplate
 
 The project template archive will be created in the build directory with the
 name '<template name>-template-<version>.zip'. See the small section below on
@@ -428,8 +428,8 @@ And that's it for the project templates.
 
 You define the version of a template by putting a VERSION file in the root
 directory of the template that contains just the version number. For example,
-you specify a version of 1.2.8 for the ratpack-lite template by adding the file
-src/templates/ratpack-lite/VERSION with the contents
+you specify a version of 1.2.8 for the my-template template by adding the file
+src/templates/my-template/VERSION with the contents
 
     1.2.8
 
