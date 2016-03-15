@@ -46,7 +46,7 @@ interface PackageSourceManager {
      * @return The requested package, or {@code null} if the package can't be
      * found in any of the registered package sources.
      */
-    PackageInfo getPackageInfo(String name)
+    TemplateInfo getPackageInfo(String name)
 
     /**
      * Searches the package sources for the requested package and retrieves the

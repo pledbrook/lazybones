@@ -1,12 +1,8 @@
 package uk.co.cacoethes.lazybones.impl
 
-import uk.co.cacoethes.lazybones.PackageNotFoundException
-import uk.co.cacoethes.lazybones.api.PackageInfo
+import uk.co.cacoethes.lazybones.api.TemplateInfo
 import uk.co.cacoethes.lazybones.api.PackageSource
 import uk.co.cacoethes.lazybones.api.PackageSourceManager
-
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * Created by pledbrook on 11/04/2014.
@@ -31,7 +27,7 @@ class DefaultPackageSourceManager implements PackageSourceManager {
     }
 
 //    @Override
-    List<PackageInfo> findPackages(String namePattern) {
+    List<TemplateInfo> findPackages(String namePattern) {
         return null
     }
 
@@ -46,7 +42,7 @@ class DefaultPackageSourceManager implements PackageSourceManager {
      * package can't be found.
      */
     @Override
-    PackageInfo getPackageInfo(String name) {
+    TemplateInfo getPackageInfo(String name) {
         return packageSourceList.find { PackageSource src -> src.hasPackage(name) }?.getPackage(name)
     }
 

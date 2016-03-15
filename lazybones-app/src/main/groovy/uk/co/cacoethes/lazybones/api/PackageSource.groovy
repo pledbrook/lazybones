@@ -19,7 +19,7 @@ interface PackageSource {
      * Returns a list of the available packages. If there are no packages, this
      * returns an empty list.
      */
-    List<PackageInfo> listPackages()
+    List<TemplateInfo> listPackages()
 
     /**
      * Returns a list of the available packages. If there are no packages, this
@@ -29,7 +29,7 @@ interface PackageSource {
      * package to return (indexed from 0). "max" specifies the maximum number of
      * packages to return.
      */
-    List<PackageInfo> listPackages(Map options)
+    List<TemplateInfo> listPackages(Map options)
 
     /**
      * Returns whether this package source contains the given package.
@@ -41,7 +41,7 @@ interface PackageSource {
      * @throws {@link uk.co.cacoethes.lazybones.PackageNotFoundException} if
      * the package isn't hosted by this package source.
      */
-    PackageInfo getPackage(String name)
+    TemplateInfo getPackage(String name)
 
     /**
      * Returns the URL for a specific version of a package.

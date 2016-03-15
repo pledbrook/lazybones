@@ -3,7 +3,7 @@ package uk.co.cacoethes.lazybones.cli
 import groovy.util.logging.Log
 import org.apache.commons.io.FilenameUtils
 import uk.co.cacoethes.lazybones.PackageNotFoundException
-import uk.co.cacoethes.lazybones.api.PackageInfo
+import uk.co.cacoethes.lazybones.api.TemplateInfo
 import uk.co.cacoethes.lazybones.api.PackageSource
 import uk.co.cacoethes.util.UrlUtils
 
@@ -41,7 +41,7 @@ class PackageLocationBuilder {
             }
         }
 
-        PackageInfo packageInfo = getPackageInfo(packageName, packageSources)
+        TemplateInfo packageInfo = getPackageInfo(packageName, packageSources)
         String versionToDownload = version ?: packageInfo.latestVersion
         String cacheLocation = cacheLocationPattern(packageName, versionToDownload)
         String remoteLocation = packageInfo.source.getTemplateUrl(packageInfo.name, versionToDownload)
@@ -49,7 +49,7 @@ class PackageLocationBuilder {
         return new PackageLocation(remoteLocation: remoteLocation, cacheLocation: cacheLocation)
     }
 
-    protected PackageInfo getPackageInfo(String packageName, List<PackageSource> packageSources) {
+    protected TemplateInfo getPackageInfo(String packageName, List<PackageSource> packageSources) {
         for (PackageSource packageSource in packageSources) {
             log.fine "Searching for ${packageName} in ${packageSource}"
 

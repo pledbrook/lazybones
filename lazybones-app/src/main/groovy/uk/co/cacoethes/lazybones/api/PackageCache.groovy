@@ -5,12 +5,14 @@ package uk.co.cacoethes.lazybones.api
  */
 interface PackageCache {
     File copyToCache(URI packageUrl, boolean overwrite)
-    File copyToCache(String repoName, String packageName, String packageVersion, URI packageUrl, boolean overwrite)
+    File copyToCache(PackageIdentifier pkgId, URI packageUrl, boolean overwrite)
     File getPackage(URI packageUrl)
-    File getPackage(String repoName, String name, String version)
+    File getPackage(PackageIdentifier pkgId)
     CachedPackage getPackageInfo(URI packageUrl)
-    CachedPackage getPackageInfo(String repoName, String name, String version)
+    CachedPackage getPackageInfo(PackageIdentifier pkgId)
+    CachedPackage findPackageInfo(String name)
+    CachedPackage findPackageInfo(String name, String version)
     boolean hasPackage(URI packageUrl)
-    boolean hasPackage(String repoName, String name, String version)
+    boolean hasPackage(PackageIdentifier pkgId)
     List<CachedPackage> listPackages()
 }

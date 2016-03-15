@@ -3,7 +3,7 @@ package uk.co.cacoethes.lazybones.impl
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
-import uk.co.cacoethes.lazybones.api.PackageInfo
+import uk.co.cacoethes.lazybones.api.TemplateInfo
 import uk.co.cacoethes.lazybones.api.PackageSource
 
 class DefaultPackageSourceManagerSpec extends Specification {
@@ -48,7 +48,7 @@ class DefaultPackageSourceManagerSpec extends Specification {
 
     def "Should return the details of a requested package if at least one package source hosts it"() {
         given: "Some package sources, one of which hosts the requested package"
-        final expectedInfo = new PackageInfo(null, "ratpack", "1.2.1", null, null, null, null)
+        final expectedInfo = new TemplateInfo(null, "ratpack", "1.2.1", null, null, null, null)
         final ps1 = Mock(PackageSource) {
             hasPackage(expectedInfo.name) >> false
             getPackage(expectedInfo.name) >> null
@@ -69,7 +69,7 @@ class DefaultPackageSourceManagerSpec extends Specification {
 
     def "Should return the requested package info from the first source that hosts it"() {
         given: "Some package sources, all of which host the requested package"
-        final expectedInfo = new PackageInfo(null, "ratpack", "1.2.1", null, null, null, null)
+        final expectedInfo = new TemplateInfo(null, "ratpack", "1.2.1", null, null, null, null)
         final ps1 = Mock(PackageSource) {
             hasPackage(expectedInfo.name) >> true
             getPackage(expectedInfo.name) >> expectedInfo
@@ -90,7 +90,7 @@ class DefaultPackageSourceManagerSpec extends Specification {
 
     def "Should return null if requested package can't be found"() {
         given: "Some package sources, none of which hosts the requested package"
-        final expectedInfo = new PackageInfo(null, "ratpack", "1.2.1", null, null, null, null)
+        final expectedInfo = new TemplateInfo(null, "ratpack", "1.2.1", null, null, null, null)
         final ps1 = Mock(PackageSource) {
             hasPackage(expectedInfo.name) >> false
             getPackage(expectedInfo.name) >> null
@@ -111,7 +111,7 @@ class DefaultPackageSourceManagerSpec extends Specification {
 
     def "Should return null if no package sources are registered"() {
         given: "A package source manager with no registered package sources"
-        final expectedInfo = new PackageInfo(null, "ratpack", "1.2.1", null, null, null, null)
+        final expectedInfo = new TemplateInfo(null, "ratpack", "1.2.1", null, null, null, null)
         final psm = new DefaultPackageSourceManager()
 
         expect: "I get null back"
@@ -120,7 +120,7 @@ class DefaultPackageSourceManagerSpec extends Specification {
 
     def "Should return a null template URL if no package sources are registered"() {
         given: "A package source manager with no registered package sources"
-        final expectedInfo = new PackageInfo(null, "ratpack", "1.2.1", null, null, null, null)
+        final expectedInfo = new TemplateInfo(null, "ratpack", "1.2.1", null, null, null, null)
         final psm = new DefaultPackageSourceManager()
 
         expect: "I get null back"
@@ -135,7 +135,7 @@ class DefaultPackageSourceManagerSpec extends Specification {
             hasPackage(pkgName) >> false
             getPackage(pkgName) >> null
         }
-        final expectedInfo = new PackageInfo(null, "ratpack", "1.2.1", null, null, null, null)
+        final expectedInfo = new TemplateInfo(null, "ratpack", "1.2.1", null, null, null, null)
         final psm = new DefaultPackageSourceManager()
 
         expect: "I get null back"

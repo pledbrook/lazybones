@@ -9,7 +9,7 @@ import groovy.transform.TupleConstructor
  */
 @groovy.transform.Immutable(copyWith = true)
 @ToString(includes = ["name", "latestVersion", "owner", "description"])
-class PackageInfo {
+class TemplateInfo {
     /** The source/repository that supplies this template package. */
     PackageSource packageSource
 

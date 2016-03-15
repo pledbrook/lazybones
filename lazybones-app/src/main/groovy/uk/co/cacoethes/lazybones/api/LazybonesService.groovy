@@ -14,7 +14,7 @@ interface LazybonesService {
     PackageSource registerPackageSource(PackageSource repository)
     Map<PackageSource, List<String>> listTemplates()
     List<CachedPackage> listCachedTemplates()
-    List<PackageInfo> findPackages(String namePattern)
+    List<TemplateInfo> findPackages(String namePattern)
 
     /**
      * What's the behaviour if multiple package sources host a package with the
@@ -22,7 +22,7 @@ interface LazybonesService {
      * @param name
      * @return
      */
-    PackageInfo getPackageInfo(String name)
+    TemplateInfo getPackageInfo(String name)
     NewProjectInfo installTemplate(String name, String version, String targetPath, List<String> tmplQualifiers, Map model)
     NewProjectInfo installTemplate(URI packageUrl, String targetPath, List<String> tmplQualifiers, Map model)
 

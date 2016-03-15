@@ -6,7 +6,7 @@ import groovy.util.logging.Log
 import java.util.logging.Level
 import joptsimple.OptionSet
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
-import uk.co.cacoethes.lazybones.api.PackageInfo
+import uk.co.cacoethes.lazybones.api.TemplateInfo
 import uk.co.cacoethes.lazybones.config.Configuration
 import uk.co.cacoethes.lazybones.impl.BintrayPackageSource
 import wslite.http.HTTPClientException
@@ -47,7 +47,7 @@ USAGE: info <template>
         log.info "Fetching package information for '${packageName}' from Bintray"
 
         // grab the package from the first repository that has it
-        PackageInfo pkgInfo
+        TemplateInfo pkgInfo
         try {
             pkgInfo = findPackageInBintrayRepositories(
                     packageName,
@@ -93,7 +93,7 @@ USAGE: info <template>
         return 0
     }
 
-    protected PackageInfo findPackageInBintrayRepositories(String pkgName, Collection<String> repositories) {
+    protected TemplateInfo findPackageInBintrayRepositories(String pkgName, Collection<String> repositories) {
         for (String bintrayRepoName in repositories) {
             def pkgInfo = new BintrayPackageSource(bintrayRepoName).getPackage(pkgName)
             if (pkgInfo) return pkgInfo

@@ -58,6 +58,12 @@ configurations {
     integTestCompile.resolutionStrategy {
         force "org.codehaus.groovy:groovy-all:${groovyVersion}"
     }
+
+    matching { it.name in ["compile", "runtime", "testCompile", "testRuntime"] }*.exclude module: "groovy-all"
+//    compile.exclude module: "groovy-all"
+//    runtime.exclude module: "groovy-all"
+//    testCompile.exclude module: "groovy-all"
+//    testRuntime.exclude module: "groovy-all"
 }
 
 repositories {
@@ -79,9 +85,8 @@ dependencies {
 
     runtime "org.apache.ivy:ivy:2.3.0"
 
-    testCompile "org.spockframework:spock-core:0.7-groovy-2.0", {
-        exclude module: "groovy-all"
-    }
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4",
+                "co.freeside:betamax:1.1.2"
 
     integTestCompile "org.codehaus.groovy:groovy-all:2.4.3",
                      "commons-io:commons-io:2.4",

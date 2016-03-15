@@ -5,8 +5,6 @@ package uk.co.cacoethes.lazybones.api
  */
 @groovy.transform.Immutable(copyWith = true)
 class CachedPackage {
-    String name
-    String version
-    String sourceRepoName
-    String sourceUrl
+    PackageIdentifier id
+    URI sourceUri
 }

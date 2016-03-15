@@ -3,7 +3,7 @@ package uk.co.cacoethes.lazybones.impl
 import groovy.util.logging.Log
 import uk.co.cacoethes.lazybones.NoVersionsFoundException
 import uk.co.cacoethes.lazybones.PackageNotFoundException
-import uk.co.cacoethes.lazybones.api.PackageInfo
+import uk.co.cacoethes.lazybones.api.TemplateInfo
 import uk.co.cacoethes.lazybones.api.PackageSource
 import wslite.http.HTTPClientException
 import wslite.rest.RESTClient
@@ -28,7 +28,7 @@ class BintrayPackageSource implements PackageSource {
     BintrayPackageSource(String repositoryName, restClient = null) {
         this.repoName = repositoryName
         this.restClient = restClient != null ? restClient : new RESTClient(API_BASE_URL)
-        
+
         if (System.getProperty("integration.test") == "true") {
             restClient.httpClient.sslTrustAllCerts = true
         }
@@ -44,7 +44,7 @@ class BintrayPackageSource implements PackageSource {
     }
 
     @Override
-    List<PackageInfo> listPackages(Map options = [:]) {
+    List<TemplateInfo> listPackages(Map options = [:]) {
         def response = restClient.get(path: "/repos/${repoName}/packages")
 
         def pkgNames = response.json.findAll {
@@ -82,7 +82,7 @@ class BintrayPackageSource implements PackageSource {
      */
     @Override
     @SuppressWarnings("ReturnNullFromCatchBlock")
-    PackageInfo getPackage(String name) {
+    TemplateInfo getPackage(String name) {
         def pkgNameWithSuffix = name + PACKAGE_SUFFIX
 
         def response
@@ -107,7 +107,7 @@ class BintrayPackageSource implements PackageSource {
             throw new NoVersionsFoundException(name)
         }
 
-        def pkgInfo = new PackageInfo(this, data.name - PACKAGE_SUFFIX, data.'latest_version')
+        def pkgInfo = new TemplateInfo(this, data.name - PACKAGE_SUFFIX, data.'latest_version')
 
         pkgInfo.with {
             versions = data.versions as List

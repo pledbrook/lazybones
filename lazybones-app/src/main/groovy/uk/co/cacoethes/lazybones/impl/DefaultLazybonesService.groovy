@@ -4,7 +4,7 @@ import uk.co.cacoethes.lazybones.PackageNotFoundException
 import uk.co.cacoethes.lazybones.api.CachedPackage
 import uk.co.cacoethes.lazybones.api.LazybonesService
 import uk.co.cacoethes.lazybones.api.PackageCache
-import uk.co.cacoethes.lazybones.api.PackageInfo
+import uk.co.cacoethes.lazybones.api.TemplateInfo
 import uk.co.cacoethes.lazybones.api.PackageSource
 import uk.co.cacoethes.lazybones.api.PackageSourceManager
 import uk.co.cacoethes.lazybones.api.NewProjectInfo
@@ -56,12 +56,12 @@ class DefaultLazybonesService implements LazybonesService {
     }
 
     @Override
-    List<PackageInfo> findPackages(String namePattern) {
+    List<TemplateInfo> findPackages(String namePattern) {
         return null
     }
 
     @Override
-    PackageInfo getPackageInfo(String name) {
+    TemplateInfo getPackageInfo(String name) {
         return packageSourceManager
     }
 
