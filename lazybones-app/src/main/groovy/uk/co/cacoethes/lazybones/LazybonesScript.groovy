@@ -5,6 +5,7 @@ import groovy.text.SimpleTemplateEngine
 import groovy.text.TemplateEngine
 import groovy.util.logging.Log
 import org.apache.commons.io.FilenameUtils
+import uk.co.cacoethes.lazybones.commands.InstallationScriptExecuter
 import uk.co.cacoethes.util.AntPathMatcher
 import uk.co.cacoethes.util.Naming
 
@@ -39,7 +40,7 @@ class LazybonesScript extends Script {
     File templateDir
 
     /**
-     * Stores the values for {@link #ask(java.lang.String, java.lang.Object, java.lang.String)}
+     * Stores the values for {@link #ask(java.lang.String, java.lang.String, java.lang.String)}
      * calls when a parameter name is specified.
      * @since 0.7
      */
@@ -59,10 +60,15 @@ class LazybonesScript extends Script {
     File scmExclusionsFile
 
     /**
+     * Model params. Used to run sub-scripts.
+     */
+    Map<String, String> model
+
+    /**
      * The reader stream from which user input will be pulled. Defaults to a
      * wrapper around stdin using the platform's default encoding/charset.
      */
-    Reader reader = new BufferedReader(new InputStreamReader(System.in))
+    Reader reader
 
     private TemplateEngine templateEngine = new SimpleTemplateEngine()
 
@@ -159,6 +165,21 @@ class LazybonesScript extends Script {
         String line = reader.readLine()
 
         return line ?: defaultValue
+    }
+
+    /**
+     * Include another script in the main script, and execute it in-line.
+     * @param file subscript
+     * @param bindings values to pass from parent script to this script
+     * @return the last expression evaluated in the subscript
+     */
+    def include(String file, Map<String, String>...bindings) {
+        def m  = [:]
+        m << model
+        bindings.each { m << it }
+        def executor = new InstallationScriptExecuter(null, reader)
+        executor.runPostInstallScript(file, tmplQualifiers, projectDir, templateDir, m)
+        executor.scriptReturnValue
     }
 
     /**
