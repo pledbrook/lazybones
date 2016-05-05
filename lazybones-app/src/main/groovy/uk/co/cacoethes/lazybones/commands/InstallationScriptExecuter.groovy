@@ -19,7 +19,7 @@ class InstallationScriptExecuter {
     static final String FILE_ENCODING = "UTF-8"
 
     private ScmAdapter scmAdapter
-    private Reader inputReader
+    private final Reader inputReader
 
     /**
      * Set by the execution of a script. Useful for getting results from include scripts.
@@ -70,7 +70,11 @@ class InstallationScriptExecuter {
      * @param model a map of variables available to the script
      * @return the lazybones script if it exists
      */
-    Script runPostInstallScript(String scriptFileName, List tmplQualifiers, File targetDir, File templateDir, Map<String, String> model) {
+    Script runPostInstallScript(String scriptFileName,
+                                List tmplQualifiers,
+                                File targetDir,
+                                File templateDir,
+                                Map<String, String> model) {
         def installScriptFile = new File(templateDir, scriptFileName)
         if (installScriptFile.exists()) {
             def script = initializeScript(model, tmplQualifiers, installScriptFile, targetDir, templateDir)
