@@ -1,0 +1,15 @@
+== Credits
+
+=== Developers
+
+* https://github.com/pledbrook[Peter Ledbrook]
+* https://github.com/kyleboon[Kyle Boon]
+* https://github.com/tbarker9[Tommy Barker]
+
+=== Contributors
+
+* https://github.com/alkemist[Luke Daley]
+* https://github.com/tomaslin[Tomas Lin]
+* https://github.com/rhart[Russell Hart]
+* https://github.com/dsyer[Dave Syer]
+* https://github.com/andyjduncan[Andy Duncan]

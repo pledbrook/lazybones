@@ -1,0 +1,99 @@
+== Creating projects
+
+To create a new project, run
+
+[source,shell]
+----
+lazybones create <template name> <template version> <target directory>
+----
+
+So if you wanted to create a skeleton Ratpack project in a new
+'my-rat-app' directory you would run
+
+[source,shell]
+----
+lazybones create ratpack 1.2.0 my-rat-app
+----
+
+The version is optional and if you leave it out, Lazybones will
+install the latest version of the template it can find.
+
+Named templates are all stored on Bintray. By default, Lazybones
+searches for templates in the pledbrook/lazybones-templates
+repository, but you can use other Bintray repositories by adding some
+configuration - set the Custom Repositories section under
+Configuration later in this document.
+
+You're not limited to only Bintray as you can install templates
+directly from a URL too:
+
+[source,shell]
+----
+lazybones create http://dl.bintray.com/kyleboon/lazybones/java-basic-template-0.1.zip my-app
+----
+
+Of course it can be pretty laborious copying and pasting URLs around,
+so Lazybones allows you to configure aliases for URLs that you use
+frequently. By adding the following configuration to your Lazybones
+settings file, `~/.lazybones/config.groovy` (see below for more details
+on this), you can install the template by name:
+
+[source,groovy]
+----
+templates {
+    mappings {
+        myTmpl = "http://dl.bintray.com/..."
+    }
+}
+----
+
+In other words, you could now run
+
+[source,shell]
+----
+lazybones create myTmpl my-app
+----
+
+Note that when using the URL option, there is no need to specify a
+version. You should also be aware that mappings take precedence,
+i.e. if a mapping has the same name as an existing template, the
+mapping is used. This essentially creates a simple override mechanism.
+
+There is just one more thing to say about the `create` command: by
+default it creates the specified directory and puts the initial
+project in there. If you want to unpack a template in the current
+directory instead, for example if you have already created the project
+directory, then just pass '.' as the directory:
+
+[source,groovy]
+----
+lazybones create ratpack .
+----
+
+Once you have created a new project from a template, you may notice
+that the project directory contains a .lazybones sub directory. You
+may delete this, but then you won't be able to use the `generate`
+command (see next section) if the project template has support for it.
+
+Many project templates request information from you, such as a project
+name, a group ID, a default package, etc. If this is the umpteenth
+time you have created a project from a given template, then answering
+the questions can become tedious. There is also the problem of
+scripting and automation when you want to create a project without
+user intervention. The solution to both these issues is to pass the
+values on the command line:
+
+[source,shell]
+----
+lazybones create ratpack 1.2.0 ratapp -Pgroup=org.example -Ppackage=org.example.myapp
+----
+
+The `-P` option allows you to pass property values into the project
+templates without user intervention. The key is to know what the
+property names are, and that comes down to the project template. At
+the moment, the best way to find out what those properties are is to
+look at the post-install script itself.
+
+The last option to mention is `--with-git` which will automatically
+create a new git repository in the project directory. The only
+requirement is that you have the git command on your path.

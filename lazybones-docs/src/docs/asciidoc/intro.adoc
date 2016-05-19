@@ -1,0 +1,23 @@
+== Intro
+
+Lazybones was born out of frustration that Ratpack does not and will
+not have a command line tool that will bootstrap a project. It's a
+good decision for Ratpack, but I'm lazy and want tools to do the
+boring stuff for me.
+
+The tool is very simple: it allows you to create a new project
+structure for any framework or library for which the tool has a
+template. You can even contribute templates by sending pull requests
+to this GitHub project or publishing the packages to the relevant
+Bintray repository (more info available below).
+
+The concept of Lazybones is very similar to Maven archetypes, and what
+Yeoman does for web applications. Lazybones also includes a
+subtemplates feature that resembles the behaviour of Yeoman's
+sub-generators, allowing you to generate optional extras (controllers,
+scaffolding etc.) inside a project.
+
+== License
+
+The *Lazybones* project is open sourced under the
+http://www.apache.org/licenses/LICENSE-2.0.html[Apache 2 License].

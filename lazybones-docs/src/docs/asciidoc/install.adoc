@@ -1,0 +1,12 @@
+== Install it
+
+Grab lazybones from sdkman (formerly gvm):
+
+[source,shell]
+----
+sdk install lazybones
+----
+
+or alternatively, grab the distribution from
+Bintray, unpack it to a local directory, and then add its 'bin'
+directory to your PATH environment variable.

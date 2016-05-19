@@ -1,0 +1,214 @@
+== Configuration
+
+Lazybones will run out of the box without any extra configuration, but
+the tool does allow you to override the default behaviour via a fixed
+set of configuration options. These options can be provided in a
+number of ways following a set order of precedence:
+
+System properties of the form `lazybones.*`, which can be passed into
+the app via either `JAVA_OPTS` or `LAZYBONES_OPTS` environment
+variables. For example:
+
+[source,shell]
+----
+env JAVA_OPTS="-Dlazybones.config.file=/path/to/my-custom-default-config.groovy" lazybones ...
+----
+
+Highest precedence, i.e. it overrides all other sources of setting
+data.
+
+User configuration file in `$USER_HOME/.lazybones/config.groovy`. This
+is parsed using Groovy's ConfigSlurper, so if you're familiar with
+that syntax you'll be right at home. Otherwise, just see the examples
+below.
+
+(Since 0.8) A JSON configuration file in
+`$USER_HOME/.lazybones/managed-config.groovy` that is used by the
+config commands. You can edit it this as well.
+
+A Groovy-based default configuration file that is provided by the
+application itself, but you can specify an alternative file via the
+`lazybones.config.file` system property.
+
+Lazybones also provides a convenient mechanism for setting and
+removing options via the command line: the config command.
+
+=== Command line
+
+The config command provides several sub-commands that allow you to
+interact with the persisted Lazybones configuration; specifically, the
+JSON config file. You run a sub-command via
+
+[source,shell]
+----
+lazybones config <sub-cmd> <args>
+----
+
+where `<sub-cmd>` is one of:
+
+* `set <option> <value> [<value> ...]`
+
+Allows you to change the value of a configuration setting. Multiple
+values are treated as a single array/list value. The new value
+replaces any existing one.
+
+* `add <option> <value>`
+
+Appends an extra value to an existing array/list setting. Reports an
+error if the setting doesn't accept multiple values. If the setting
+doesn't already have a value, this command will initialise it with an
+array containing the given value.
+
+* `clear <option>`
+
+Removes a setting from the configuration, effectively reverting it to
+whatever the internal default is.
+
+* `show [--all] <option>`
+
+Shows the current value of a setting. You can use the `--all` argument
+(without a setting name) to display all the current settings and their
+values.
+
+* `list`
+
+Displays all the configuration settings supported by Lazybones.
+
+So what configuration settings are you likely to customise?
+
+=== Custom Repositories
+
+Lazybones will by default download the templates from a specific
+Bintray repository. If you want to host template packages in a
+different repository you can add it to Lazybone's search path via the
+`bintrayRepositories` setting:
+
+[source,groovy]
+----
+bintrayRepositories = [
+      "kyleboon/lazybones",
+      "pledbrook/lazybones-templates"
+]
+----
+
+If a template exists in more than one repository, it will be
+downloaded from the first repository in the list that it appears in.
+
+=== Package aliases
+
+If you regularly use a template at a specific URL rather than from
+Bintray, then you will want to alias that URL to a name. That's where
+template mappings (or aliases) come in. The aliases are defined as
+normal settings of the form
+
+[source,groovy]
+----
+templates.mappings.<alias> = <url>
+----
+
+In a Groovy configuration file, you can define multiple aliases in a block:
+
+[source,groovy]
+----
+templates {
+    mappings {
+        test = "http://dl.dropboxusercontent.com/u/29802534/custom-ratpack.zip"
+        after = "file:///var/tmp/afterburnerfx-2.0.0.zip"
+    }
+}
+----
+
+Alternatively, add them from the command line like this:
+
+[source,shell]
+----
+lazybones config set templates.mappings.after file:///var/tmp/afterburnerfx-2.0.0.zip
+----
+
+The aliases will always be available to you until you remove them from
+the persisted configuration.
+
+=== System properties
+
+**(Since 0.8.1)**
+
+Many people have to work behind a proxy, but Lazybones didn't make it
+easy to configure one. In fact the only way to do it was to add the
+relevant system properties to a `JAVA_OPTS` environment variable. From
+0.8.1, you now have another option.
+
+Lazybones has stolen the idea of having a special form of
+configuration option for system properties from Gradle. So if you
+define a property with a `systemProp`. prefix, it will be added as a
+system property internally. So to configure an HTTP proxy, you only
+need to add the following to your Lazybones configuration:
+
+[source,groovy]
+----
+systemProp {
+    http {
+        proxyHost = "localhost"
+        proxyPort = 8181
+    }
+    https {
+        proxyHost = "localhost"
+        proxyPort = 8181
+    }
+}
+----
+
+To avoid potential configuration issues, use the same proxy settings
+for HTTP and HTTPS if possible.
+
+If your proxy requires authentication, you will need to add a couple
+of extra properties:
+
+[source,groovy]
+----
+systemProp {
+    http {
+        proxyUser = "johndoe"
+        proxyPassword = "mypassword"
+    }
+}
+----
+
+As with the host and port, there are `https` variants of the username
+and passwordi as well.
+
+=== General options
+
+These are miscellaneous options that can be overridden on the command
+line:
+
+[source,groovy]
+----
+// <-- This starts a line comment
+// Set logging level - overridden by command line args
+options.logLevel = "SEVERE"
+----
+
+The logging level can either be overridden using the same logLevel
+setting:
+
+[source,shell]
+----
+lazybones --logLevel SEVERE info ratpack
+----
+
+or via `--verbose`, `--quiet`, and `--info` options:
+
+[source,shell]
+----
+lazybones --verbose info ratpack
+----
+
+The logging level can be one of:
+
+* OFF
+* SEVERE
+* WARNING
+* INFO
+* FINE
+* FINEST
+* ALL

@@ -1,0 +1,19 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.2'
+    }
+}
+
+apply plugin: 'org.asciidoctor.convert'
+
+asciidoctor {
+    attributes 'source-highlighter': 'prettify',
+               toc                 : 'left',
+               icons               : 'font',
+               toclevels           : 3,
+               'pdf-style'         : 'default'
+}

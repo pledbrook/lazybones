@@ -1,0 +1,783 @@
+== Templates
+
+Lazybones alone is just a tool that doesn't do much. It needs a solid
+selection of template packages to make it a compelling solution for
+developers' day-to-day needs. That's why we try to make it as easy as
+possible to develop and publish templates. This guide explains how to
+go about both steps.
+
+=== Getting started
+
+The first thing you want to do is set up a build for your templates,
+because creating and publishing a template involves several steps:
+
+1. Create the directory structure and files for the template
+2. Add VERSION and README files
+3. Package the template structure into a zip, filtering out .retain
+and VERSION files
+4. Publish the zip file to a repository (only Bintray supported at the
+moment)
+5. Fortunately this is dead easy because you can use Lazybones to set
+a project up for you! Simply run
+
+[source,shell]
+----
+lazybones create lazybones-project my-lzb-templates
+----
+
+and you'll get a simple http://gradle.org/[Gradle] build file with a
+directory into which you put your templates. The next step is to
+create the template.
+
+=== Create a template
+
+Lazybones templates are simple zip files containing a directory
+structure and a bunch of files. How you create that zip file is up to
+you, but we're going to use the build that was created for us. It
+handles both the packaging and publishing of templates, so we don't
+have to worry about the details.
+
+So let's create a new template Java project with just a Gradle build
+file and some standard directories. First, create the directory
+`templates/simple-java/`. This is where our template files are going
+to go. Inside this new directory, add these files:
+
+* README.md - a text file that contains information about the template
+* VERSION - a text file containing the current version number of the template
+* build.gradle - the build file for building this new project
+* src/main/java/.retain
+* src/main/resources/.retain
+* src/test/java/.retain
+* src/test/resources/.retain
+
+The `.retain` files allow us to include empty directories in both a
+git repository and the template zip. The build simply excludes
+`.retain` files when packaging the template while maintaining the
+directory structure. Note that the `.retain` files can be empty, so a
+simple `touch` `src/main/java/.retain` is sufficient.
+
+The `build.gradle` file is part of this template project and just
+contains:
+
+[source,groovy]
+----
+apply plugin: "java"
+
+group = "org.example"
+version = "0.1"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+----
+
+The `VERSION` file is required by the build, because that's how the
+build knows what the current version of the template is. Just put any
+version string into the file:
+
+[source,shell]
+----
+1.0-SNAPSHOT
+----
+
+No quotes. No markup. Just the version text. Note that the build
+excludes this file from the template zip as the version is included in
+the zip file's name.
+
+Finally, `README.md` contains some information about the
+template. Remember that this is displayed immediately after a new
+project is created from the template, so it should offer some guidance
+on what the template provides and what steps to take next with the new
+project. Add this to the file:
+
+[source,shell]
+----
+Simple Java project template
+------------------------------
+
+You have just created a basic Java application. It provides a standard
+project structure and a basic Gradle build. Simply add your source files
+to `src/main/java`, your test cases to `src/test/java` and then you will
+be able to build your project with
+
+    gradle build
+    gradle compile
+    gradle test
+
+Don't forget to add any extra JAR dependencies to `build.gradle`!
+----
+
+Although the README is not required, you really should include one. It
+doesn't have to be Markdown either or have a file extension. We just
+happen to like the Markdown syntax and the way that GitHub handles
+files with an md extension.
+
+We could simply leave the template as it is, but wouldn't it be great
+if the user could set the group ID and version for the project at
+creation time? That would mean parameterising the group and version in
+the build file. Not a problem: we can add a post-install script.
+
+=== Create a post-install script
+
+Post-install scripts are executed immediately after a template is
+unpacked into the new project directory and just before the README is
+displayed. They are straight Groovy scripts with access to just the
+core Groovy classes, plus Groovy's `SimpleTemplateEngine` and
+http://commons.apache.org/proper/commons-io/[Apache Commons IO] (for
+making file manipulation easier).
+
+Every script has access to the following properties:
+
+* `projectDir` - (v0.7+) a `File` instance representing the root
+  directory of the new project. Treat this as read-only.
+* `targetDir` - (deprecated) a string representing the root directory
+  of the new project. Use this for versions of Lazybones prior to
+  0.7. Treat as read-only.
+* `fileEncoding` - the encoding used by your template files. You can
+  set this at the start of the script. Defaults to UTF-8.
+* `lazybonesVersion` - a string representing the version of Lazybones
+  the user is running.
+* `lazybonesMajorVersion` - a string representing the first number in
+  the version string, e.g. "1" for "1.2.3".
+* `lazybonesMinorVersion` - a string representing the second number in
+  the version string, e.g. "2" for "1.2.3".
+
+The script also has access to all the public and protected methods and
+properties defined in the
+https://github.com/pledbrook/lazybones/blob/master/lazybones-app/src/main/groovy/uk/co/cacoethes/lazybones/LazybonesScript.groovy[LazybonesScript]
+class. Of particular interest are the `ask()` and `processTemplates()`
+methods.
+
+`ask()` allows the script to request input from a user, such as 'y' or
+'n' for whether to include a particular feature or not. Even better,
+the user can provide the input on the command line, bypassing the
+input requests all together.
+
+`processTemplates()` makes it easy to parameterise any of the files in
+your template using Groovy syntax. It basically runs the source file
+through Groovy's `SimpleTemplateEngine` to produce the resulting
+file. So if we want to allow the user to specify the project's group
+ID and version at install time, we modify `build.gradle` slightly:
+
+[source,groovy]
+----
+apply plugin: "java"
+
+group = "${group}"
+version = "${version}"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+----
+
+and then add a post-install script, lazybones.groovy, in the root of
+the template:
+
+[source,groovy]
+----
+def props = [:]
+props.group = ask("Define value for 'group' [org.example]: ", "org.example", "group")
+props.version = ask("Define value for 'version' [0.1]: ", "0.1", "version")
+
+processTemplates "build.gradle", props
+----
+
+Sorted! And if the user wants to bypass the two asks, he or she can
+provide values for the requested properties on the command line:
+
+[source,shell]
+----
+lazybones create simple-java my-java-app -Pgroup=uk.co.cacoethes -Pversion=1.0-SNAPSHOT
+----
+
+In other words, you get non-interactive creation of projects from
+templates.
+
+Another useful method available to post-install scripts is
+`transformText()`. It's common for scripts to convert strings between
+camel case (for class names perhaps), lower-case hyphenated (for
+directory names), and other forms. The `transformText()` method allows
+you to do just that:
+
+[source,groovy]
+----
+import uk.co.cacoethes.util.NameType
+
+def className = "MyClass"
+def directoryForClass = transformText(className, from: NameType.CAMEL_CASE, to: NameType.HYPHENATED)
+new File(directoryForClass).mkdirs()
+----
+
+The `from` and `to` arguments are both required and must be one of the
+`NameType` enum values: `CAMEL_CASE` ("MyClass"), `PROPERTY`
+("myClass"), `HYPHENATED` ("my-class"), or `NATURAL` ("My Class")
+
+Once the template is ready, it's time to try it out and publish it.
+
+=== Package, install and publish
+
+There are three steps to publishing a template, each of which can be accomplished with a simple task provided by the build:
+
+* `packaging` - zipping up the template directory
+* `installing` - putting the template package into the local Lazybones
+  template cache
+* `publishing` - making the template package available publicly in a
+  Bintray repository
+
+The relevant Gradle tasks are:
+
+* `packageTemplate<Name>`
+* `packageAllTemplates`
+* `installTemplate<Name>`
+* `installAllTemplates`
+* `publishTemplate<Name>`
+* `publishAllTemplates`
+
+The packaging tasks aren't often used, so we'll skip over those right
+now. But installing the templates in your local cache is important so
+that you can easily test them before publication. You can do this on a
+per-template basis, or simply install all the templates in your
+templates directory.
+
+So if you want execute a task for a particular template, what is
+`<Name>` in the above tasks? It's derived from the name of the
+template, which comes from the directory name. In our case, the
+template name is simple-java. To use this name in the Gradle tasks, we
+simply camel-case it: SimpleJava. Of course, this means your
+directories should use hyphenated notation rather than camel-case.
+
+Installing the `simple-java` template in the local cache then becomes a
+case of
+
+[source,shell]
+----
+./gradlew installTemplateSimpleJava
+----
+
+which can then be tested with
+
+[source,shell]
+----
+lazybones create simple-java 1.0-SNAPSHOT my-java-app -Pgroup=uk.co.cacoethes -Pversion=0.1
+----
+
+Note that you have to specify the version of the template to install,
+otherwise Lazybones will look up the latest version online and either
+say the template doesn't exist, or use whatever the latest version is
+(not your development version).
+
+If the rules for converting between camel-case and hyphenated forms
+don't suit your template name, for example if you separate numbers
+with hyphens ('javaee-7'), then you can use hyphens in the task name:
+
+[source,shell]
+----
+./gradlew packageTemplate-javaee-7
+----
+
+Once you're happy with the template, you can publish it to a Bintray
+repository. To do that, you have to configure the build. If you have a
+look at `build.gradle`, you'll see this section (+ some comments):
+
+[source,groovy]
+----
+lazybones {
+    // Pre version 1.1 of the Lazybones Gradle plugin, you needed
+    // to specify this property:
+    //     repositoryUrl = "https://api.bintray.com/content/<account>/<templates-repo>"
+    // instead of `repositoryName`
+    repositoryName = "<account>/<repo>"             // e.g. "pledbrook/lazybones-templates"
+    repositoryUsername = "your_bintray_username"
+    repositoryApiKey = "your_bintray_api_key"
+
+    // These are required for open source packages
+    licenses = ["Apache-2.0"]
+    vcsUrl = "https://github.com/pledbrook/lazybones/tree/master/lazybones-templates"
+}
+----
+
+As you can see, the repository name, username, and API key properties
+need to be set up properly. You can hard-code the repository name in
+the build file (just replace `<account>` and `<repo>` appropriately),
+but the username and API key shouldn't be included in a file that will
+probably go into version control.
+
+Instead, create a `gradle.properties` file in the root of the project
+(not the root of the `simple-java` template, but the overall project
+directory) and put the following into it:
+
+[source,groovy]
+----
+bintrayUsername=someone
+bintrayApiKey=sfhakfh2948th9ghagh4gh30948g93hg
+----
+
+Of course, put your actual username and key in there! Then update
+build.gradle with:
+
+[source,groovy]
+----
+lazybones {
+    repositoryName = "..."
+    repositoryUsername = project.bintrayUsername
+    repositoryApiKey = project.bintrayApiKey
+}
+----
+
+So now the repository credentials are being initialised from the
+(non-SCM-controlled) properties file.
+
+Bintray adds a couple of extra restrictions on publishing if you are
+using the open source hosting. If that's the case, you will need to
+add `licenses` and `vcsUrl` properties to the Lazybones configuration
+block. The assumption here is that all templates in a project are
+licensed under the same OSS licence and the `vcsUrl` property points
+to the host source repository for the whole project.
+
+Before you can successfully publish to Bintray, you of course have to
+have an account. You also have to set up a repository, which you can
+do through the Bintray web UI. Once that's done, you can run
+
+[source,shell]
+----
+./gradlew publishTemplateSimpleJava
+----
+
+to make it available to all and sundry! Don't forget to go to the
+Bintray UI in order to finalise the publication. You can also send an
+inclusion request for your package to
+`pledbrook/lazybones-templates`. If accepted, your template will
+automatically appear in the `lazybones list` command.
+
+=== Fine-tuning the packaging
+
+**(since version 1.2 of the Gradle plugin)**
+
+The packaging process is by default rather dumb. It will include all
+files and directories in the target template directory except for a
+few hard-coded exceptions (the VERSION and .retain files for
+example). That leaves a lot of scope for accidentally including
+temporary files in the package! To help you avoid that, the plugin
+allows you to specify a set of extra exclusions using Ant-style paths:
+
+[source,groovy]
+----
+lazybones {
+    packageExclude "**/*.swp", ".gradle", "build"
+}
+----
+
+These exclusions apply to all templates. If you want template-specific
+exclusions, then use the following syntax:
+
+[source,groovy]
+----
+lazybones {
+    template("simple-java") {     // Template (directory) name
+        packageExclude "**/*.swp", ".settings"
+    }
+}
+----
+
+Note that the template-specific settings completely override the
+global ones, so if you want the global ones to apply you will need to
+repeat them in the template-specific list.
+
+Another potential issue when packaging templates is with file and
+directory permissions. Lazybones attempts to retain the permissions it
+finds in the template directory, but these may not be correct on
+Windows. To compensate for that, the plugin allows you to specify file
+permissions in the template configuration:
+
+[source,groovy]
+----
+lazybones {
+    fileMode "755", "gradlew", "**/*.sh"
+}
+----
+
+The first argument is the Unix-style permission as a string (such as
+`"600"`, `"755"` and so on), and the rest are a list of Ant-style
+patterns representing the files and directories that the permission
+string should apply to. You can have multiple `fileMode()` entries,
+although ideally you should only have one per file mode.
+
+As with package exclusions, you can also specify file modes on a
+per-template basis:
+
+[source,groovy]
+----
+lazybones {
+    template("simple-java") {
+        fileMode "600", "secret.properties"
+        fileMode "755, "gradlew", "**/*.sh"
+    }
+}
+----
+
+Again, the template-specific settings replace the global ones for that
+particular template.
+
+That's it for the getting started guide. You've created a template,
+tested it, and finally published it to Bintray. For the rest of the
+guide we'll look at the template creation in more detail.
+
+=== Template engines
+
+The `processTemplates()` method available to post-install scripts
+allows you to generate files based on templates. By default, any files
+that match the pattern passed to `processTemplates()` are treated as
+Groovy templates that can be processed by
+http://docs.groovy-lang.org/latest/html/api/groovy/text/SimpleTemplateEngine.html[SimpleTemplateEngine]
+and those source files are replaced by the processed versions. That's
+not the end of the story though.
+
+Lazybones allows you to use any template engine that implements
+Groovy's
+http://docs.groovy-lang.org/latest/html/api/groovy/text/TemplateEngine.html[TemplateEngine],
+meaning that your source templates could be Moustache, Velocity, or
+anything else. Of course, not every template engine has a Groovy
+implementation but it's often trivial to create an adapter
+`TemplateEngine` implementation. For the following examples, we'll use
+a Handlebars implementation.
+
+The first step to using an alternative template engine is to include
+the implementation JAR in the post-install script for your project
+template. Lazybones uses Groovy's `@Grab` annotation for that:
+
+[source,groovy]
+----
+@Grab(group="uk.co.cacoethes", module="groovy-handlebars-engine", version="0.2")
+import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
+
+registerDefaultEngine new HandlebarsTemplateEngine()
+----
+
+The Handlebars engine JAR is in
+https://bintray.com/bintray/jcenter[jCenter] which @Grab automatically
+searches along with Maven Central. If you have the JAR hosted
+elsewhere, you'll need to use
+http://docs.groovy-lang.org/latest/html/api/groovy/lang/GrabResolver.html[@GrabResolver].
+
+Once you have the JAR on the script's classpath, you can register the
+engine. There are several ways to do this depending what you want to
+do. The above example uses `registerDefaultEngine()` to make the
+Handlebars template engine the default, which means that any files
+handled by `processTemplates` will be treated as Handlbars templates
+rather than Groovy ones.
+
+What if you want to use different engines for different templates
+though? Or perhaps you prefer to give the source templates a suffix
+that identifies them as such? In these cases, you can use
+`registerEngine()`:
+
+[source,groovy]
+----
+@Grab(group="uk.co.cacoethes", module="groovy-handlebars-engine", version="0.2")
+import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
+
+registerEngine "hbs", new HandlebarsTemplateEngine()
+
+processTemplates "**/*.groovy", [foo: "bar"]
+----
+
+This method registers a template engine against a specific suffix. If
+any files match the `processTemplates()` pattern with the addition of
+the registered suffix, Lazybones will use the corresponding template
+engine for that file.
+
+So let's say your template project has a
+`src/main/groovy/org/example/App.groovy.hbs` file. The App.groovy part
+matches the pattern and `hbs` is a registered extension. So that file
+will be processed by the Handlebars template engine, creating a
+`src/main/groovy/org/example/App.groovy` file in the target
+project. Here's a summary of how source template files are processed:
+
+[cols="3"]
+|===
+|Filename         |Resulting file |Processing
+|App.groovy       |App.groovy     |Registered default template engine
+|App.groovy.gtpl  |App.groovy     |Groovy template engine
+|App.groovy.hbs   |App.groovy     |Handlebars template engine
+|===
+
+Lazybones automatically registers the Groovy template engine against
+the suffix `gtpl`. Also note that you should not include the template
+suffix in your file pattern. If you try
+
+[source,groovy]
+----
+processTemplates "**/*.hbs", [foo: "bar"]
+----
+
+then Lazybones will in fact use the default template engine for any
+source file that has an `hbs` suffix. It's better to use the pattern
+
+[source,groovy]
+----
+"**/*"
+----
+
+instead, as then any files ending with `hbs` will be processed with the
+Handlebars template engine. This does raise a problem: the pattern
+above will match non-template files too, and Lazybones will process
+those files with the default template engine.
+
+If you do want to take this approach, then you can disable the default
+template engine:
+
+[source,groovy]
+----
+@Grab(group="uk.co.cacoethes", module="groovy-handlebars-engine", version="0.2")
+import uk.co.cacoethes.handlebars.HandlebarsTemplateEngine
+
+registerEngine "hbs", new HandlebarsTemplateEngine()
+clearDefaultEngine()
+
+processTemplates "**/*", [foo: "bar"]
+----
+
+This will ensure that only source files with a registered template
+suffix get processed. All other files are left untouched.
+
+=== Subtemplates
+
+**(since 0.7)**
+
+As long as you are using version 1.1 or later of the Lazybones Gradle
+plugin, it's very easy to add subtemplate support to your project
+templates. The key points to understand are:
+
+* Subtemplates are similar to project templates but packaged inside a
+  project template zip
+* A subtemplate can be included in multiple project templates
+* Subtemplates only take effect when the user runs the `lazybones
+  generate` command
+
+Let's say you want to add a subtemplate for generating `@Entity`
+classes in a project created from the simple-java template we
+introduced earlier. Your starting point is to create a new directory
+for the subtemplate:
+
+[source,groovy]
+----
+templates/subtmpl-entity
+----
+
+Note that although the subtemplate will be going inside the
+simple-jave template, its directory is at the same level as
+templates/simple-java. The key is to give the directory name as
+'subtmpl-' prefix, as this is what tells the build that it's a
+subtemplate, resulting in subtmpl-entity being excluded from the
+*AllTemplates tasks.
+
+The contents of a subtemplate source directory look a little like a
+normal project template, except you are unlikely to include as many
+files and the README is unnecessary. In this case, we want:
+
+* `VERSION` - the file containing the current version of the subtemplate
+* `lazybones.groovy` - the post-install script
+* `Entity.groovy.gtpl` - the template source file for entity classes
+
+Each of these files behaves in the same way as in a project template,
+but there are a few subtleties. Consider the template source file for
+entities:
+
+[source,groovy]
+----
+package ${pkg}
+
+import grails.persistence.Entity
+
+@Entity(group="${parentGroup}", version="${parentVersion}")
+class ${cls} {
+    String name
+}
+----
+
+This references several parameters: `pkg`, `cls`, `parentGroup` and
+`parentVersion`. Where do these parameters come from? We need to look
+into the post-install script, lazybones.groovy, to find out:
+
+[source,groovy]
+----
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FilenameUtils
+
+import static org.apache.commons.io.FilenameUtils.concat
+
+def params = [:]
+params.pkg = ask("Define value for the package: ", null, "package")
+params.cls = ask("Define value for class name: ", null, "class").capitalize()
+
+// Pass in parameters from the project template
+params.parentGroup = parentParams.group
+params.parentVersion = parentParams.version
+
+processTemplates("Entity.groovy", params)
+
+def pkgPath = params.pkg.replace('.' as char, '/' as char)
+def filename = params.cls + ".groovy"
+def destFile = new File(projectDir, concat(concat("src/main/groovy", pkgPath), filename))
+destFile.parentFile.mkdirs()
+
+FileUtils.moveFile(new File(templateDir, "Entity.groovy"), destFile)
+
+println "Created new persistence entity ${FilenameUtils.normalize(destFile.path)}"
+----
+
+As you can see, the `pkg` and `cls` parameters are mapped from the
+return values of two `ask()` calls. This is standard post-install
+script behaviour. The interesting parameters, `parentGroup` and
+`parentVersion`, are mapped from something new: the `parentParams`
+map. This contains any named parameters used by the parent project
+template, i.e. simple-java in this case. Because of this,
+`parentParams` only exists for subtemplates.
+
+Another novel aspect of the post-install script is the reference to a
+`templateDir` property in addition to `projectDir`. This is because
+subtemplates are not unpacked directly in the project
+directory. Instead, Lazybones unpacks them into the project's
+.lazybones directory. `templateDir` points to the location of the
+unpacked subtemplate, whereas `projectDir` still points to the root
+directory of the project created from simple-java. So your subtemplate
+post-install script will typically want to copy or move files from
+`templateDir` to `projectDir`. The Commons IO classes that all
+post-install scripts have access to are ideal for this.
+
+With all of the subtemplates files in place, all you need to do is
+tell the build that the simple-java project template should include
+the entity subtemplate. So open up the build file and add this line to
+the `lazybones` block:
+
+[source, groovy]
+----
+lazybones {
+    ...
+    template "simple-java" includes "entity"
+}
+----
+
+Note how the name of the subtemplate excludes the 'subtmpl-'
+prefix. Now when you package the simple-java project template, the
+entity subtemplate will be included in it, ready for use with
+Lazybones' `generate` command.
+
+If you want to include multiple subtemplates, just pass extra
+arguments to `includes()`:
+
+[source,groovy]
+----
+lazybones {
+    ...
+    template "simple-java" includes "entity", "controller", "view"
+}
+----
+
+There is one final option available to template authors. What if you
+want to package the entity, controller, and view template files into a
+single subtemplate package? How would the user be able to specify
+which type of class he or she wants to generate? The answer is through
+template qualifiers.
+
+Let's say you have an 'artifact' subtemplate that includes
+Entity.groovy.gtpl, Controller.groovy.gtpl, etc. The user can run the
+`generate` command like this to determine which artifact type to use:
+
+[source,shell]
+----
+lazybones generate artifact::controller
+----
+
+The `::` separates the subtemplate name, 'artifact', from the qualifier,
+'controller'. In your post-install script, you can access the
+qualifiers through a `tmplQualifiers` property:
+
+[source,groovy]
+----
+def artifactTemplate
+if (tmplQualifiers) {
+    artifactTemplate = tmplQualifiers[0].capitalize() + ".groovy.gtpl"
+}
+else {
+    artifactTemplate = ask("Which type of artifact do you want to generate? ", null, "type")
+}
+
+// ... process the corresponding template file.
+----
+
+The user can even pass extra qualifiers simply by separating them with
+`::`
+
+[source,shell]
+----
+lazybones generate artifact::controller::org.example::Book
+----
+
+This is why `tmplQualifiers` is a list. It retains the order that the
+qualifiers are specified on the command line.
+
+Note qualifiers should not be used for general parameterisation such
+as packages and class names. Think carefully before supporting more
+than a single qualifier.
+
+=== Post install script in-depth
+
+The lazybones.groovy post install script is a generic groovy script
+with a few extra helper methods:
+
+* `ask(String message, defaultValue = null)` - asks the user a
+  question and returns their answer, or `defaultValue` if no answer is
+  provided
+
+* `ask(String message, defaultValue, String propertyName)` - works
+  similarly to the `ask()` above, but allows grabbing variables from the
+  command line as well based on the `propertyName`.
+
+* `processTemplates(String filePattern, Map substitutionVariables)` -
+  use ant pattern matching to find files and filter their contents in
+  place using Groovy's `SimpleTemplateEngine`.
+
+* `hasFeature(String featureName)` - checks if the script has access
+  to a feature, `hasFeature("ask")` or
+  `hasFeature("processTemplates")` would both return true
+
+You can get a complete list of the available methods from the
+https://github.com/pledbrook/lazybones/blob/master/lazybones-app/src/main/groovy/uk/co/cacoethes/lazybones/LazybonesScript.groovy[LazybonesScript]
+class.
+
+Here is a very simple example `lazybones.groovy` script that asks the
+user for a couple of values and uses those to populate parameters in
+the template's build file:
+
+[source,groovy]
+----
+def params = [:]
+params["groupId"] = ask("What is the group ID for this project?")
+params["version"] = ask("What is the project's initial version?", "0.1", "version")
+
+processTemplates("*.gradle", params)
+processTemplates("pom.xml", params)
+----
+
+The main Gradle build file might then look like this:
+
+[source,groovy]
+----
+apply plugin: "groovy"
+
+<% if (group) { %>group = "${group}"<% } %>
+version = "${version}"
+----
+
+The `${}` expressions are executed as Groovy expressions and they have
+access to any variables in the parameter map passed to
+`processTemplates()`. Scriptlets, i.e. code inside `<% %>` delimiters,
+allow for more complex logic.
