@@ -22,7 +22,6 @@ plugins {
 apply plugin: "groovy"
 apply plugin: "application"
 apply plugin: "codenarc"
-apply plugin: "net.gvmtool.sdkvendor"
 
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
