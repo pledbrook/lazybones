@@ -170,16 +170,16 @@ class LazybonesScript extends Script {
     /**
      * Include another script in the main script, and execute it in-line.
      * @param file subscript
-     * @param bindings values to pass from parent script to this script
+     * @param bindings values to pass from parent script to this script. These are additional model parameters,
+     * and are added to the existing parent model parameters.
      * @return the last expression evaluated in the subscript
      */
-    def include(String file, Map<String, String>...bindings) {
+    def include(String file, Map<String, String> bindings) {
         def m  = [:]
         m << model
-        bindings.each { m << it }
+        m << bindings
         def executor = new InstallationScriptExecuter(null, reader)
         executor.runPostInstallScript(file, tmplQualifiers, projectDir, templateDir, m)
-        executor.scriptReturnValue
     }
 
     /**

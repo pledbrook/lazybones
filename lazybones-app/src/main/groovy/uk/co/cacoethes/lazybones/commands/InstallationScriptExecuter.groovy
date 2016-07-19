@@ -21,11 +21,6 @@ class InstallationScriptExecuter {
     private ScmAdapter scmAdapter
     private final Reader inputReader
 
-    /**
-     * Set by the execution of a script. Useful for getting results from include scripts.
-     */
-    def scriptReturnValue
-
     InstallationScriptExecuter() {
         this(null)
     }
@@ -68,9 +63,10 @@ class InstallationScriptExecuter {
      * package. Once the script has been run, it is deleted.
      * @param targetDir the target directory that contains the scriptFileName script
      * @param model a map of variables available to the script
-     * @return the lazybones script if it exists
+     * @return the last expression evaluated in script. For example, if a map of parameters is executed
+     * in a subscript, these can be passed back to the calling lazybones.groovy script.
      */
-    Script runPostInstallScript(String scriptFileName,
+    def runPostInstallScript(String scriptFileName,
                                 List tmplQualifiers,
                                 File targetDir,
                                 File templateDir,
@@ -78,11 +74,10 @@ class InstallationScriptExecuter {
         def installScriptFile = new File(templateDir, scriptFileName)
         if (installScriptFile.exists()) {
             def script = initializeScript(model, tmplQualifiers, installScriptFile, targetDir, templateDir)
-            scriptReturnValue = script.run()
+            def scriptReturnValue = script.run()
             installScriptFile.delete()
-
             persistParentParams(templateDir, script)
-            return script
+            return scriptReturnValue
         }
 
         return null

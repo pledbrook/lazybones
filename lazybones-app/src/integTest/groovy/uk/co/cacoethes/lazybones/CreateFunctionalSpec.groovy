@@ -83,6 +83,10 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
         def text = new File(baseWorkDir, "my-app/build.gradle").text.trim()
         text.contains("group = \"org.example\"")
         text.contains("version = \"1.0-SNAPSHOT\"")
+
+        and: "The included lazybones script and subscript are deleted"
+        !new File("$baseWorkDir/my-app", "lazybones.groovy").exists()
+        !new File("$baseWorkDir/my-app", "sub1.groovy").exists()
     }
 
     @Betamax(tape="create-tape")
