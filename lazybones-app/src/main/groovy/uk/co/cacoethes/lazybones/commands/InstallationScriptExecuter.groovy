@@ -19,13 +19,19 @@ class InstallationScriptExecuter {
     static final String FILE_ENCODING = "UTF-8"
 
     private ScmAdapter scmAdapter
+    private final Reader inputReader
 
     InstallationScriptExecuter() {
         this(null)
     }
 
     InstallationScriptExecuter(ScmAdapter adapter) {
+        this(adapter, new BufferedReader(new InputStreamReader(System.in)))
+    }
+
+    InstallationScriptExecuter(ScmAdapter adapter, Reader inputReader) {
         this.scmAdapter = adapter
+        this.inputReader = inputReader
     }
 
     @SuppressWarnings("ParameterReassignment")
@@ -55,22 +61,34 @@ class InstallationScriptExecuter {
     /**
      * Runs the post install script if it exists in the unpacked template
      * package. Once the script has been run, it is deleted.
-     * @param targetDir the target directory that contains the lazybones.groovy script
+     * @param targetDir the target directory that contains the scriptFileName script
      * @param model a map of variables available to the script
-     * @return the lazybones script if it exists
+     * @return the last expression evaluated in script. For example, if a map of parameters is executed
+     * in a subscript, these can be passed back to the calling lazybones.groovy script.
      */
-    Script runPostInstallScript(List tmplQualifiers, File targetDir, File templateDir, Map<String, String> model) {
-        def installScriptFile = new File(templateDir, "lazybones.groovy")
+    def runPostInstallScript(String scriptFileName,
+                                List tmplQualifiers,
+                                File targetDir,
+                                File templateDir,
+                                Map<String, String> model) {
+        def installScriptFile = new File(templateDir, scriptFileName)
         if (installScriptFile.exists()) {
             def script = initializeScript(model, tmplQualifiers, installScriptFile, targetDir, templateDir)
-            script.run()
+            def scriptReturnValue = script.run()
             installScriptFile.delete()
-
             persistParentParams(templateDir, script)
-            return script
+            return scriptReturnValue
         }
 
         return null
+    }
+
+    /**
+     * Run an arbitrary script, usually as a subscript.
+     * @see InstallationScriptExecuter#runPostInstallScript(String, List, File, File, Map)
+     */
+    def runPostInstallScript(List tmplQualifiers, File targetDir, File templateDir, Map<String, String> model) {
+        runPostInstallScript("lazybones.groovy", tmplQualifiers, targetDir, templateDir, model)
     }
 
     protected LazybonesScript initializeScript(
@@ -99,7 +117,10 @@ class InstallationScriptExecuter {
             setProjectDir(targetDir)
             setTemplateDir(templateDir)
             setScmExclusionsFile(scmAdapter != null ? new File(targetDir, scmAdapter.exclusionsFilename) : null)
+            setModel(model)
         }
+        //not sure why this won't work inside of the with statement
+        script.setReader(inputReader)
         return script
     }
 
