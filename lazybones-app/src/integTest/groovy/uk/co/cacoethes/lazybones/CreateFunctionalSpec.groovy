@@ -67,6 +67,29 @@ class CreateFunctionalSpec extends AbstractFunctionalSpec {
     }
 
     @Betamax(tape="create-tape")
+    def "Post-install script works with include subscripts"() {
+        when: "creating a groovyapp with no pre-defined property values"
+        def args = [
+                "create",
+                "test-tmpl-subscripts",
+                "0.2",
+                "my-app"]
+        def exitCode = runCommand(args, baseWorkDir, ["org.example", "1.0-SNAPSHOT", "4", "org.foo", "2.0-SNAPSHOT", "8"])
+
+        then: "It successfully completes"
+        exitCode == 0
+
+        and: "The generated build file contains the expected group ID and version"
+        def text = new File(baseWorkDir, "my-app/build.gradle").text.trim()
+        text.contains("group = \"org.example\"")
+        text.contains("version = \"1.0-SNAPSHOT\"")
+
+        and: "The included lazybones script and subscript are deleted"
+        !new File("$baseWorkDir/my-app", "lazybones.groovy").exists()
+        !new File("$baseWorkDir/my-app", "sub1.groovy").exists()
+    }
+
+    @Betamax(tape="create-tape")
     def "Create command installs a template from an HTTP URL"() {
         when: "I run lazybones with the create command using a full URL for the ratpack template"
         def packageUrl = "http://dl.dropboxusercontent.com/u/29802534/custom-ratpack.zip"

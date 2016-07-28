@@ -38,7 +38,7 @@ class InstallationScriptExecuterSpec extends Specification {
         when: "when I run lazybones.groovy"
         File file = testFolder.newFile("lazybones.groovy")
         file.write("//do nothing")
-        LazybonesScript script = cmd.runPostInstallScript([], testFolder.root, testFolder.root, [:])
+        def script = cmd.initializeScript([:], [], file, testFolder.root, testFolder.root)
 
         then: "the targetDir is set"
         script.getProjectDir() == testFolder.root
