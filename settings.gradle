@@ -1,6 +1,7 @@
 include "lazybones-gradle-plugin",
         "lazybones-templates",
-        "lazybones-app"
+        "lazybones-app",
+        "lazybones-docs"
 
 rootProject.name = "lazybones"
 

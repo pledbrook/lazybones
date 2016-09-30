@@ -1,0 +1,29 @@
+== Search Templates
+
+To see what templates you can install, run
+
+[source,shell]
+----
+lazybones list
+----
+
+This will list all aliases and remote templates. If you want to see
+what templates you have cached locally, run
+
+[source,shell]
+----
+lazybones list --cached
+----
+
+In fact, `--cached` is implied if Lazybones can't connect to the internet.
+
+You can also find out more about a template through the info command:
+
+[source,shell]
+----
+lazybones info <template name>
+----
+
+This will print a description of the template and what versions are
+available for it. If you're offline, this will simply display an error
+message.

@@ -1,0 +1,43 @@
+== Sub-templates
+
+As of Lazybones version 0.7, project templates can incorporate
+subtemplates. Imagine that you have just created a new web application
+project from a template and that template documents that you can
+create new controllers using a sub- template named `controller`. To
+use it, just `cd` into the project directory and run
+
+[source,shell]
+----
+lazybones generate controller
+----
+
+This will probably ask you for the name of the controller and its
+package before generating the corresponding controller file in your
+project. You can reuse the command to create as many controllers as
+you need.
+
+As with the `create` command, you can also pass in property values on
+the command line if the subtemplate is parameterised:
+
+[source,shell]
+----
+lazybones generate controller -Ppackage=org.example.myapp -Pclass=Book
+----
+
+The last option available to you as a user is template
+qualifiers. These only work if the subtemplate supports them, but they
+allow you to pass additional information in a concise way:
+
+[source,shell]
+----
+lazybones generate artifact::controller
+----
+
+In this case, the template name is `artifact`, but we have qualified
+it with an extra controller. You can pass in as many qualifiers as you
+want, you just separate them with `::`.
+
+Note that you do not specify a version with the `generate`
+command. This is because the subtemplates are embedded directly in the
+project template, and so there can only be one version available to
+you.

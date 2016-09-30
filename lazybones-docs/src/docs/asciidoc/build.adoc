@@ -1,0 +1,125 @@
+== Build
+
+his project is split into two parts:
+
+* The lazybones command line tool; and
+* The project templates.
+
+=== Command line tool
+
+The command line tool is created via Gradle's application plugin. The
+main class is `uk.co.cacoethes.lazybones.LazyBonesMain`, which currently
+implements all the sub-commands (create, list, etc.) as concrete
+methods.
+
+The main class plus everything else under src/main is packaged into a
+`lazybones` JAR that is included in the distribution zip. The
+application Gradle plugin generates a lazybones script that then runs
+the main class with all required dependencies on the classpath.
+
+To build the distribution, simply run
+
+[source,shell]
+----
+./gradlew distZip
+----
+
+=== Project templates
+
+The project templates are simply directory structures with whatever
+files in them that you want. Ultimately, the template project
+directories will be zipped up and stored on
+https://bintray.com/repo/browse/pledbrook/lazybones-templates[Bintray]. From
+there, lazybones downloads the zips on demand and caches them in a
+local user directory (currently ~/.lazybones/templates).
+
+If you want empty directories to form part of the project template,
+then simply add an empty .retain file to each one. When the template
+archive is created, any .retain files are filtered out (but the
+containing directories are included).
+
+To package up a template, simply run
+
+[source,shell]
+----
+./gradlew packageTemplate<TemplateName>
+----
+
+The name of the project template comes from the containing directory,
+which is assumed to be lowercase hyphenated. The template name is the
+equivalent camel case form. So the template directory structure in
+src/templates/my-template results in a template called 'MyTemplate',
+which can be packaged with
+
+[source,shell]
+----
+./gradlew packageTemplateMyTemplate
+----
+
+The project template archive will be created in the build directory
+with the name '-template-.zip'. See the small section below on how the
+template version is derived.
+
+You can also package all the templates in one fell swoop:
+
+[source,shell]
+----
+./gradlew packageAllTemplates
+----
+
+Once a template is packaged up, you can publish it to a generic (non-Maven) Bintray repository by running
+
+[source,shell]
+----
+./gradlew publishTemplate<TemplateName>
+----
+
+This will initially fail, because the build does not know where to
+publish to. That's quickly fixed by adding a gradle.properties file in
+the root of this project that contains at least these properties:
+
+[source,shell]
+----
+repo.username=your_bintray_username
+repo.apiKey=your_bintray_apikey
+----
+
+You can then publish new versions of templates whenever you want. Note
+that you cannot republish with this mechanism, so remember to
+increment the version if you need to.
+
+Finally, you can publish the whole shebang (unusual) with
+
+[source,shell]
+----
+./gradlew publishAllTemplates
+----
+
+If you don't want to publish your template you can install it locally
+using the installTemplate rule.
+
+[source,shell]
+----
+ ./gradlew installTemplate<TemplateName>
+----
+
+This will install the template to ~/.lazybones/templates so that you
+can use it without moving it to bintray first.
+
+And that's it for the project templates.
+
+=== Template versions
+
+You define the version of a template by putting a VERSION file in the
+root directory of the template that contains just the version
+number. For example, you specify a version of 1.2.8 for the
+my-template template by adding the file
+src/templates/my-template/VERSION with the contents
+
+[source,shell]
+----
+1.2.8
+----
+
+That's it! The VERSION file will automatically be excluded from the
+project template archive.

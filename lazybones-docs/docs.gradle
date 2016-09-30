@@ -1,0 +1,30 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.2'
+        classpath 'org.ajoberstar:gradle-git:1.4.2'
+    }
+}
+
+apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'org.ajoberstar.github-pages'
+
+asciidoctor {
+    attributes 'source-highlighter': 'prettify',
+               toc                 : 'left',
+               icons               : 'font',
+               toclevels           : 3,
+               'pdf-style'         : 'default'
+}
+
+githubPages {
+    repoUri = 'https://github.com/pledbrook/lazybones.git'
+    deleteExistingFiles = true
+
+    pages {
+        from file('build/asciidoc/html5/')
+    }
+}

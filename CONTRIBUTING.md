@@ -89,4 +89,3 @@ fix any minor problems than not have the contribution at all.
 Ultimately, be aware that the maintainers don't have much time to dedicate to
 processing pull requests, so the less work they have to do the more likely and
 quickly they can merge those pull requests in.
-

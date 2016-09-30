@@ -1,0 +1,27 @@
+= Lazybones
+:numbered:
+:imagesDir: ./images/
+:baseDir: ../../
+:stem:
+
+image::lazybones-logo.svg[width=300, align=center]
+
+include::intro.adoc[]
+
+include::install.adoc[]
+
+include::create_projects.adoc[]
+
+include::subtemplates.adoc[]
+
+include::templates_search.adoc[]
+
+include::configuration.adoc[]
+
+include::build.adoc[]
+
+include::templates_development.adoc[]
+
+include::contributing.adoc[]
+
+include::credits.adoc[]

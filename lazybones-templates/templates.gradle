@@ -29,10 +29,20 @@ gradle.taskGraph.whenReady { graph ->
     if (graph.allTasks.any { it.name.startsWith("publish") }) {
         verifyProperty(project, 'repo.username')
         verifyProperty(project, 'repo.apiKey')
+        verifyProperty(project, 'github.token')
 
         graph.allTasks.findAll { it instanceof BintrayGenericUpload }.each { task ->
             task.username = project.'repo.username'
             task.apiKey = project.'repo.apiKey'
+        }
+
+        graph.allTasks.findAll { it.name == 'publishGhPages' }.each { task ->
+            task.project.githubPages.credentials.with {
+                username = project.'github.token'
+                //Password should be set in blank when using github token
+                //https://github.com/ajoberstar/gradle-git/wiki/Travis-CI-Authentication
+                password = ''
+            }
         }
     }
 }
