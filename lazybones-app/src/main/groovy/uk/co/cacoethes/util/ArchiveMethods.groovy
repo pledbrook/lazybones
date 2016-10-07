@@ -66,6 +66,10 @@ class ArchiveMethods {
             }
         }
 
+        // close the zipFile
+        // should the potential IOException bubble up?
+        zipFile.close()
+
         return unzippedFiles
     }
 
