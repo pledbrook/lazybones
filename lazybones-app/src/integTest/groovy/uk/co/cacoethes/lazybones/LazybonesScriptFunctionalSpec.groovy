@@ -11,6 +11,7 @@ class LazybonesScriptFunctionalSpec extends AbstractFunctionalSpec {
 
     void setup() {
         initProxy(recorder.proxy.address())
+        System.err.println "My Groovy Version is: ${GroovySystem.version}"
     }
 
     @Betamax(tape="create-tape")

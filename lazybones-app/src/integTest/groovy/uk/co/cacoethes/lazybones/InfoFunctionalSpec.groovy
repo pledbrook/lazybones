@@ -13,6 +13,8 @@ class InfoFunctionalSpec extends AbstractFunctionalSpec {
 
     @Betamax(tape='info-tape')
     def "Info command prints all available info for a package"() {
+        println "My Groovy Version is: ${GroovySystem.version}"
+
         when: "I run lazybones with the info command for the ratpack template"
         def exitCode = runCommand(["info", "ratpack"], baseWorkDir)
 

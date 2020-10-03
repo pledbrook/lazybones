@@ -1,0 +1,67 @@
+plugins {
+    id 'maven-publish'
+    id 'java-gradle-plugin'
+    id 'groovy'
+}
+
+archivesBaseName = "lazybones-gradle"
+group = "uk.co.cacoethes"
+version = "${lazybonesGradlePluginVersion}"
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // gradleApi() drags in the Groovy bundled with Gradle, so always a good idea
+    // to specify localGroovy() too
+    implementation localGroovy(), gradleApi()
+
+    testImplementation("org.spockframework:spock-core:0.7-groovy-2.0") {
+        exclude module: "groovy-all"
+    }
+    testImplementation "cglib:cglib-nodep:2.2.2"
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+tasks.withType(PublishToMavenRepository) {
+    onlyIf {
+        project.hasProperty('repo.username') && project.hasProperty('repo.apiKey')
+    }
+}
+
+publishing {
+    publications {
+        myLibrary(MavenPublication) {
+            from components.java
+        }
+    }
+    if (project.hasProperty('repo.username')) {
+        repositories {
+            maven {
+                credentials {
+                    username project.'repo.username'
+                    password project.'repo.apiKey'
+                }
+                name = 'lazybonesBintrayRepo'
+                url = "https://api.bintray.com/maven/pledbrook/plugins/lazybones-gradle"
+            }
+        }
+    }
+}
+
+gradlePlugin {
+    plugins {
+        autoUpdate {
+            id = 'uk.co.cacoethes.lazybones-templates'
+            implementationClass = 'uk.co.cacoethes.gradle.LazybonesTemplatesPlugin'
+        }
+    }
+}

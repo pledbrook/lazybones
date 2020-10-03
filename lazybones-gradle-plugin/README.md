@@ -23,7 +23,7 @@ to set it up manually in the `buildscript` section of your build file:
         }
     
         dependencies {
-            classpath "uk.co.cacoethes:lazybones-gradle:1.2.4"
+            classpath "uk.co.cacoethes:lazybones-gradle:1.2.5-SNAPSHOT"
         }
     }
 

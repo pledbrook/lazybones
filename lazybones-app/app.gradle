@@ -1,40 +1,24 @@
-buildscript {
-    repositories {
-        // Keep this for testing dev versions of the lazybones-templates plugin
-//        mavenCentral()
-//        mavenLocal()
-    }
-
-    dependencies {
-        // Keep this for testing dev versions of the lazybones-templates plugin
-//        classpath "uk.co.cacoethes:lazybones-gradle:1.2.3"
-    }
+plugins {
+    id 'groovy'
+    id 'application'
+    id "uk.co.cacoethes.lazybones-templates" version "1.2.5-SNAPSHOT"
+    id "io.sdkman.vendors" version "2.0.0"
 }
 
 import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
 
-plugins {
-    id "net.saliman.cobertura" version "2.2.7"
-    id "uk.co.cacoethes.lazybones-templates" version "1.2.3"
-    id "io.sdkman.vendors" version "1.1.0"
-}
-
-apply plugin: "groovy"
-apply plugin: "application"
-apply plugin: "codenarc"
-
 applicationName = "lazybones"
 mainClassName = "uk.co.cacoethes.lazybones.LazybonesMain"
-version = "0.8.3"
+version = "0.8.4-SNAPSHOT"
 
 // These settings mimic the old client VM behavior. Should result in faster startup.
 applicationDefaultJvmArgs = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1", "-XX:CICompilerCount=3"]
 
-sourceCompatibility = "1.6"
-targetCompatibility = "1.6"
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 ext {
-    groovyVersion = "2.4.3"
+    groovyVersion = "2.4.15"
     cachePath = new File(System.getProperty("user.home"), ".lazybones/templates").absolutePath
     isCiBuild = System.getProperty("drone.io") as boolean
     testWorkDir = file("$buildDir/testWork").path
@@ -53,7 +37,7 @@ sourceSets {
 }
 
 configurations {
-    integTestCompile.resolutionStrategy {
+    integTestImplementation.resolutionStrategy {
         force "org.codehaus.groovy:groovy-all:${groovyVersion}"
     }
 }
@@ -63,9 +47,10 @@ repositories {
 }
 
 dependencies {
-    compile "org.codehaus.groovy:groovy:${groovyVersion}"
+    implementation "org.codehaus.groovy:groovy:${groovyVersion}"
+    implementation "org.codehaus.groovy:groovy-all:${groovyVersion}"
 
-    compile "commons-io:commons-io:2.4",
+    implementation "commons-io:commons-io:2.4",
             "org.codehaus.groovy:groovy-json:${groovyVersion}",
             "org.codehaus.groovy:groovy-templates:${groovyVersion}",
             "org.apache.commons:commons-compress:1.5",
@@ -73,29 +58,23 @@ dependencies {
             "net.sf.jopt-simple:jopt-simple:4.4",
             "org.ini4j:ini4j:0.5.2"
 
-    runtime "org.apache.ivy:ivy:2.3.0"
+    runtimeOnly "org.apache.ivy:ivy:2.3.0"
 
-    testCompile "org.spockframework:spock-core:0.7-groovy-2.0", {
+    testImplementation("org.spockframework:spock-core:0.7-groovy-2.0") {
         exclude module: "groovy-all"
     }
 
-    integTestCompile "org.codehaus.groovy:groovy-all:2.4.3",
+    integTestImplementation "org.codehaus.groovy:groovy-all:${groovyVersion}",
                      "commons-io:commons-io:2.4",
                      "co.freeside:betamax:1.1.2",
                      "org.littleshoot:littleproxy:1.1.0-beta1"
 
-    integTestCompile "org.spockframework:spock-core:1.0-groovy-2.4"
-}
-
-idea {
-    module {
-        scopes.PROVIDED.plus += [configurations.integTestCompile]
-    }
+    integTestImplementation "org.spockframework:spock-core:1.0-groovy-2.4"
 }
 
 jar {
     manifest {
-        attributes("Implementation-Title": "Lazybones", "Implementation-Version": version)
+        attributes("Implementation-Title": "Lazybones", "Implementation-Version": project.version)
     }
 }
 
@@ -137,10 +116,11 @@ task configureCachePath {
 //for a single test, you can run "gradle -DintegTest.single=<test name>"
 task integTest(type: Test) {
     dependsOn "installDist", "configureCachePath", "installAllTemplates"
-    inputs.dir sourceSets.main.output.classesDir
-    inputs.dir sourceSets.main.output.resourcesDir
 
-    mustRunAfter "test"
+    testClassesDirs = sourceSets.integTest.output.classesDirs
+    classpath = sourceSets.integTest.runtimeClasspath
+    shouldRunAfter test
+
     ignoreFailures = true
 
     systemProperty "integration.test", "true"
@@ -163,7 +143,7 @@ task integTest(type: Test) {
         systemProperty "lazybones.cache.dir", project.cachePath
     }
 
-    testClassesDir = sourceSets.integTest.output.classesDir
+    testClassesDirs = sourceSets.integTest.output.classesDirs
     classpath = sourceSets.integTest.runtimeClasspath
 
     include "**/*Spec*"
@@ -172,31 +152,18 @@ task integTest(type: Test) {
 
 task packageReports(type: Zip) {
     from "build/reports"
-    archiveName = "reports.zip"
-    destinationDir = buildDir
+    archiveFileName = "reports.zip"
+    destinationDirectory = buildDir
 }
 
 integTest.finalizedBy packageReports
-
-codenarc {
-    configFile = rootProject.file("codenarc.groovy")
-}
-codenarcMain.excludes = ["**/NameType.groovy"]
-codenarcTest.enabled = false
-codenarcIntegTest.enabled = false
-
-/** Cobertura (Coverage) Configuration */
-cobertura {
-    coverageFormats = ['html', 'xml']
-    coverageSourceDirs = sourceSets.main.allSource.srcDirs
-}
 
 distZip.dependsOn("test", "integTest")
 check.dependsOn("test", "integTest")
 
 task uploadDist(type: BintrayGenericUpload, dependsOn: "distZip") {
-    artifactFile = distZip.archivePath
-    artifactUrlPath = "lazybones/${version}/${distZip.archiveName}"
+    artifactFile = distZip.archiveFile.get().asFile
+    artifactUrlPath = "lazybones/${version}/${distZip.archiveFileName}"
     repositoryName = "pledbrook/lazybones-templates"
     packageName = "lazybones"
     licenses = ["Apache-2.0"]
