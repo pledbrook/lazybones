@@ -1,6 +1,12 @@
-include "lazybones-gradle-plugin",
-        "lazybones-templates",
-        "lazybones-app"
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+}
+
+// The plugin is build separately because these 2 other projects depend on it as a 'plugin'
+include "lazybones-templates", "lazybones-app"
 
 rootProject.name = "lazybones"
 

@@ -83,14 +83,10 @@ class PackageTemplateRule implements Rule {
 
         validateTemplateVersion tmplConvention, tmplDir, tmplName
 
-        final task = project.tasks.create(taskName, Zip)
-        task.with {
-            conventionMapping.map("baseName") { tmplName + project.extensions.lazybones.packageNameSuffix }
-            conventionMapping.map("destinationDir") { project.extensions.lazybones.packagesDir }
-
-            conventionMapping.map("version") {
-                tmplConvention?.version ?: project.file("$tmplDir/VERSION").text.trim()
-            }
+        final Zip task = project.tasks.create(taskName, Zip) {
+            archiveBaseName.set("${tmplName}${project.extensions.lazybones.packageNameSuffix}")
+            destinationDirectory.set(project.extensions.lazybones.packagesDir)
+            archiveVersion.set(tmplConvention?.version ?: project.file("$tmplDir/VERSION").text.trim())
 
             includeEmptyDirs = true
         }

@@ -1,19 +1,8 @@
-buildscript {
-    repositories {
-        mavenLocal()
-        maven {
-            url "http://dl.bintray.com/pledbrook/plugins"
-        }
-    }
-
-    dependencies {
-        classpath "uk.co.cacoethes:lazybones-gradle:1.2.4"
-    }
+plugins {
+    id "uk.co.cacoethes.lazybones-templates" version "1.2.5-SNAPSHOT"
 }
 
 import uk.co.cacoethes.gradle.tasks.BintrayGenericUpload
-
-apply plugin: "uk.co.cacoethes.lazybones-templates"
 
 lazybones {
     licenses = ["Apache-2.0"]

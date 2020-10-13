@@ -43,12 +43,16 @@ class BintrayGenericUpload extends DefaultTask {
      * A list of the licenses that apply to the package. This is only required
      * when creating a new OSS package in Bintray.
      */
+    @Optional
+    @Input
     List<String> licenses
 
     /**
      * The URL where the source code for the templates is hosted. This is only
      * required for OSS projects.
      */
+    @Optional
+    @Input
     String vcsUrl
 
     /**
@@ -63,9 +67,11 @@ class BintrayGenericUpload extends DefaultTask {
      * The username of the account to publish as. The account must of course
      * have permission to publish to the target repository.
      */
+    @Input
     String username
 
     /** The Bintray API key for the {@link #username} account. */
+    @Input
     String apiKey
 
     @TaskAction
